@@ -2,7 +2,7 @@
  * Created by huangyijun on 16/11/11.
  */
 'use strict';
-const request = require('@tuniu/request');
+const request = require('@microscope/request');
 
 class Communication {
     constructor(config) {

@@ -9,7 +9,7 @@ const path = require('path');
 const Commu = require('./Commu.js');
 const Metric = require('./Metrics.js');
 const Collect = require('./Colle.js');
-const Redis = require('@tuniu/node-redis');
+const Redis = require('@microscope/node-redis');
 
 const CORE_INSTRUMENTATION = {http: 'http.js'};
 
