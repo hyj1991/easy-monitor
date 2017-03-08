@@ -1,6 +1,6 @@
 /**
  * @description Helper方法集合
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 'use strict';
 const path = require('path');

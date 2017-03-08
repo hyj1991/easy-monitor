@@ -1,6 +1,6 @@
 /**
  * @description 基于C扩展的定时器，在while等进程级别阻塞情况下依旧能运行
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 'use strict';
 const LinkList = require('./internal/LinkList');

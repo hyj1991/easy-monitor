@@ -1,6 +1,6 @@
 /**
  * @description 定时器原始类
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 
 class Timer {

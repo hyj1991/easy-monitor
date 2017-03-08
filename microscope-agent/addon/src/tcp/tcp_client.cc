@@ -2,7 +2,7 @@
 
 /**
  * @description 建立Tcp连接
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 int TcpClient::TcpConnect(const char* server_ip,int server_port){
        //解析域名，如果是IP则不用解析，如果出错，显示错误信息
@@ -32,7 +32,7 @@ int TcpClient::TcpConnect(const char* server_ip,int server_port){
 
 /**
  * @description 发送数据流
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 int TcpClient::TcpSendMessage(const char* message){
     int send_res = send(socket_fd,message,strlen(message),0);
@@ -41,7 +41,7 @@ int TcpClient::TcpSendMessage(const char* message){
 
 /**
  * @description 接收数据流
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 /*void TcpClient::TcpReceiveMessage(std::string str){ 
     char tmp[1000] ; 

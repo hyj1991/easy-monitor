@@ -1,6 +1,6 @@
 /**
  * @description 构造JS层的LinkList类数据结构(适用于大批量的append和删除操作，时间复杂度为o(n))
- * @author huangyijun@tuniu.com
+ * @author https://github.com/hyj1991
  */
 'use strict';
 
