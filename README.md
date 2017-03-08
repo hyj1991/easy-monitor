@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="300" heigth="300" src="/assets/microscope.png" alt="microscope logo">
+  <img width="150" heigth="150" src="/assets/microscope.png" alt="microscope logo">
 </div>
 
 # MICROSCOPE
