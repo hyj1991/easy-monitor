@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/hyj1991/microscope/issues"
   },
-  "homepage": "https://github.com/hyj1991/microscope#readme"
+  "homepage": "https://github.com/hyj1991/microscope#readme",
+  "dependencies": {
+    "nan": "^2.5.1"
+  }
 }
