@@ -1,0 +1,24 @@
+{
+  "name": "microscope-server",
+  "version": "0.0.0",
+  "description": "a node monit project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyj1991/microscope.git"
+  },
+  "keywords": [
+    "node",
+    "monit",
+    "project"
+  ],
+  "author": "https://github.com/hyj1991",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hyj1991/microscope/issues"
+  },
+  "homepage": "https://github.com/hyj1991/microscope#readme"
+}
