@@ -1,3 +1,7 @@
+<div align="center">
+  <img width="300" heigth="300" src="/assets/microscope.png" alt="microscope logo">
+</div>
+
 # MICROSCOPE
 [English Version](https://github.com/hyj1991/microscope/blob/master/README.md)
 ##简介
