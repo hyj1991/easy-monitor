@@ -4,8 +4,10 @@
   "description": "an easy nodejs project monitor",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
   },
+  "gypfile": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyj1991/easy-monitor.git"
@@ -21,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/hyj1991/easy-monitor/issues"
   },
-  "homepage": "https://github.com/hyj1991/easy-monitor#readme"
+  "homepage": "https://github.com/hyj1991/easy-monitor#readme",
+  "dependencies": {
+    "nan": "^2.5.1"
+  }
 }
