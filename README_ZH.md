@@ -1,9 +1,5 @@
-<div align="center">
-  <img width="150" heigth="150" src="/assets/microscope.png" alt="microscope logo">
-</div>
-
-# MICROSCOPE
-[English Version](https://github.com/hyj1991/microscope/blob/master/README.md)
+# Easy-Monitor
+[English Version](https://github.com/hyj1991/easy-monitor/blob/master/README.md)
 ##简介
 本项目是一个针对node的监控项目，旨在帮助开发者快速发现 **线上的运行时错误**，比如线上项目的内存泄漏，或者进程级别长阻塞。
 

@@ -1,9 +1,5 @@
-<div align="center">
-  <img width="150" heigth="150" src="/assets/microscope.png" alt="microscope logo">
-</div>
-
-# MICROSCOPE
-[中文版](https://github.com/hyj1991/microscope/blob/master/README_ZH.md)
+# Easy-Monitor
+[中文版](https://github.com/hyj1991/easy-monit/blob/master/README_ZH.md)
 ## instruction
 A node monit project, it can let you find **online runtime-error** such as memory-leak and process long blocking.
 

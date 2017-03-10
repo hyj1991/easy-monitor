@@ -1,0 +1,25 @@
+{
+  "name": "easy-monitor",
+  "version": "1.0.0",
+  "description": "an easy nodejs project monitor",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyj1991/easy-monitor.git"
+  },
+  "keywords": [
+    "node",
+    "nodejs",
+    "project",
+    "monitor"
+  ],
+  "author": "https://github.com/hyj1991",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hyj1991/easy-monitor/issues"
+  },
+  "homepage": "https://github.com/hyj1991/easy-monitor#readme"
+}
