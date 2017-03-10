@@ -1,5 +1,5 @@
 # Easy-Monitor
-[中文版](https://github.com/hyj1991/easy-monit/blob/master/README_ZH.md)
+[中文版](README_ZH.md)
 ## instruction
 A node monit project, it can let you find **online runtime-error** such as memory-leak and process long blocking.
 
