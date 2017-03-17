@@ -1,0 +1,141 @@
+<script src="Chart.js"></script><!doctype html>
+<html>
+	<head>
+		<title>CPUProfiler</title>
+		<link href="styles.css" rel="stylesheet">
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="prettify.js"></script>
+		<script src="Chart.js"></script>
+		<script type="text/javascript" src="//use.typekit.net/puc1imu.js"></script>
+		<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+	</head>
+	<body>
+	<div class="redBorder"></div>
+	<div class="greenBorder"></div>
+	<div class="yellowBorder"></div>
+	<div id="wrapper">
+		<nav>	
+			<dl>
+			</dl>
+		</nav>
+		
+		<div id="contentWrapper">
+			<h1 id="mainHeader">Achilles</h1>
+			<h2 id="introText">Pid:7688 Profiler Statistics By V8 Engine</h2>
+			<article id="timeout">
+				<h1>Functions Timeout</h1>
+				<h2>ExecTime > 500ms List:</h2>
+				<pre data-type="bash"><code>1. FunctionName: "hello", ExecTime: "2.702ms", FilePath: "(/Users/node/achilles/app/src/controllers/SiteController.js 120)"
+
+2. FunctionName: "tmpArr.forEach.item", ExecTime: "1.534ms", FilePath: "(/Users/huangyijun/git/easy-monitor/easy-monitor-demo/main_process/src/tcpclient.js 42)"
+
+3. FunctionName: "doCpuProfiler", ExecTime: "1.534ms", FilePath: "(/Users/huangyijun/git/easy-monitor/easy-monitor-demo/main_process/src/cpuprofiler.js 6)"</code></pre>
+				<p>You can set your timeout by add <code>"?timeout=your timeout"</code> to this url, such as: <code>"?timeout=200"</code></p>
+				<h2>ExecTime Top 5 List:</h2>
+				<pre data-type="bash"><code>1. FunctionName: "hello", ExecTime: "2.702ms", FilePath: "(/Users/node/achilles/app/src/controllers/SiteController.js 120)"
+
+2. FunctionName: "tmpArr.forEach.item", ExecTime: "1.534ms", FilePath: "(/Users/huangyijun/git/easy-monitor/easy-monitor-demo/main_process/src/tcpclient.js 42)"
+
+3. FunctionName: "doCpuProfiler", ExecTime: "1.534ms", FilePath: "(/Users/huangyijun/git/easy-monitor/easy-monitor-demo/main_process/src/cpuprofiler.js 6)"</code></pre>
+			</article>
+
+			<article id="bailout">
+				<h1>Functions Bailout</h1>
+				<h2>Top 10 Bailout List:</h2>
+				<pre data-type="bash"><code>1. FunctionName: "handle", BailoutReason: "TryCatchStatement", FilePath: "(/Users/node/achilles/node_modules/.4.15.2@express/lib/router/layer.js 86)"
+
+2. FunctionName: "getPathname", BailoutReason: "TryCatchStatement", FilePath: "(/Users/node/achilles/node_modules/.4.15.2@express/lib/router/index.js 526)"
+
+3. FunctionName: "loadMVC", BailoutReason: "TryCatchStatement", FilePath: "(/Users/node/achilles/node_modules/.0.6.4@@tuniu/light-mvc/index.js 121)"
+
+4. FunctionName: "tryRender", BailoutReason: "TryCatchStatement", FilePath: "(/Users/node/achilles/node_modules/.4.15.2@express/lib/application.js 638)"
+
+5. FunctionName: "tryHandleCache", BailoutReason: "TryCatchStatement", FilePath: "(/Users/node/achilles/node_modules/.2.5.6@ejs/lib/ejs.js 200)"</code></pre>
+			</article>
+		</div>
+	</div>
+	</body>
+	<script>
+	$(document).ready(function(){
+	
+		var $nav = $("nav dl");
+		
+		$("article").each(function(){
+			var $el = $(this);
+			var $h1 = $el.find("h1");
+			var sectionTitle = $h1.html();
+			var articleId = $el.attr("id");
+			var $dt = $("<dt><a href=\"#"+articleId +"\">"+sectionTitle+"</a></dt>");
+			
+			$dt.find("a").on("click",function(e){
+				e.preventDefault();
+				$('html,body').animate({scrollTop: $h1.offset().top},400);
+			});
+			
+			$nav.append($dt);
+			
+			var $subtitles = $el.find("h2");
+			
+			$subtitles.each(function(){
+				var $h2 = $(this);
+				var title = $h2.text();
+				var newID = articleId + "-" +camelCase(title);
+				$h2.attr("id",newID);
+				var $dd = $("<dd><a href=\"#" +newID + "\">" + title + "</a></dd>");
+				
+				$dd.find("a").on("click",function(e){
+					e.preventDefault();
+					$('html,body').animate({scrollTop: $h2.offset().top},400);
+				})
+				$nav.append($dd);
+				
+			});
+			
+			var $articles = $el.find("article");
+			
+		});	
+		
+		$("canvas").each(function(){
+			var $canvas = $(this);
+			var ctx = this.getContext("2d");
+			
+			
+			
+			eval($("code[data-for='" + $canvas.attr("id") + "']").text());
+			
+			
+			var evalString = "new Chart(ctx)." + $canvas.data("type") + "(data);";
+			
+			eval(evalString);
+						
+		});
+		prettyPrint();			
+		
+		function camelCase(str){			
+			var splitString = str.split(" ");
+			
+			var returnedCamel = splitString[0].toLowerCase();
+			
+			for (var i=1; i<splitString.length; i++){
+				returnedCamel += splitString[i].charAt(0).toUpperCase() + splitString[i].substring(1).toLowerCase();
+			}
+			
+			return returnedCamel;
+			
+		} 
+	});
+	</script>
+	<script type="text/javascript">
+	
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-28909194-3']);
+	  _gaq.push(['_trackPageview']);
+	
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+	
+	</script>
+</html>
