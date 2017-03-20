@@ -28,7 +28,7 @@ router(app, config, helper);
 
 //listen application
 tcp(config, helper).listen(config.LISTEN_PORT_TCP, helper.tcpListenSuccess(config.LISTEN_PORT_TCP));
-const httpServer = app.listen(config.LISTEN_PORT_HTTP, helper.httpListenSuccess(config.LISTEN_PORT_HTTP));
+const httpServer = app.listen(config.HTTP_SERVER_PORT, helper.httpListenSuccess(config.HTTP_SERVER_PORT));
 httpServer.on('error', err => {
     helper.logger.info(`http server has been started, this will be closed...`);
     httpServer.close();

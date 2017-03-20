@@ -1,8 +1,18 @@
 'use strict';
 const path = require('path');
-const logger = require('../../common/Logger');
+const logger = require('../../common_library/Logger');
 const EventEmitter = require('events').EventEmitter;
 const event = new EventEmitter();
+
+function _loadConfig() {
+    let config = require(path.join(__dirname, '../config/config.js'));
+    Object.setPrototypeOf(config, require(path.join(__dirname, '../../common_config/config.js')));
+    return config;
+}
+
+const config = _loadConfig();
+
+logger.setLevel(config.LOG_LEVEL);
 
 module.exports = {
     logger,
@@ -10,7 +20,7 @@ module.exports = {
     event,
 
     loadConfig(){
-        return require(path.join(__dirname, '../config/config.js'));
+        return config;
     },
 
     jsonParse(str){

@@ -47,4 +47,4 @@ Logger.prototype.debug = function (msg) {
     if (this.level >= levelMap['debug']) console.log(this.prefix + colors['debug'](msg))
 };
 
-module.exports = new Logger(2, '[Easy-Monitor] ');
+module.exports = new Logger(2, '[Easy-Monitor]');

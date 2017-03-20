@@ -62,11 +62,11 @@ module.exports = function (config, helper) {
     });
 
     client.on('error', function (error) {
-        logger.error(`tcpclient->error pid ${process.pid} ${error}`);
+        logger.debug(`tcpclient->error pid ${process.pid} ${error}`);
     });
 
     client.on('close', function () {
-        logger.error(`tcpclient->close pid ${process.pid} tcp connection closed`);
+        logger.debug(`tcpclient->close pid ${process.pid} tcp connection closed`);
         //when socket close, remove original listener to avoid memory leak
         client.removeListener('connect', callbackListener);
         client.destroy();

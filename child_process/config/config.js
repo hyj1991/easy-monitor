@@ -4,8 +4,6 @@ const path = require('path');
 module.exports = {
     VIEW_PATH: path.join(__dirname, '../view'),
 
-    LISTEN_PORT_HTTP: 12333,
-
     LISTEN_PORT_TCP: 8082,
 
     MESSAGE_TYPE: {

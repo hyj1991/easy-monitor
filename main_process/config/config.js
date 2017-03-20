@@ -14,7 +14,7 @@ module.exports = {
         3: 'CPU_PROFILER_MESSAGE'
     },
 
-    HEARTBEAT_TIME: 6 * 1000,
+    HEARTBEAT_TIME: 60 * 1000,
 
     CPU_PROFILING_TIME: 5 * 1000,
 
