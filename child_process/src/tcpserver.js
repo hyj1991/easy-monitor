@@ -55,7 +55,7 @@ module.exports = function (config, helper) {
     });
 
     server.on('error', err => {
-        logger.info(`tcp server has been started, this will be closed...`);
+        logger.info(`tcp server has been started, this [${process.pid}] will be closed...`);
         server.close();
     });
 

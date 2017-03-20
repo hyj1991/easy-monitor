@@ -6,6 +6,8 @@ const analysisLib = require('v8-cpu-analysis');
 module.exports = function (config, helper) {
     const logger = helper.logger;
 
+    let reconnectTimes = 0;
+
     let client = new net.Socket();
     let heartBeatMessage = JSON.stringify({
             type: config.MESSAGE_TYPE[0],
@@ -14,6 +16,7 @@ module.exports = function (config, helper) {
 
     function callbackListener() {
         logger.info(`connect to ${config.TCP_INFO.HOST}:${config.TCP_INFO.PORT} success...`);
+        reconnectTimes = 0;
         client.write(heartBeatMessage);
     }
 
@@ -67,6 +70,10 @@ module.exports = function (config, helper) {
     });
 
     client.on('close', function () {
+        if (++reconnectTimes === 10) {
+            helper.event.emit('tcp_server_maybe_closed');
+            reconnectTimes = 0;
+        }
         logger.debug(`tcpclient->close pid ${process.pid} tcp connection closed`);
         //when socket close, remove original listener to avoid memory leak
         client.removeListener('connect', callbackListener);
