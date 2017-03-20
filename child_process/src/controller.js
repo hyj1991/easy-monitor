@@ -33,6 +33,9 @@ module.exports = function (app, config, helper) {
                         type: config.MESSAGE_TYPE[2],
                         data: JSON.stringify({
                             timeout: req.query.timeout || 500,
+                            long_limit: req.query.long_limit,
+                            top_limit: req.query.top_limit,
+                            bail_limit: req.query.bail_limit,
                             uuid
                         })
                     }) + '\n\n');
@@ -60,6 +63,9 @@ module.exports = function (app, config, helper) {
                             type: config.MESSAGE_TYPE[2],
                             data: JSON.stringify({
                                 timeout: req.query.timeout || 500,
+                                long_limit: req.query.long_limit,
+                                top_limit: req.query.top_limit,
+                                bail_limit: req.query.bail_limit,
                                 uuid
                             })
                         }) + '\n\n');

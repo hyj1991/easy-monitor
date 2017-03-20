@@ -35,17 +35,29 @@
                <% } %>
             </code></pre>
             <p>
-                You can set your timeout by add <code>"?timeout=your timeout"</code> to this url, Here are some useful links:
+                You can set your timeout and list number by add <code>"?timeout=your timeout&long_limit=your list number"</code> to this url, Here are some useful links:
                 <ul>
-                <li><a href="/CPUProfiler/<%- processName %>::<%- processPid %>?timeout=1">Set Functions Executing Time > 1ms</a></li>
                 <li><a href="/CPUProfiler/<%- processName %>::<%- processPid %>?timeout=200">Set Functions Executing Time > 200ms</a></li>
+                <li><a href="/CPUProfiler/<%- processName %>::<%- processPid %>?timeout=10&long_limit=10">Set Functions Executing Time > 10ms And List 10</a></li>
                 </ul>
             </p>
 
-            <h2>ExecTime Top 5 List:</h2>
-            <pre data-type="bash">
-
-            </pre>
+            <h2>ExecTime Top <a href=""><%- data.topExecutingFunctions.length %></a> List:</h2>
+            <pre data-type="bash"><code>
+                <%
+                let topExecutingFunctions = data.topExecutingFunctions;
+                let topExecutingFunctionsLength = topExecutingFunctions.length;
+                for(let i=0; i<topExecutingFunctionsLength; i++){
+                %>
+<%- (i+1) %>. FunctionName: "<%- topExecutingFunctions[i].funcName %>", ExecTime: "<%- topExecutingFunctions[i].execTime %>ms", FilePath: "<%- topExecutingFunctions[i].url %>"
+                <% } %>
+            </code></pre>
+            <p>
+                You can set your list number by add <code>"?top_limit=your list number"</code> to this url, Here are some useful links:
+            <ul>
+                <li><a href="/CPUProfiler/<%- processName %>::<%- processPid %>?top_limit=10">Set List Number = 10</a></li>
+            </ul>
+            </p>
         </article>
 
 
@@ -61,6 +73,12 @@
 <%- (i+1) %>. FunctionName: "<%- bailoutFunctions[i].funcName %>", BailoutReason: "<%- bailoutFunctions[i].bailoutReason %>", HitTimes:<%- bailoutFunctions[i].hitTimes %>, FilePath: "<%- bailoutFunctions[i].url %>"
             <% } %>
             </code></pre>
+            <p>
+                You can set your list number by add <code>"?bail_limit=your list number"</code> to this url, Here are some useful links:
+            <ul>
+                <li><a href="/CPUProfiler/<%- processName %>::<%- processPid %>?bail_limit=10">Set List Number = 10</a></li>
+            </ul>
+            </p>
         </article>
     </div>
 </div>

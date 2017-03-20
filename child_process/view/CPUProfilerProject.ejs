@@ -21,14 +21,15 @@
     <div id="contentWrapper">
         <h1 id="mainHeader"><%- projectName %></h1>
         <h2 id="introText">Profiler Statistics By <a href="/">Easy-Monitor</a></h2>
-
+        <article id="<%- projectName %>">
         <%
         let dataLength = data.length;
         for(let i=0; i<dataLength; i++){
 
         %>
-        <article id="<%- data[i].processName %>::<%- data[i].processPid %>">
+        <p id="<%- data[i].processName %>::<%- data[i].processPid %>">
             <h1>Pid: <%- data[i].processPid %></h1>
+
             <h2>Functions ExecTime > <a href="/CPUProfiler/Project/<%- data[i].processName %>?timeout=<%- data[i].timeout %>"><%- data[i].timeout %>ms</a> List:</h2>
             <pre data-type="bash"><code>
                     <%
@@ -40,17 +41,29 @@
                     <% } %>
             </code></pre>
             <p>
-                You can set your timeout by add <code>"?timeout=your timeout"</code> to this url, Here are some useful links:
+                You can set your timeout by add <code>"?timeout=your timeout&long_limit=your list number"</code> to this url, Here are some useful links:
             <ul>
-                <li><a href="/CPUProfiler/Project/<%- data[i].processName %>?timeout=1">Set Functions Executing Time > 1ms</a></li>
                 <li><a href="/CPUProfiler/Project/<%- data[i].processName %>?timeout=200">Set Functions Executing Time > 200ms</a></li>
+                <li><a href="/CPUProfiler/Project/<%- data[i].processName %>?timeout=10&long_limit=10">Set Functions Executing Time > 10ms And List 10</a></li>
             </ul>
             </p>
 
-            <h2>Functions ExecTime Top 5 List:</h2>
+            <h2>ExecTime Top <a href=""><%- data[i].data.topExecutingFunctions.length %></a> List:</h2>
             <pre data-type="bash"><code>
-
+                    <%
+                        let topExecutingFunctions = data[i].data.topExecutingFunctions;
+                        let topExecutingFunctionsLength = topExecutingFunctions.length;
+                    for(let i=0; i<topExecutingFunctionsLength; i++){
+                    %>
+<%- (i+1) %>. FunctionName: "<%- topExecutingFunctions[i].funcName %>", ExecTime: "<%- topExecutingFunctions[i].execTime %>ms", FilePath: "<%- topExecutingFunctions[i].url %>"
+                    <% } %>
             </code></pre>
+            <p>
+                You can set your list number by add <code>"?top_limit=your list number"</code> to this url, Here are some useful links:
+            <ul>
+                <li><a href="/CPUProfiler/Project/<%- data[i].processName %>?top_limit=10">Set List Number = 10</a></li>
+            </ul>
+            </p>
 
             <h2>Top <a href=""><%- data[i].data.bailoutFunctions.length %></a> Bailout List:</h2>
             <pre data-type="bash"><code>
@@ -62,6 +75,12 @@
 <%- (i+1) %>. FunctionName: "<%- bailoutFunctions[i].funcName %>", BailoutReason: "<%- bailoutFunctions[i].bailoutReason %>", HitTimes:<%- bailoutFunctions[i].hitTimes %>, FilePath: "<%- bailoutFunctions[i].url %>"
             <% } %>
             </code></pre>
+            <p>
+                You can set your list number by add <code>"?bail_limit=your list number"</code> to this url, Here are some useful links:
+            <ul>
+                <li><a href="/CPUProfiler/Project/<%- data[i].processName %>?bail_limit=10">Set List Number = 10</a></li>
+            </ul>
+            </p>
 
         </article>
         <% } %>
