@@ -15,6 +15,10 @@ function easyMonitor(appName) {
         config.LOG_LEVEL = config.logLevel;
     }
 
+    if (typeof config.httpServerPort === 'number' || typeof config.httpServerPort === 'string') {
+        config.HTTP_SERVER_PORT = config.httpServerPort;
+    }
+
     require('./main_process')(config);
 }
 
