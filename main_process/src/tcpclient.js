@@ -50,9 +50,9 @@ module.exports = function (config, helper) {
                             type: config.MESSAGE_TYPE[3],
                             uuid: item.data.uuid,
                             data: JSON.stringify({
-                                longFunctions: analysisLib(profiler, item.data.timeout || 500, false, true, {limit: item.data.long_limit || config.FUNCTIONS_ANALYSIS.LONG_FUNCTIONS_LIMIT}),
-                                topExecutingFunctions: analysisLib(profiler, 1, false, true, {limit: item.data.top_limit || config.FUNCTIONS_ANALYSIS.TOP_EXECUTING_FUNCTIONS}),
-                                bailoutFunctions: analysisLib(profiler, null, true, true, {limit: item.data.bail_limit || config.FUNCTIONS_ANALYSIS.BAILOUT_FUNCTIONS_LIMIT})
+                                longFunctions: analysisLib(profiler, item.data.timeout || 500, false, true, {limit: item.data.long_limit || config.FUNCTIONS_ANALYSIS.LONG_FUNCTIONS_LIMIT}, config.filterFunction),
+                                topExecutingFunctions: analysisLib(profiler, 1, false, true, {limit: item.data.top_limit || config.FUNCTIONS_ANALYSIS.TOP_EXECUTING_FUNCTIONS}, config.filterFunction),
+                                bailoutFunctions: analysisLib(profiler, null, true, true, {limit: item.data.bail_limit || config.FUNCTIONS_ANALYSIS.BAILOUT_FUNCTIONS_LIMIT}, config.filterFunction)
                             })
                         };
                         client.write(JSON.stringify(result) + '\n\n');
