@@ -7,6 +7,10 @@ function easyMonitor(appName) {
         config.appName = appName;
     }
 
+    if (typeof config.monitorAuth === 'function') {
+        config.monitorAuth = config.monitorAuth.toString();
+    }
+
     require('./main_process')(config);
 }
 

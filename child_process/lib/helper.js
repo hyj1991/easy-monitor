@@ -1,4 +1,5 @@
 'use strict';
+const vm = require('vm');
 const path = require('path');
 const logger = require('../../common_library/Logger');
 const EventEmitter = require('events').EventEmitter;
@@ -13,6 +14,11 @@ function _loadConfig() {
     } catch (e) {
         commonConfig = require(path.join(__dirname, '../../common_config/config.js'));
     }
+
+    if (commonConfig.monitorAuth && typeof commonConfig.monitorAuth === 'string') {
+        commonConfig.monitorAuth = vm.runInThisContext(`(${commonConfig.monitorAuth})`);
+    }
+
     let config = require(path.join(__dirname, '../config/config.js'));
     Object.setPrototypeOf(config, commonConfig);
     return config;

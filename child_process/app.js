@@ -9,6 +9,7 @@ const path = require('path');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const serverFavicon = require('serve-favicon');
 const router = require('./src/router');
 const helper = require('./lib/helper');
 const tcp = require('./src/tcpserver');
@@ -20,6 +21,7 @@ app.set('view engine', 'ejs');
 
 //use some middleware
 app.use(express.static(path.join(__dirname, './public')));
+app.use(serverFavicon(path.join(__dirname, './public/favicon.ico')));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({extended: false, limit: '10mb'}));
 

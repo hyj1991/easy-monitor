@@ -1,9 +1,32 @@
 'use strict';
 const uuidV4 = require('uuid/v4');
+const basicAuth = require('basic-auth');
 
 module.exports = function (app, config, helper) {
-
     return {
+        BasicAuth(req, res, next){
+            if (!config.monitorAuth || typeof config.monitorAuth !== 'function') {
+                return next();
+            }
+
+            let credentials = basicAuth(req);
+
+            if (!credentials) {
+                res.statusCode = 401;
+                res.setHeader('WWW-Authenticate', 'Basic realm="Easy Monitor"');
+                return next('Access denied');
+            }
+
+            config.monitorAuth(credentials.name, credentials.pass).then(isAuthed => {
+                if (isAuthed) {
+                    return next();
+                }
+                res.statusCode = 401;
+                res.setHeader('WWW-Authenticate', 'Basic realm="Easy Monitor"');
+                next('Access denied');
+            }).catch(next);
+        },
+
         IndexPidList(req, res, next){
             let cachedMap = helper.getCachedSocket();
             let pidList = Object.keys(cachedMap);
