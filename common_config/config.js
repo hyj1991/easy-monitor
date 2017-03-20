@@ -2,7 +2,7 @@
 module.exports = {
     LOG_LEVEL: 2,
     HTTP_SERVER_PORT: 12333,
-    MONITOR_AUTH: false,
+    monitorAuth: false,
     filterFunction: function (filePath, funcName) {
         //if filePath or funcName has ignore string
         let needIgnore = ['node_modules', 'anonymous'].some(fileName => {

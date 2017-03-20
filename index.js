@@ -11,6 +11,10 @@ function easyMonitor(appName) {
         config.monitorAuth = config.monitorAuth.toString();
     }
 
+    if (typeof config.logLevel === 'number' || typeof config.logLevel === 'string') {
+        config.LOG_LEVEL = config.logLevel;
+    }
+
     require('./main_process')(config);
 }
 
