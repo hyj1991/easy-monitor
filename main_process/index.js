@@ -6,11 +6,11 @@ const config = helper.loadConfig();
 const logger = helper.logger;
 const tcpclient = require('./src/tcpclient');
 
-module.exports = function startEasyMonitor(appName) {
-    config.appName = appName || process.title;
+module.exports = function startEasyMonitor(commonConfig) {
+    config.appName = commonConfig.appName || process.title;
     tcpclient(config, helper);
 
-    let dashboardProcess = child_process.fork(path.join(__dirname, '../child_process/app.js'));
+    let dashboardProcess = child_process.fork(path.join(__dirname, '../child_process/app.js'), [JSON.stringify(commonConfig)]);
 
     dashboardProcess.on('exit', signal => {
         if (signal === 0) {

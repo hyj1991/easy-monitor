@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
     VIEW_PATH: path.join(__dirname, '../view'),
 
-    LISTEN_PORT_TCP: 8082,
+    LISTEN_PORT_TCP: 26666,
 
     MESSAGE_TYPE: {
         0: 'HEART_BEAT_REQUEST',

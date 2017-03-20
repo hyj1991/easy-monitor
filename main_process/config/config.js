@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
     TCP_INFO: {
         HOST: '127.0.0.1',
-        PORT: '8082'
+        PORT: '26666'
     },
 
     MESSAGE_TYPE: {

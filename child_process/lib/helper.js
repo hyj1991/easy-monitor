@@ -7,8 +7,14 @@ const event = new EventEmitter();
 const cacheMap = {};
 
 function _loadConfig() {
+    let commonConfig = {};
+    try {
+        commonConfig = JSON.parse(process.argv[2]);
+    } catch (e) {
+        commonConfig = require(path.join(__dirname, '../../common_config/config.js'));
+    }
     let config = require(path.join(__dirname, '../config/config.js'));
-    Object.setPrototypeOf(config, require(path.join(__dirname, '../../common_config/config.js')));
+    Object.setPrototypeOf(config, commonConfig);
     return config;
 }
 
