@@ -34,4 +34,5 @@ const httpServer = app.listen(config.HTTP_SERVER_PORT, helper.httpListenSuccess(
 httpServer.on('error', err => {
     helper.logger.info(`http server has been started, this [${process.pid}] will be closed...`);
     httpServer.close();
+    process.exit(0);
 });

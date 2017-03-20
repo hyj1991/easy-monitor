@@ -1,6 +1,6 @@
 {
   "name": "easy-monitor",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "a nodejs project monitor",
   "main": "index.js",
   "scripts": {
