@@ -86,7 +86,7 @@ app.get('/hello', function (req, res, next) {
 app.listen(8082);
 ```
 
-Save the above as a JS file, then open your browser and visit ```http://127.0.0.1:12333```, it is so simply!
+Save the above as a JS file, then open your browser and visit ```http://127.0.0.1:12333```, just so simple!
 
 ## 高级定制化
 
