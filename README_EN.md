@@ -180,47 +180,50 @@ As the picture, there will be multiple child process in cluster mode, you can cl
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Multi.jpeg" alt="Index_Multi">
 
-As the picture, ```Easy-Monitor``` **suppirt multi project deployment**, the usage is exactly the same as the single project, you can refer to Quick Start.
+As the picture, ```Easy-Monitor``` **support multi project deployment**, the usage is exactly the same as the single project, you can refer to Quick Start.
 
 When you deploy multi projects, monitor homepage will display these different project and their child process pid.
 
-### II.监控详情页
+### II.DetaiPage
 
-#### 1.执行时间超出预期的函数列表
+#### 1.List of the Time-Executing out of Expected Functions
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Long.jpeg" alt="Detail_Long">
 
-如图，可以追加 ```querystring``` 参数的形式自定义预期时间以及展示的条数，如下：
+As the picture, we can add ```querystring``` params to customize the expected time and the number of items to display, such as:
 
-* ```?timeout=你预期的时间(ms)```
-* ```?long_limit=你想展示的条数```
-* ```?timeout=你预期的时间(ms)&long_limit=你想展示的条数```
+* ```?timeout=your expected execution time(ms)```
 
-#### 2.耗费时间最久的函数列表
+* ```?long_limit=the number of items you want to display```
+
+* ```?timeout=your expected execution time(ms)&long_limit=the number of items you want to display```
+
+#### 2.List of the Most Time-Consuming Functions
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Top.jpeg" alt="Detail_Top">
 
-如图，可以追加 ```querystring``` 参数的形式自定义展示条数，如下：
 
-* ```?top_limit=你想展示的条数```
+As the picture, we can add ```querystring``` params to customize the number of items to display, such as:
 
-#### 3.v8引擎无法优化的函数列表
+* ```?top_limit=the number of items you want to display```
+
+#### 3.List of the De-Optimizing Functions By V8 Engine
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Bail.jpeg" alt="Detail_Bail">
 
-如图，可以追加 ```querystring``` 参数的形式自定义展示条数，如下：
+As the picture, we can add ```querystring``` params to customize the number of items to display, such as:
 
-* ```?bail_limit=你想展示的条数```
+* ```?bail_limit=the number of items you want to display```
 
-## 测试
+## Unit Test
 
-clone下本代码后，使用npm安装依赖，然后执行如下测试脚本：
+Run unit test as：
 
 ```
 npm run test
 ```
 
-即可看到覆盖率测试报告。
+It will create a coverage report.
 
 # License
 
