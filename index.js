@@ -1,5 +1,10 @@
 'use strict';
-function easyMonitor(appName) {
+
+/**
+ * @param appName: String or Object
+ * @returns config: Object
+ */
+function getCommonConfig(appName) {
     let config = require('./common_config/config');
     if (typeof appName === 'object') {
         Object.assign(config, appName);
@@ -18,8 +23,13 @@ function easyMonitor(appName) {
     if (typeof config.httpServerPort === 'number' || typeof config.httpServerPort === 'string') {
         config.HTTP_SERVER_PORT = config.httpServerPort;
     }
-
-    require('./main_process')(config);
+    return config;
 }
 
+function easyMonitor(appName) {
+    let commonConfig = getCommonConfig(appName);
+    require('./main_process')(commonConfig);
+}
+
+easyMonitor.getCommonConfig = getCommonConfig;
 module.exports = easyMonitor;

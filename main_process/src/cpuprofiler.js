@@ -8,7 +8,7 @@ let isDoingProfiling = false;
 function doCpuProfiler(title, config, callback) {
     if (isDoingProfiling) {
         event.once('cpu_profiling_complete', callback);
-        return;
+        return false;
     }
     isDoingProfiling = true;
     v8Profiler.startProfiling(title, true);
@@ -19,7 +19,8 @@ function doCpuProfiler(title, config, callback) {
         callback(profiler);
         event.emit('cpu_profiling_complete', profiler);
         isDoingProfiling = false;
-    }, config.CPU_PROFILING_TIME)
+    }, config.CPU_PROFILING_TIME);
+    return true;
 }
 
 module.exports = doCpuProfiler;
