@@ -21,12 +21,12 @@
     <div id="contentWrapper">
         <h1 id="mainHeader"><%- projectName %></h1>
         <h2 id="introText">Profiler Statistics By <a href="/">Easy-Monitor</a></h2>
-        <article id="<%- projectName %>">
         <%
         let dataLength = data.length;
         for(let i=0; i<dataLength; i++){
 
         %>
+        <article id="<%- projectName %>">
         <p id="<%- data[i].processName %>::<%- data[i].processPid %>">
             <h1>Pid: <%- data[i].processPid %></h1>
 
