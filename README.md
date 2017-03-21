@@ -67,7 +67,8 @@ http://127.0.0.1:12333
 
 ```js
 'use strict';
-require('easy-monitor')('your project name');
+const easyMonitor = require('easy-monitor');
+easyMonitor('your project name');
 const express = require('express');
 const app = express();
 
@@ -79,6 +80,67 @@ app.listen(8082);
 ```
 
 将上述的内容保存成一个js文件，启动后访问 ```http://127.0.0.1:12333```即进入Easy-Monitor的首页，就是这样的简单！
+
+## 高级定制化
+
+### I.定制化参数
+
+```Easy-Monitor``` 也为大家保留了一些重要的属性可以方便定制化，依靠执行 ```require('easy-monitor')(object)``` 函数时传入一个对象，来替代默认传入的项目名称的字符串，这个传入的对象可以包含如下属性：
+
+* **logLevel**：Number类型，默认是2，用来设置日志级别：
+	* 0：不输出任何日志
+	* 1：输出error日志
+	* 2：输出info日志
+	* 3：输出debug日志
+* **appName**：String类型，默认是 process.title 获取到的值，用来设置项目名称
+* **httpServerPort**：Numver类型，默认是 12333，用来设置监控HTTP服务器的侦听端口
+* **filterFunction**：函数，默认将profiling的结果中过滤掉了包含node_modules、anonymous以及路径中不包含 "/" 的系统函数，开发者可以自己编写过滤函数来找出自己想要的结果，入参和返回值：
+	* filePath：String类型，profiling结果函数所在的文件全路径
+	* funcName：String类型，pfofiling结果函数的名称
+	* 返回值：为true表示保留结果，false表示过滤掉
+* **monitorAuth**：函数，默认不鉴权，用来进行登入监控页面的鉴权，开发者可以自己编写鉴权函数，入参和返回值：
+	* user：String类型，为用户名
+	* pass：String类型，为用户键入密码
+	* 返回值：Promise对象实例，resolve(true)表示鉴权通过，resolve(false)或者reject表示鉴权失败
+
+### II.定制化例子
+
+下面是一个使用 ```Easy-Monitor``` 嵌入Express项目的定制化的完整例子：
+
+```js
+'use strict';
+const easyConfig = {
+    logLevel: 3,
+    appName: 'My Project 1',
+    httpServerPort: 8888,
+    filterFunction: function (filePath, funcName) {
+        if (funcName === 'anonymous' || ~filePath.indexOf('node_modules')) {
+            return false;
+        }
+        return Boolean(/^\(\/.*/.test(filePath));
+    },
+    monitorAuth: function (user, pass) {
+        return new Promise(resolve => resolve(Boolean(user === 'admin' && pass === 'lifeishard')));
+    }
+};
+const easyMonitor = require('easy-monitor');
+easyMonitor(easyConfig);
+
+const express = require('express');
+const app = express();
+
+app.get('/hello', function helloIndex(req, res, next) {
+    let date = Date.now();
+    while (Date.now() - date < 300) {
+    }
+    res.send('hello');
+});
+
+app.listen(8082);
+```
+
+这个例子中，日志级别被调整为3，监控服务器端口更改为8888，也设置了过滤规则和简单的鉴权规则，大家可以自行运行尝试一番。
+
 
 ## 监控页面一览
 
