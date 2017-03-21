@@ -94,12 +94,16 @@ app.listen(8082);
 	* 1：输出error日志
 	* 2：输出info日志
 	* 3：输出debug日志
+
 * **appName**：String类型，默认是 process.title 获取到的值，用来设置项目名称
+
 * **httpServerPort**：Numver类型，默认是 12333，用来设置监控HTTP服务器的侦听端口
+
 * **filterFunction**：函数，默认将profiling的结果中过滤掉了包含node_modules、anonymous以及路径中不包含 "/" 的系统函数，开发者可以自己编写过滤函数来找出自己想要的结果，入参和返回值：
 	* filePath：String类型，profiling结果函数所在的文件全路径
 	* funcName：String类型，pfofiling结果函数的名称
 	* 返回值：为true表示保留结果，false表示过滤掉
+
 * **monitorAuth**：函数，默认不鉴权，用来进行登入监控页面的鉴权，开发者可以自己编写鉴权函数，入参和返回值：
 	* user：String类型，为用户名
 	* pass：String类型，为用户键入密码
