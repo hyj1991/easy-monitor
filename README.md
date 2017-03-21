@@ -1,10 +1,12 @@
 <div align="center">
   <img width="300" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/logo.png" alt="easy-monitor logo">
 </div>
+
 [![npm version](https://badge.fury.io/js/easy-monitor.svg)](https://badge.fury.io/js/easy-monitor)
 [![Package Quality](http://npm.packagequality.com/shield/easy-monitor.svg)](http://packagequality.com/#?package=easy-monitor)
 [![npm](https://img.shields.io/npm/dt/easy-monitor.svg)](https://www.npmjs.com/package/easy-monitor)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
+
 # Easy-Monitor
 [English Version](README_EN.md)
 
@@ -84,7 +86,7 @@ app.listen(8082);
 
 #### 查看整个项目
 
-![Index_Project](https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg)
+<img width="600" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
 
 如图，点击项目名称，则会对整个项目所有的进程进行profiling操作，这个所有进程包含：
 
