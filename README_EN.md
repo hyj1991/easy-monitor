@@ -88,35 +88,37 @@ app.listen(8082);
 
 Save the above as a JS file, then open your browser and visit ```http://127.0.0.1:12333```, just so simple!
 
-## 高级定制化
+## Customization
 
-### I.定制化参数
+### I.Customization Parameters
 
-```Easy-Monitor``` 也为大家保留了一些重要的属性可以方便定制化，依靠执行 ```require('easy-monitor')(object)``` 函数时传入一个对象，来替代默认传入的项目名称的字符串，这个传入的对象可以包含如下属性：
+```Easy-Monitor``` also remain some important
+attributes so that we can customize conveniently, it's dependence on the object you set  when executing ```require('easy-monitor')(object)```, this object  can have below attributes as:
 
-* **logLevel**：Number类型，默认是2，用来设置日志级别：
-	* 0：不输出任何日志
-	* 1：输出error日志
-	* 2：输出info日志
-	* 3：输出debug日志
+* **logLevel**：Number，default is 2，it used to set log level：
+	* 0：don't output any log
+	* 1：output error log
+	* 2：output info log
+	* 3：output debug log
 
-* **appName**：String类型，默认是 process.title 获取到的值，用来设置项目名称
+* **appName**：String, default is getting from process.title, it used to set your project name.
 
-* **httpServerPort**：Numver类型，默认是 12333，用来设置监控HTTP服务器的侦听端口
+* **httpServerPort**：Numver, default is 12333, it used to set monitor http server port.
 
-* **filterFunction**：函数，默认将profiling的结果中过滤掉了包含node_modules、anonymous以及路径中不包含 "/" 的系统函数，开发者可以自己编写过滤函数来找出自己想要的结果，入参和返回值：
-	* filePath：String类型，profiling结果函数所在的文件全路径
-	* funcName：String类型，pfofiling结果函数的名称
-	* 返回值：为true表示保留结果，false表示过滤掉
+* **filterFunction**：function，default filtering out the profiling results of the 'node_modules' and 'anonymous', and all file paths that don't have the string '/', because of these may be system functions.
+Developer can write function to filter your own results, below is the params and returned value:
+	* filePath: String, file path that functions at
+	* funcName: String, function name
+	* returned value: if true remain, if false filtering out
 
-* **monitorAuth**：函数，默认不鉴权，用来进行登入监控页面的鉴权，开发者可以自己编写鉴权函数，入参和返回值：
-	* user：String类型，为用户名
-	* pass：String类型，为用户键入密码
-	* 返回值：Promise对象实例，resolve(true)表示鉴权通过，resolve(false)或者reject表示鉴权失败
+* **monitorAuth**：function，default don't authentication，it used for authentication, developer can write function for own authentication, below is the params and returned value:
+	* user：String, it's username
+	* pass：String, it's password
+	* returned value：a Promise instance，resolve(true) mean authentication pass, resolve(false) or reject mean authentication failed.
 
-### II.定制化例子
+### II.Customization Example
 
-下面是一个使用 ```Easy-Monitor``` 嵌入Express项目的定制化的完整例子：
+Below is a thorough example that ```Easy-Monitor``` with Express：
 
 ```js
 'use strict';
