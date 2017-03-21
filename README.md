@@ -72,7 +72,7 @@ easyMonitor('your project name');
 const express = require('express');
 const app = express();
 
-app.get('hello', function (req, res, next) {
+app.get('/hello', function (req, res, next) {
     res.send('hello');
 });
 
@@ -139,7 +139,8 @@ app.get('/hello', function helloIndex(req, res, next) {
 app.listen(8082);
 ```
 
-这个例子中，日志级别被调整为3，监控服务器端口更改为8888，也设置了过滤规则和简单的鉴权规则，大家可以自行运行尝试一番。
+这个例子中，日志级别被调整为3，监控服务器端口更改为8888，也设置了过滤规则和简单的鉴权规则。
+并且 ```/hello``` 这个路由被设置成阻塞300ms后返回，大家可以打开 ```http://127.0.0.1:8888``` 进入 ```Easy-Monitor``` 首页，点击项目名称或者pid进行profiling操作，同时不停访问 ```http://127.0.0.1:8082/hello``` 这个路径，然后观察结果来自行尝试一番。
 
 
 ## 监控页面一览
