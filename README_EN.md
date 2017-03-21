@@ -152,7 +152,7 @@ app.get('/hello', function helloIndex(req, res, next) {
 app.listen(8082);
 ```
 
-In this example, log level setted to 3, monitor http server port changed to 8888, also set own filtering rule and simply authentication rule.
+In this example, log level setted to be 3, monitor http server port changed to be 8888, we also set our own filtering rule and simply authentication rule.
 
 More, ```/hello``` setted being blocking after 300ms, you can open ```http://127.0.0.1:8888``` to visit ```Easy-Monitor``` home page, to click the project name or pid, then it will do cpu profiling, meanwhile you can visit ```http://127.0.0.1:8082/hello``` ceaselessly.
 
@@ -166,21 +166,23 @@ After all, you'll get result by trying it.
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
 
-As above picture, you can click the project name, this will profiling the **whole project's process**, include:
+As the picture, you can click the project name, this will profiling the **whole project's process**, include:
 * single process mode: only main process
 * cluster mode: all cluster process
 
-#### 2.查看项目下某一个子进程
+#### 2.Profiling The Unique Process
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Pid.jpeg" alt="Index_Pid">
 
-如图，在cluster模式下项目会有多个子进程，点击某一个特定的pid，则只会对 **此pid对应的子进程** 进行profiling操作。
+As the picture, there will be multiple child process in cluster mode, you can click unique pid, this will profiling the **unique process** only. 
 
-#### 3.多项目部署
+#### 3.Multi Project Deployment
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Multi.jpeg" alt="Index_Multi">
 
-如图，```Easy-Monitor``` **支持多项目部署**，用法和单项目是一模一样的，可以参考前面的快速开始。那么多项目启动后，监控页面会展示出不同的项目名称和对应的子进程pid。
+As the picture, ```Easy-Monitor``` **suppirt multi project deployment**, the usage is exactly the same as the single project, you can refer to Quick Start.
+
+When you deploy multi projects, monitor homepage will display these different project and their child process pid.
 
 ### II.监控详情页
 
