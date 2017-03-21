@@ -65,7 +65,7 @@ http://127.0.0.1:12333
 ```
 ### IV.下面是一个嵌入Express应用的完整例子
 
-```
+```js
 'use strict';
 require('easy-monitor')('your project name');
 const express = require('express');
@@ -78,7 +78,7 @@ app.get('hello', function (req, res, next) {
 app.listen(8082);
 ```
 
-将上述的内容保存成一个js文件，启动后访问 ```http://127.0.0.1:12333```即进入Easy-Monitor的首页。
+将上述的内容保存成一个js文件，启动后访问 ```http://127.0.0.1:12333```即进入Easy-Monitor的首页，就是这样的简单！
 
 ## 监控页面一览
 
