@@ -14,7 +14,7 @@
 
 轻量级的Node进程状态监控工具，仅仅需要项目入口 ```require``` 一次，就可以非常便捷地展示出进程的状态细节。
 
-### 功能
+### I.功能
 
 * **找出执行时长耗费最久的5个或者更多的函数**
 * **找出那些执行时间超出预期的5函数**
@@ -24,7 +24,7 @@
 
 这个工具的目的是帮助大家更深入的理解自己的Node进程，性能优化时能更有针对性，最终提升大家的项目体验。
 
-### 特点
+### II.特点
 
 * **轻量级**：```Easy-Monitor``` 非传统C/S物理分离模式，```require``` 后即可使用，没有额外的监控server/agent部署成本
 * **运行时**：```Easy-Monitor``` 针对的是运行时的函数性能以及内存细节进行处理展示，可用于线上生产环境项目。
@@ -39,7 +39,7 @@
 
 ## 快速开始
 
-### 安装
+### I.安装
 
 在控制台执行下面的命令安装：
 
@@ -47,7 +47,7 @@
 npm install easy-monitor
 ```
 
-### 项目中引入
+### II.项目中引入
 
 在你的项目入口文件中按照如下方式引入，传入你的项目名称：
 
@@ -56,14 +56,14 @@ const easyMonitor = require('easy-monitor');
 easyMonitor('你的项目名称');
 ```
 
-### 访问监控页面
+### III.访问监控页面
 
 打开你的浏览器，输入以下地址，即可看到进程相关信息：
 
 ```bash
 http://127.0.0.1:12333
 ```
-### 下面是一个嵌入Express应用的完整例子
+### IV.下面是一个嵌入Express应用的完整例子
 
 ```
 'use strict';
@@ -82,32 +82,32 @@ app.listen(8082);
 
 ## 监控页面一览
 
-### 首页
+### I.首页
 
-#### 查看整个项目
+#### 1.查看整个项目
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
 
-如图，点击项目名称，则会对整个项目所有的进程进行profiling操作，这个所有进程包含：
+如图，点击项目名称，则会对 **整个项目** 所有的进程进行profiling操作，这个所有进程包含：
 
 * 单进程模式下则只有一个主进程
 * cluster模式下所有的子进程
 
-#### 查看项目下某一个子进程
+#### 2.查看项目下某一个子进程
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Pid.jpeg" alt="Index_Pid">
 
-如图，在cluster模式下项目会有多个子进程，点击某一个特定的pid，则只会对此cluster子进程进行profiling操作。
+如图，在cluster模式下项目会有多个子进程，点击某一个特定的pid，则只会对 **此pid对应的子进程** 进行profiling操作。
 
-#### 多项目部署
+#### 3.多项目部署
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Multi.jpeg" alt="Index_Multi">
 
-如图，```Easy-Monitor``` 支持多项目部署，用法和单项目时一模一样的，可以参考前面的快速开始。那么多项目启动后，监控页面会展示出不同的项目名称和对应的子进程pid。
+如图，```Easy-Monitor``` **支持多项目部署**，用法和单项目是一模一样的，可以参考前面的快速开始。那么多项目启动后，监控页面会展示出不同的项目名称和对应的子进程pid。
 
-### 监控详情页
+### II.监控详情页
 
-#### 执行时间超出预期的函数列表
+#### 1.执行时间超出预期的函数列表
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Long.jpeg" alt="Detail_Long">
 
@@ -117,7 +117,7 @@ app.listen(8082);
 * ```?long_limit=你想展示的条数```
 * ```?timeout=你预期的时间(ms)&long_limit=你想展示的条数```
 
-#### 耗费时间最久的函数列表
+#### 2.耗费时间最久的函数列表
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Top.jpeg" alt="Detail_Top">
 
@@ -125,7 +125,7 @@ app.listen(8082);
 
 * ```?top_limit=你想展示的条数```
 
-#### v8引擎无法优化的函数列表
+#### 3.v8引擎无法优化的函数列表
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Bail.jpeg" alt="Detail_Bail">
 
