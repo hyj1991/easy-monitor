@@ -86,7 +86,7 @@ app.listen(8082);
 
 #### 查看整个项目
 
-<img width="500" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
 
 如图，点击项目名称，则会对整个项目所有的进程进行profiling操作，这个所有进程包含：
 
@@ -101,7 +101,7 @@ app.listen(8082);
 
 #### 多项目部署
 
-![Index_Multi](https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Multi.jpeg)
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Multi.jpeg" alt="Index_Multi">
 
 如图，```Easy-Monitor``` 支持多项目部署，用法和单项目时一模一样的，可以参考前面的快速开始。那么多项目启动后，监控页面会展示出不同的项目名称和对应的子进程pid。
 
@@ -109,7 +109,7 @@ app.listen(8082);
 
 #### 执行时间超出预期的函数列表
 
-![Detail_Long](https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Long.jpeg)
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Long.jpeg" alt="Detail_Long">
 
 如图，可以追加 ```querystring``` 参数的形式自定义预期时间以及展示的条数，如下：
 
@@ -119,7 +119,7 @@ app.listen(8082);
 
 #### 耗费时间最久的函数列表
 
-![Detail_Top](https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Top.jpeg)
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Top.jpeg" alt="Detail_Top">
 
 如图，可以追加 ```querystring``` 参数的形式自定义展示条数，如下：
 
@@ -127,7 +127,7 @@ app.listen(8082);
 
 #### v8引擎无法优化的函数列表
 
-![Detail_Bail](https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Bail.jpeg)
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Bail.jpeg" alt="Detail_Bail">
 
 如图，可以追加 ```querystring``` 参数的形式自定义展示条数，如下：
 
