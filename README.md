@@ -198,6 +198,16 @@ app.listen(8082);
 
 * ```?bail_limit=你想展示的条数```
 
+## 测试
+
+clone下本代码后，使用npm安装依赖，然后执行如下测试脚本：
+
+```
+npm run test
+```
+
+即可看到覆盖率测试报告。
+
 # License
 
 [MIT License](LICENSE)
