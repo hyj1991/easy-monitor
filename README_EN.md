@@ -152,22 +152,23 @@ app.get('/hello', function helloIndex(req, res, next) {
 app.listen(8082);
 ```
 
-这个例子中，日志级别被调整为3，监控服务器端口更改为8888，也设置了过滤规则和简单的鉴权规则。
-并且 ```/hello``` 这个路由被设置成阻塞300ms后返回，大家可以打开 ```http://127.0.0.1:8888``` 进入 ```Easy-Monitor``` 首页，点击项目名称或者pid进行profiling操作，同时不停访问 ```http://127.0.0.1:8082/hello``` 这个路径，然后观察结果来自行尝试一番。
+In this example, log level setted to 3, monitor http server port changed to 8888, also set own filtering rule and simply authentication rule.
 
+More, ```/hello``` setted being blocking after 300ms, you can open ```http://127.0.0.1:8888``` to visit ```Easy-Monitor``` home page, to click the project name or pid, then it will do cpu profiling, meanwhile you can visit ```http://127.0.0.1:8082/hello``` ceaselessly.
 
-## 监控页面一览
+After all, you'll get result by trying it.
 
-### I.首页
+## Monitor Page Preview
 
-#### 1.查看整个项目
+### I.HomePage
+
+#### 1.Profiling The Whole Project
 
 <img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
 
-如图，点击项目名称，则会对 **整个项目** 所有的进程进行profiling操作，这个所有进程包含：
-
-* 单进程模式下则只有一个主进程
-* cluster模式下所有的子进程
+As above picture, you can click the project name, this will profiling the **whole project's process**, include:
+* single process mode: only main process
+* cluster mode: all cluster process
 
 #### 2.查看项目下某一个子进程
 
