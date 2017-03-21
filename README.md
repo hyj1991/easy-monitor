@@ -86,7 +86,7 @@ app.listen(8082);
 
 #### 查看整个项目
 
-<img width="300" heigth="150" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
+<img width="400" heigth="200" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
 
 如图，点击项目名称，则会对整个项目所有的进程进行profiling操作，这个所有进程包含：
 
@@ -95,7 +95,7 @@ app.listen(8082);
 
 #### 查看项目下某一个子进程
 
-<img width="300" heigth="150" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Pid.jpeg" alt="Index_Pid">
+<img width="500" heigth="250" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Pid.jpeg" alt="Index_Pid">
 
 如图，在cluster模式下项目会有多个子进程，点击某一个特定的pid，则只会对此cluster子进程进行profiling操作。
 
