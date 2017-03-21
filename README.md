@@ -28,7 +28,7 @@ The purpose of ```Easy-Monitor``` is to help you more in-depth understanding of 
 
 ### II.Feature
 
-* **LightWeight**：```Easy-Monitor``` is unconventional C/S physical separation model，all you need to to is ```require``` in your project，there is no additional server/agent deployment costs.
+* **LightWeight**：```Easy-Monitor``` is unconventional C/S physical separation model, all you need to to is ```require``` in your project, there is no additional server/agent deployment costs.
 
 * **RunTime**：```Easy-Monitor``` can provide you runtime performance and memory details, and it can be used for production.
 
@@ -43,7 +43,7 @@ Temporary don't support Node v7.x.
 
 ## Quick Start
 
-```Easy-Monitor``` is simple，only three steps you can start your own performance monitor.
+```Easy-Monitor``` is simple, only three steps you can start your own performance monitor.
 
 ### I.Install
 
@@ -55,7 +55,7 @@ npm install easy-monitor
 
 ### II.Require
 
-Require in your project，argument is your project name, such as:
+Require in your project, argument is your project name, such as:
 
 ```js
 const easyMonitor = require('easy-monitor');
@@ -95,7 +95,7 @@ Save the above as a JS file, then open your browser and visit ```http://127.0.0.
 ```Easy-Monitor``` also remain some important
 attributes so that we can customize conveniently, it's dependence on the object you set  when executing ```require('easy-monitor')(object)```, this object  can have below attributes as:
 
-* **logLevel**：Number，default is 2，it used to set log level：
+* **logLevel**：Number, default is 2, it used to set log level：
 	* 0：don't output any log
 	* 1：output error log
 	* 2：output info log
@@ -105,16 +105,16 @@ attributes so that we can customize conveniently, it's dependence on the object 
 
 * **httpServerPort**：Numver, default is 12333, it used to set monitor http server port.
 
-* **filterFunction**：function，default filtering out the profiling results of the 'node_modules' and 'anonymous', and all file paths that don't have the string '/', because of these may be system functions.
+* **filterFunction**：function, default filtering out the profiling results of the 'node_modules' and 'anonymous', and all file paths that don't have the string '/', because of these may be system functions.
 Developer can write function to filter your own results, below is the params and returned value:
 	* filePath: String, file path that functions at
 	* funcName: String, function name
 	* returned value: if true remain, if false filtering out
 
-* **monitorAuth**：function，default don't authentication，it used for authentication, developer can write function for own authentication, below is the params and returned value:
+* **monitorAuth**：function, default don't authentication, it used for authentication, developer can write function for own authentication, below is the params and returned value:
 	* user：String, it's username
 	* pass：String, it's password
-	* returned value：a Promise instance，resolve(true) mean authentication pass, resolve(false) or reject mean authentication failed.
+	* returned value：a Promise instance, resolve(true) mean authentication pass, resolve(false) or reject mean authentication failed.
 
 ### II.Customization Example
 
@@ -123,15 +123,15 @@ Below is a thorough example that ```Easy-Monitor``` with Express：
 ```js
 'use strict';
 const easyConfig = {
-    logLevel: 3,
-    appName: 'My Project 1',
-    httpServerPort: 8888,
+    logLevel: 3, 
+    appName: 'My Project 1', 
+    httpServerPort: 8888, 
     filterFunction: function (filePath, funcName) {
         if (funcName === 'anonymous' || ~filePath.indexOf('node_modules')) {
             return false;
         }
         return Boolean(/^\(\/.*/.test(filePath));
-    },
+    }, 
     monitorAuth: function (user, pass) {
         return new Promise(resolve => resolve(Boolean(user === 'admin' && pass === 'lifeishard')));
     }
