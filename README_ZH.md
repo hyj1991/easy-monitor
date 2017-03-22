@@ -12,13 +12,13 @@
 
 ## 简介
 
-轻量级的Node进程状态监控工具，仅仅需要项目入口 ```require``` 一次，就可以非常便捷地展示出进程的状态细节。
+轻量级的Node性能监控工具，仅仅需要项目入口 ```require``` 一次，就可以非常便捷地展示出进程的状态细节。
 
 ### I.功能
 
 * **找出执行时长耗费最久的5个或者更多的函数**
 
-* **找出那些执行时间超出预期的5函数**
+* **找出那些执行时间超出预期的函数**
 
 * **找出v8引擎无法优化的函数**
 
@@ -102,7 +102,7 @@ app.listen(8082);
 
 * **appName**：String类型，默认是 process.title 获取到的值，用来设置项目名称
 
-* **httpServerPort**：Numver类型，默认是 12333，用来设置监控HTTP服务器的侦听端口
+* **httpServerPort**：Number类型，默认是 12333，用来设置监控HTTP服务器的侦听端口
 
 * **filterFunction**：函数，默认将profiling的结果中过滤掉了包含node_modules、anonymous以及路径中不包含 "/" 的系统函数，开发者可以自己编写过滤函数来找出自己想要的结果，入参和返回值：
 	* filePath：String类型，profiling结果函数所在的文件全路径
@@ -116,7 +116,7 @@ app.listen(8082);
 
 ### II.定制化例子
 
-下面是一个使用 ```Easy-Monitor``` 嵌入Express项目的定制化的完整例子：
+下面是一个将 ```Easy-Monitor``` 嵌入Express项目中且定制化的完整例子：
 
 ```js
 'use strict';
@@ -209,7 +209,7 @@ app.listen(8082);
 
 * ```?bail_limit=你想展示的条数```
 
-## 测试
+## 单元测试
 
 clone下本代码后，使用npm安装依赖，然后执行如下测试脚本：
 
