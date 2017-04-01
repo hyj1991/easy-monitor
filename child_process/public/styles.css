@@ -51,6 +51,19 @@ h2 {
     line-height: 40px;
 }
 
+h2 a {
+    font-size:15px;
+    color: #434343;
+    /*text-decoration: none;*/
+    /*border-bottom: 1px solid #434343;*/
+}
+
+h2 kuo{
+    font-size:15px;
+    color: #434343;
+    text-decoration: none;
+}
+
 h3 {
     font-family: "proxima-nova", sans-serif;
     font-weight: 600;
@@ -72,6 +85,28 @@ p {
     padding:0px;
     margin:0px;
     display: inline;
+}
+
+p1 {
+    font-family: "proxima-nova", sans-serif;
+    line-height: 24px;
+    font-size: 15px;
+    color: #767c8d;
+    padding:0px;
+    margin:0px;
+    display: inline;
+}
+
+p1 a {
+    font-size: 10px;
+    color: #767c8d;
+    /*text-decoration: none;*/
+    /*border-bottom: 1px solid #767c8d;*/
+}
+
+p1 kuo{
+    font-size: 10px;
+    color: #767c8d;
 }
 
 .btn {

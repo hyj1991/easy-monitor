@@ -10,6 +10,8 @@ module.exports = {
         0: 'HEART_BEAT_REQUEST',
         1: 'HEART_BEAT_RESPONSE',
         2: 'DO_CPU_PROFILER',
-        3: 'CPU_PROFILER_MESSAGE'
+        3: 'CPU_PROFILER_MESSAGE',
+        4: 'DO_MEM_PROFILER',
+        5: 'MEM_PROFILER_MESSAGE'
     }
 };

@@ -1,6 +1,7 @@
 'use strict';
 const uuidV4 = require('uuid/v4');
 const basicAuth = require('basic-auth');
+const analysisLib = require('v8-analytics');
 
 module.exports = function (app, config, helper) {
     return {
@@ -125,6 +126,59 @@ module.exports = function (app, config, helper) {
                     })
                 });
             }
+        },
+
+        MEMProfiler(req, res, next){
+            const uuid = uuidV4();
+            let processId = req.params.ProcessID;
+            /*let socket = helper.getCachedSocket()[processId];
+             if (socket) {
+             socket.write(JSON.stringify({
+             type: config.MESSAGE_TYPE[4],
+             data: JSON.stringify({
+             uuid
+             })
+             }) + '\n\n');
+
+             helper.event.once(uuid, heapData => {
+             let {heapMap, leakPoint, statistics, rootIndex} = analysisLib.memAnalytics(heapData, req.query.leak_limit);
+
+             const fs = require('fs');
+             fs.writeFileSync('./heapMap.json', JSON.stringify(heapData));
+             console.log(rootIndex);
+             console.log(leakPoint);
+             console.log(statistics);
+
+             res.render('MEMProfiler', {heapMap, leakPoint, statistics});
+             });
+             } else {
+             res.redirect('/');
+             }*/
+
+            const heapMap = require('./heapMap.json');
+            const rootIndex = 0;
+            const leakPoint = [{index: 364, id: '@729', size: 11702656},
+                {index: 1, id: '@3', size: 1275553},
+                {index: 27547, id: '@55095', size: 1061880},
+                {index: 26893, id: '@53787', size: 1047072},
+                {index: 4, id: '@9', size: 616432}];
+            const statistics = {
+                total: 12979481,
+                v8heap: 12943705,
+                native: 35776,
+                code: 2205280,
+                jsArrays: 195736,
+                strings: 4485688,
+                system: 1279561
+            };
+            res.render('MEMProfiler', {
+                leak_limit: req.query.leak_limit || 5,
+                processName: processId.split('::')[0],
+                processPid: processId.split('::')[1],
+                heapMap,
+                leakPoint,
+                statistics
+            });
         }
     }
 };

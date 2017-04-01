@@ -250,8 +250,8 @@ pre {
   -webkit-font-smoothing: antialiased;
   margin: 40px 0 20px 0;
   overflow:auto;
-  /*white-space: pre-wrap;*/
-  /*word-wrap: break-word;*/
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 pre code {
   display: block;

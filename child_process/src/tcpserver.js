@@ -29,6 +29,10 @@ module.exports = function (config, helper) {
                         event.emit(item.uuid, helper.jsonParse(item.data))
                     }
 
+                    if (item.type === config.MESSAGE_TYPE[5]) {
+                        event.emit(item.uuid, helper.jsonParse(item.data))
+                    }
+
                     if (item.type === config.MESSAGE_TYPE[0]) {
                         let pid = helper.jsonParse(item.data).pid;
                         socket.__pid__ = pid;

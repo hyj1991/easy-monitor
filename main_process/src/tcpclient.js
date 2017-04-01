@@ -1,7 +1,8 @@
 'use strict';
 const net = require('net');
 const cpuProfiler = require('./cpuprofiler');
-const analysisLib = require('v8-cpu-analysis');
+const heapSnapshot = require('./heapsnapshot');
+const analysisLib = require('v8-analytics');
 
 module.exports = function (config, helper) {
     const logger = helper.logger;
@@ -58,6 +59,26 @@ module.exports = function (config, helper) {
                                 bailoutFunctions: analysisLib(profiler, null, true, true, {limit: item.data.bail_limit || config.FUNCTIONS_ANALYSIS.BAILOUT_FUNCTIONS_LIMIT}, config.filterFunction)
                             })
                         };
+                        client.write(JSON.stringify(result) + '\n\n');
+                    });
+                }
+
+                if (item.type === config.MESSAGE_TYPE[4]) {
+                    item.data = helper.jsonParse(item.data);
+                    logger.info(`tcpclient->will start memory profiling...`);
+                    heapSnapshot(item.data.uuid, config, (err, heapData) => {
+                        let result = {
+                            type: config.MESSAGE_TYPE[5],
+                            uuid: item.data.uuid,
+                            data: JSON.stringify({})
+                        };
+
+                        if (err) {
+                            return client.write(JSON.stringify(result) + '\n\n');
+                        }
+
+                        //heap data is too big, so send it to child_process process
+                        result.data = heapData;
                         client.write(JSON.stringify(result) + '\n\n');
                     });
                 }
