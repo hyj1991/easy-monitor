@@ -16,7 +16,7 @@ function doMemProfiler(title, config, callback) {
     snapshot.export(function (error, result) {
         callback(error, result);
         snapshot.delete();
-        event.emit('memory_profiling_complete', profiler);
+        event.emit('memory_profiling_complete', null, result);
         isDoingProfiling = false;
     });
 

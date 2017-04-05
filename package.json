@@ -1,6 +1,6 @@
 {
   "name": "easy-monitor",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "a nodejs performance monitor",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "express": "^4.15.2",
     "serve-favicon": "^2.4.1",
     "uuid": "^3.0.1",
-    "v8-analytics": "^1.2.2",
+    "v8-analytics": "^1.2.3",
     "v8-cpu-analysis": "^1.0.14",
     "v8-profiler": "^5.6.5"
   },

@@ -6,7 +6,10 @@
     <script src="/assets/jquery/jquery.min.js"></script>
     <script src="/docs/prettify.js"></script>
     <script src="/docs/Chart.js"></script>
-    <script type="text/javascript">try {Typekit.load();} catch (e) {}</script>
+    <script type="text/javascript">try {
+            Typekit.load();
+        } catch (e) {
+        }</script>
     <script src="/echarts.min.js"></script>
 </head>
 <body>
@@ -21,25 +24,30 @@
 
     <div id="contentWrapper">
         <h1 id="mainHeader">Memory Leak</h1>
-        <h2 id="introText"><a href="/CPUProfiler/<%- processName %>::<%- processPid %>">Pid:<%- processPid %></a> Heapnapshot Statistics By <a href="/">Easy-Monitor</a></h2>
+        <h2 id="introText"><a href="/CPUProfiler/<%- processName %>::<%- processPid %>">Pid:<%- processPid %></a>
+            Heapnapshot Statistics By <a href="/">Easy-Monitor</a></h2>
 
         <article id="statistics">
 
             <h1>Heap Status</h1>
-            <h2>Summary</h2>
-            <pre><code>
-            <%
-                let statisticsKey = Object.keys(statistics)
-                let statisticsLength = statisticsKey.length;
-                for(let i=0; i<statisticsLength; i++){
-                    let item = statistics[statisticsKey[i]];
-            %>
-<%- (i+1) %> "<%- statisticsKey[i] %>": <%- parseInt(statistics[statisticsKey[i]]/1024) %> KB
-            <% } %>
-                </code></pre>
-
             <h2>Statistics</h2>
             <div id="statstics" style="width: 600px;height:400px;"></div>
+
+            <h2>Summary</h2>
+            <p>Heap Memory Total is: <%- helper.formatSize(statistics.total) %>, Below is summary sort by constructor name:</p>
+             <pre><code><%
+                     let aggregatesList = Object.keys(aggregates);
+                     let aggregatesLength = aggregatesList.length;
+
+                     //aggregatesList.sort((o, n)=>Number(aggregates[o].maxRet) < Number(aggregates[n].maxRet) ? 1 : -1);
+
+                     for(let i = 0; i < aggregatesLength; i++){
+                         let aggregate = aggregates[aggregatesList[i]];
+                         let shallowSize = helper.formatSize(aggregate.self);
+                         let retainedSize = helper.formatSize(aggregate.maxRet);
+                     %>
+<%- (i + 1) %>. Constructor: "<%- aggregatesList[i] %>", Distance: "<%- aggregate.distance>=1 && aggregate.distance || '-' %>", Objects Count: "<%- aggregate.count %>", Shallow Size: "<%- shallowSize %>", Retained Size: "<%- retainedSize %>"
+                    <% } %></code></pre>
         </article>
 
 
@@ -48,21 +56,35 @@
             <h2>Suspicious Leak Point List</h2>
             <p>I think the most probable leak point can be things who take maximum heap memory.</p>
             <p>So I filter out the biggest <%- leak_limit %> nodes ( DESC by "RetainedSize" ): </p>
-            <pre><code>
-1. name&id: "Object::@727", type: "object", retainedSize: "235259232 bytes", taken "99.77%" of all heap memory.
-
-2. name&id: "system / Context::@759", type: "object", retainedSize: "232037472 bytes", taken "98.40%" of all heap memory.
-
-3. name&id: "Object::@48387", type: "object", retainedSize: "232036208 bytes", taken "98.40%" of all heap memory.
-
-4. name&id: "TimersList::@48389", type: "object", retainedSize: "232023424 bytes", taken "98.39%" of all heap memory.
-
-5. name&id: "Timeout::@49263", type: "object", retainedSize: "232022848 bytes", taken "98.39%" of all heap memory.
-                </code></pre>
+            <pre><code><%
+                    let leakPointLength = leakPoint.length;
+                    for(let i = 0; i < leakPointLength; i++){
+                        let leak = leakPoint[i];
+                    %>
+<%- (i + 1) %>. name&id: "<%- heapMap[leak.index].name %>::<%- leak.id %>", distance:"<%- heapMap[leak.index].distance %>", type: "<%- heapMap[leak.index].type %>", retainedSize: "<%- leak.size %>bytes", taken "<%- ((leak.size / statistics.total) * 100).toFixed(2) %>%" of all heap memory.
+                    <% } %></code></pre>
             <p>Below are gravity diagram, which can help you find leak point details.</p>
-            <h2>Leak Point Detail: @727</h2>
-            <p>Object::@727, it's retainSize is: 235259232/1024 KB, below is gravity diagram: </p>
-            <div id="leakPoint1" style="width: 600px;height:600px;"></div>
+
+            <%
+            for(let i = 0; i < leakPointLength; i++){
+                let leak = leakPoint[i];
+                let retainedSize = '';
+                let sizeTmp = leak.size;
+                if (sizeTmp / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp)} Bytes`;
+                } else if (sizeTmp / 1024 / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp / 1024)} KB`;
+                } else if (sizeTmp / 1024 / 1024 / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp / 1024 / 1024)} MB`;
+                } else {
+                    retainedSize = `${parseInt(sizeTmp / 1024 / 1024 / 1024)} GB`;
+                }
+            %>
+            <h2>Leak Point Detail: <%- leak.id %></h2>
+            <p><%- heapMap[leak.index].name %>::<%- leak.id %>, it's retainSize is: <%- retainedSize %>, below is
+                gravity diagram: </p>
+            <div id="<%- leak.id %>" style="width: 800px;height:800px;"></div>
+            <% } %>
 
         </article>
     </div>
@@ -163,28 +185,29 @@
         ]
     };
 
-    option.series[0].data = <%- JSON.stringify(Object.keys(statistics).reduce((pre, next)=>{
-        if(next !== 'total' && next !== 'v8heap'){
-            pre.push({name:next, value: statistics[next]})
+    option.series[0].data = <%- JSON.stringify(Object.keys(statistics).reduce((pre, next) => {
+        if (next !== 'total' && next !== 'v8heap') {
+            pre.push({name: next, value: statistics[next]})
         }
         return pre;
     }, [])) %>
 
-    option.legend.data = <%- JSON.stringify(Object.keys(statistics).filter(key=>key !== 'total' && key !== 'v8heap')) %>
-
-
-
-
-    // 使用刚指定的配置项和数据显示图表。
-    myChart.setOption(option);
+        option.legend.data = <%- JSON.stringify(Object.keys(statistics).filter(key => key !== 'total' && key !== 'v8heap')) %>// 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
 </script>
-
+<script>
+    var graphOptionsMap = {};
+</script>
+<%
+for(let i = 0; i < leakPointLength; i++){
+    let leak = leakPoint[i];
+%>
 <script type="text/javascript">
     // 基于准备好的dom，初始化echarts实例
-    var myChart = echarts.init(document.getElementById('leakPoint1'));
+    var myChart = echarts.init(document.getElementById('<%- leak.id %>'));
 
     // 指定图表的配置项和数据
-    var option1 = {
+    graphOptionsMap["<%- leak.id %>"] = {
         title: {
             text: '',
         },
@@ -211,64 +234,9 @@
                         }
                     }
                 },
-                data: [{
-                    name: '@723',
-                    value: 2000,
-                    x: 2,
-                    y: 0
-                }, {
-                    name: '节点2',
-                    x: 0,
-                    y: 2
-                }, {
-                    name: '节点3',
-                    x: 4,
-                    y: 2
-                }, {
-                    name: '节点4',
-                    x: 2,
-                    y: 4
-                }],
+                data: [],
                 // links: [],
-                links: [{
-                    source: 0,
-                    target: 1,
-                    symbolSize: [5, 20],
-                    label: {
-                        normal: {
-                            show: true
-                        }
-                    },
-                    lineStyle: {
-                        normal: {
-                            width: 5,
-                            curveness: 0.2
-                        }
-                    }
-                }, {
-                    source: '节点2',
-                    target: '节点1',
-                    label: {
-                        normal: {
-                            show: true
-                        }
-                    },
-                    lineStyle: {
-                        normal: {curveness: 0.2}
-                    }
-                }, {
-                    source: '节点1',
-                    target: '节点3'
-                }, {
-                    source: '节点2',
-                    target: '节点3'
-                }, {
-                    source: '节点2',
-                    target: '节点4'
-                }, {
-                    source: '节点1',
-                    target: '节点4'
-                }],
+                links: [],
                 lineStyle: {
                     normal: {
                         opacity: 0.9,
@@ -280,9 +248,113 @@
         ]
     };
 
+    <%
+        /*let leakPointDetail = heapMap[leak.index];
+        let leakDatas = [];
+        let leakLinks = [];
+        let linkLength = 2;
+
+        let loopList = [leakPointDetail];
+        let distance = 0;
+        let distanceLimit = 1;
+        while (loopList.length !== 0 && distance < distanceLimit) {
+            let tmp = [];
+            for (let i = 0; i < loopList.length; i++) {
+                let children = loopList[i].children;
+
+                children.sort((o, n) => {
+                    let oldSize = Number(heapMap[o.index].retainedSize);
+                    let newSize = Number(heapMap[n.index].retainedSize);
+
+                    return oldSize < newSize ? 1 : -1;
+                });
+
+                children = children.filter((item, index) => index < 5);
+
+                let fX = 0;
+                let fY = 0;
+                if(loopList[i].father){
+                    let parentLocation = loopList[i].fatherLocation;
+                    if(isNaN(parentLocation.x)){
+                        parentLocation.x = 0;
+                    }
+                    if(isNaN(parentLocation.y)){
+                        parentLocation.y = 0;
+                    }
+
+                    let allDegree = 90;
+                    if(parentLocation.length > 2){
+                        allDegree = 180;
+                    }
+
+                    if(parentLocation.length === 1){
+                        fX = parentLocation.x + linkLength * Number(Math.cos(0));
+                        fY = parentLocation.y + linkLength * Number(Math.sin(0));
+
+                    }else{
+                        fX = parentLocation.x + linkLength * Number(Math.cos(2 * Math.PI / 360 * allDegree/(parentLocation.length - 1) * parentLocation.index).toFixed(2));
+                        fY = parentLocation.y + linkLength * Number(Math.sin(2 * Math.PI / 360 * allDegree/(parentLocation.length - 1) * parentLocation.index).toFixed(2));
+                    }
+                }
+
+                leakDatas.push({name: `${loopList[i].id}`, x: fX, y: fY, value: loopList[i].retainedSize});
+
+
+                children.forEach((child, index) => {
+                    if (distance === (distanceLimit - 1)) {
+                        let fX = 0;
+                        let fY = 0;
+                        if(heapMap[child.index].father){
+                            let parentLocation = heapMap[child.index].fatherLocation;
+                            parentLocation.x = isNaN(parentLocation.x) && 0 || parentLocation.x;
+                            parentLocation.y = isNaN(parentLocation.y) && 0 || parentLocation.y;
+                            let allDegree = 90;
+                            if(parentLocation.length > 2){
+                                allDegree = 180;
+                            }
+
+                            if(parentLocation.length === 1){
+                                fX = parentLocation.x + linkLength * Number(Math.cos(0));
+                                fY = parentLocation.y + linkLength * Number(Math.sin(0));
+
+                            }else{
+                                fX = parentLocation.x + linkLength * Number(Math.cos(2 * Math.PI / 360 * allDegree/(parentLocation.length - 1) * parentLocation.index).toFixed(2));
+                                fY = parentLocation.y + linkLength * Number(Math.sin(2 * Math.PI / 360 * allDegree/(parentLocation.length - 1) * parentLocation.index).toFixed(2));
+                            }
+                        }
+
+                        leakDatas.push({name: `${heapMap[child.index].id}`, x: fX, y: fY, value: heapMap[child.index].retainedSize});
+                    }
+
+                    leakLinks.push({
+                        source: `${loopList[i].id}`,
+                        target: `${heapMap[child.index].id}`,
+                        label: {
+                            normal: {
+                                show: true,
+                                formatter: `${String(child.name_or_index)}, ${((heapMap[child.index].retainedSize/loopList[i].retainedSize) * 100).toFixed(2)}%`
+                            }
+                        }
+                    });
+
+                    heapMap[child.index].father = loopList[i].index;
+                    heapMap[child.index].fatherLocation = {x:fX, y:fY, length:children.length, index};
+                    tmp.push(heapMap[child.index]);
+                });
+            }
+
+            distance++;
+            loopList = tmp;
+        }
+
+        console.log(leakPointDetail.id, JSON.stringify(leakDatas), JSON.stringify(leakLinks));*/
+    %>
+
+    <!--graphOptionsMap["<%- leak.id %>"].series[0].data = <%- /*JSON.stringify(leakDatas)*/ %>;-->
+    <!--graphOptionsMap["<%- leak.id %>"].series[0].links = <%- /*JSON.stringify(leakLinks)*/ %>;-->
 
     // 使用刚指定的配置项和数据显示图表。
-    myChart.setOption(option1);
+    myChart.setOption(graphOptionsMap["<%- leak.id %>"]);
 </script>
-
+<% } %>
 </html>

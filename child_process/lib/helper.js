@@ -66,4 +66,19 @@ module.exports = {
         }
         return result;
     },
+
+    formatSize(size){
+        let str = '';
+        if (size / 1024 < 1) {
+            str = `${size} bytes`;
+        } else if (size / 1024 / 1024 < 1) {
+            str = `${(size / 1024).toFixed(2)} KB`;
+        } else if (size / 1024 / 1024 / 1024 < 1) {
+            str = `${(size / 1024 / 1024).toFixed(2)} MB`;
+        } else {
+            str = `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
+        }
+
+        return str;
+    }
 };
