@@ -24,7 +24,7 @@
 
     <div id="contentWrapper">
         <h1 id="mainHeader">Memory Leak</h1>
-        <h2 id="introText"><a href="/CPUProfiler/<%- processName %>::<%- processPid %>">Pid:<%- processPid %></a>
+        <h2 id="introText"><a href="/MEMProfiler/<%- processName %>::<%- processPid %>">Pid:<%- processPid %></a>
             Heapnapshot Statistics By <a href="/">Easy-Monitor</a></h2>
 
         <article id="statistics">
@@ -35,19 +35,33 @@
 
             <h2>Summary</h2>
             <p>Heap Memory Total is: <%- helper.formatSize(statistics.total) %>, Below is summary sort by constructor name:</p>
-             <pre><code><%
-                     let aggregatesList = Object.keys(aggregates);
-                     let aggregatesLength = aggregatesList.length;
+            <%
+                let aggregatesList = Object.keys(aggregates);
+                let aggregatesLength = aggregatesList.length;
+                //aggregatesList.sort((o, n)=>Number(aggregates[o].maxRet) < Number(aggregates[n].maxRet) ? 1 : -1);
+                let longHtml = '<br />';
+                let shortHtml = '<br />';
+                let shortTag = '<a href="javascript:createAggregates()"><span class="rs-tag"><...Show All Aggregates></span></a>';
 
-                     //aggregatesList.sort((o, n)=>Number(aggregates[o].maxRet) < Number(aggregates[n].maxRet) ? 1 : -1);
+                for(let i = 0; i < aggregatesLength; i++){
+                    let aggregate = aggregates[aggregatesList[i]];
+                    let shallowSize = helper.formatSize(aggregate.self);
+                    let retainedSize = helper.formatSize(aggregate.maxRet);
+                    longHtml = longHtml + `${(i + 1)}. Constructor: "${aggregatesList[i]}", Distance: "${aggregate.distance>=1 && aggregate.distance || '-'}", Objects Count: "${aggregate.count}", Shallow Size: "${shallowSize}", Retained Size: "${retainedSize}"<br /><br />`;
+                    if(i < 10) {
+                        shortHtml = shortHtml + `${(i + 1)}. Constructor: "${aggregatesList[i]}", Distance: "${aggregate.distance >= 1 && aggregate.distance || '-'}", Objects Count: "${aggregate.count}", Shallow Size: "${shallowSize}", Retained Size: "${retainedSize}"<br /><br />`;
+                    }
 
-                     for(let i = 0; i < aggregatesLength; i++){
-                         let aggregate = aggregates[aggregatesList[i]];
-                         let shallowSize = helper.formatSize(aggregate.self);
-                         let retainedSize = helper.formatSize(aggregate.maxRet);
-                     %>
-<%- (i + 1) %>. Constructor: "<%- aggregatesList[i] %>", Distance: "<%- aggregate.distance>=1 && aggregate.distance || '-' %>", Objects Count: "<%- aggregate.count %>", Shallow Size: "<%- shallowSize %>", Retained Size: "<%- retainedSize %>"
-                    <% } %></code></pre>
+                    if(i === 10){
+                        shortHtml = shortHtml + '<a href="javascript:createAggregates()"><span class="rs-tag">&lt;...Show All Aggregates &gt;</span></a>'
+                    }
+
+                    if(i === aggregatesLength - 1){
+                        longHtml = longHtml+ '<a href="javascript:createAggregatesShort()"><span class="rs-tag">&lt;...Return Short Aggregates &gt;</span></a>'
+                    }
+                }
+            %>
+            <pre id="aggregates"><code><%- shortHtml %></code></pre>
         </article>
 
 
@@ -90,6 +104,17 @@
     </div>
 </div>
 </body>
+<script>
+    function createAggregates(){
+        document.getElementById('aggregates').getElementsByTagName('code')[0].innerHTML = '<%- longHtml %>';
+        prettyPrint();
+    }
+
+    function createAggregatesShort(){
+        document.getElementById('aggregates').getElementsByTagName('code')[0].innerHTML = '<%- shortHtml %>';
+        prettyPrint();
+    }
+</script>
 <script>
     $(document).ready(function () {
 
