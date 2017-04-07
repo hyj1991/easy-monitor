@@ -291,7 +291,7 @@
         let pidListLength = pidList.length;
     %>
     <article id="<%- projectName %>">
-        <h2><b>Process Name:</b> <%- projectName %> <kuo>( </kuo><a href="/CPUProfiler/Project/<%- projectName %>">CPU</a> <a href="/MEMProfiler/Project/<%- projectName %>">MEM</a><kuo> )</kuo></h2>
+        <h2><b>Process Name:</b> <%- projectName %> <kuo>( </kuo><a href="/CPUProfiler/Project/<%- projectName %>">CPU</a> <!--<a href="/MEMProfiler/Project/<%- projectName %>">MEM</a>--><kuo> )</kuo></h2>
         <%
         for(let i = 0; i < pidListLength; i++){
             let pidTmp = pidList[i];

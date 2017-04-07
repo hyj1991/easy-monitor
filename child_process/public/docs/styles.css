@@ -293,6 +293,16 @@ ul li a {
     color: #2d91ea;
 }
 
+p att{
+    font-size: 18px;
+    font-weight: 500;
+    color: grey;
+}
+
+p b{
+    color: grey;
+}
+
 canvas {
     margin-top: 20px;
 }
