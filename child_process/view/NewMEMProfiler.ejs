@@ -92,7 +92,7 @@
             %>
             <h2>Leak Point Detail: <%- leak.id %></h2>
             <p><%- heapMap[leak.index].name %>::<%- leak.id %>, it's retainSize is: <%- retainedSize %>, below isgravity diagram: </p>
-            <p><att>Label: </att><b>parent's name_or_index: </b> [<b>type</b>, <b>name</b>, <b>retained size</b>, <b>distance</b>]</p>
+            <p><att>Label: </att>(<b>percentage</b>) <b>parent's name_or_index: </b> [<b>type</b>, <b>name</b>, <b>retained size</b>, <b>distance</b>]</p>
             <div id="<%- leak.id %>" style="width: 800px;height:600px;"></div>
             <div id="<%- leak.id %>-detail"></div>
     <% } %>
@@ -239,7 +239,6 @@ for(let i = 0; i < leakPointLength; i++){
     let leak = leakPoint[i];
     let forceGraph = {nodes:[], links:[]};
 
-    let biggest = {};
     let isRecorded = {};
     let distanceDisplay = 1;
     let distanceLimit = 20;
@@ -265,7 +264,6 @@ for(let i = 0; i < leakPointLength; i++){
 
             let size = 30, category = 1, ignore = true, flag = true;
             if(isMain) {size = 40; category = 0; ignore = false}
-            if(distanceDisplay === 2){ignore = false}
 
             forceGraph.nodes.push({
                 index: nodeDetail.index,
@@ -338,10 +336,14 @@ for(let i = 0; i < leakPointLength; i++){
             tooltip: {
                 show: true,
                 formatter: function (params, ticket, callback) {//回调函数
+                    var graphTmp = myChart.getOption().series[0];
                     var id = graphTmp.nodes[params.dataIndex].id;
                     var index = graphTmp.nodes[params.dataIndex].index;
                     var linkMap = graphTmp.links.reduce((pre, next)=> {
-                        pre[next.target] = {source: next.source, index: next.sourceIndex, name_or_index: next.name_or_index};
+                        let isShow = graphTmp.nodes.some(item=>item.id === next.source && Boolean(item.ignore) === false);
+                        if(isShow){
+                            pre[next.target] = {source: next.source, index: next.sourceIndex, name_or_index: next.name_or_index};
+                        }
                         return pre;
                     }, {});
 
@@ -371,7 +373,11 @@ for(let i = 0; i < leakPointLength; i++){
                     };
                     result.showStr = function (id, index){
                         var detailTmp = heapMap[index];
-                        return (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
+                        let percentage = '100.00%';
+                        if(linkMap[id]){
+                            percentage = ((detailTmp.retainedSize / heapMap[linkMap[id].index].retainedSize) * 100).toFixed(2) + '%';
+                        }
+                        return '(' + percentage + ') ' + (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
                     };
                     document.getElementById("<%- leak.id %>-detail").innerHTML = '<p>'+ result.tracePath(id, index) + '</p>';
                     return result.showStr(id, index);
