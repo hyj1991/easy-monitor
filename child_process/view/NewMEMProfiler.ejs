@@ -242,8 +242,8 @@ for(let i = 0; i < leakPointLength; i++){
     let biggestList = {};
     let isRecorded = {};
     let distanceDisplay = 1;
-    let distanceLimit = 20;
-    let childrenLimit = 5;
+    let distanceLimit = 10;
+    let childrenLimit = 3;
     let leakDistanceLimit = 8;
 
     let leakIndexList = [leak.index];
@@ -257,6 +257,7 @@ for(let i = 0; i < leakPointLength; i++){
             let children = nodeDetail.children;
 
             //tip: child's distance === parent.distance + 1
+            if(children.length > 100) children = children.slice(0, 200);
             children = children.filter(item=>Boolean(Number(heapMap[item.index].distance) === (1+Number(nodeDetail.distance))));
             children.sort((o, n)=>Number(heapMap[o.index].retainedSize) < Number(heapMap[n.index].retainedSize) ? 1 : -1);
             children = children.filter((item, index)=> index < childrenLimit);

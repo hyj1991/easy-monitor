@@ -4,6 +4,7 @@ const path = require('path');
 const logger = require('../../common_library/Logger');
 const EventEmitter = require('events').EventEmitter;
 const event = new EventEmitter();
+const zlib = require('zlib');
 
 const cacheMap = {};
 
@@ -147,5 +148,34 @@ module.exports = {
 
     catchNode(nodes, key, value){
         return nodes.filter(item => Number(item[key]) === Number(value))[0];
+    },
+
+    parseReceiveMessage(msg, needZlib = true){
+        msg = Buffer.from(msg);
+        if (needZlib) {
+            msg = zlib.inflateSync(msg)
+        }
+
+        return String(msg);
+    },
+
+    bufSplit(buf, sym) {
+        buf = Buffer.isBuffer(buf) && buf || Buffer.from(buf);
+        sym = Buffer.isBuffer(sym) && sym || Buffer.from(sym);
+
+        let offset = 0;
+        let array = [];
+
+        let symIndex = buf.indexOf(sym, offset);
+
+        while (~symIndex) {
+            array.push(buf.slice(offset, symIndex));
+
+            offset = symIndex + sym.length;
+            symIndex = buf.indexOf(sym, offset);
+        }
+
+        array.push(buf.slice(offset));
+        return array;
     }
 };

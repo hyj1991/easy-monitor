@@ -13,16 +13,21 @@ module.exports = function (config, helper) {
         socket.on('data', chunk => {
             chunks.push(chunk);
             size += chunk.length;
-            let tmp = (Buffer.concat(chunks, size)).toString();
+            let tmp = Buffer.concat(chunks, size);
+            let endSymbol = '@#$%\r\n';
+            let endSymBuf = Buffer.from(endSymbol);
 
-            if (~tmp.indexOf('\n\n')) {
-                let tmpArr = tmp.split('\n\n');
-                let last = Buffer.from(tmpArr.pop());
+            if (~tmp.indexOf(endSymBuf)) {
+                // let tmpArr = tmp.split('\n\n');
+                // let last = Buffer.from(tmpArr.pop());
+                let tmpArr = helper.bufSplit(tmp, endSymBuf);
+                let last = tmpArr.pop();
 
                 chunks = [last];
                 size = last.length;
 
                 tmpArr.forEach(item => {
+                    item = helper.parseReceiveMessage(item);
                     logger.debug(`tcpserver->parse data: ${item}`);
                     item = helper.jsonParse(item);
                     if (item.type === config.MESSAGE_TYPE[3]) {

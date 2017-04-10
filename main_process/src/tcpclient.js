@@ -11,14 +11,14 @@ module.exports = function (config, helper) {
 
     let client = new net.Socket();
     let heartBeatMessage = JSON.stringify({
-            type: config.MESSAGE_TYPE[0],
-            data: JSON.stringify({pid: `${config.appName}::${process.pid}`})
-        }) + '\n\n';
+        type: config.MESSAGE_TYPE[0],
+        data: JSON.stringify({pid: `${config.appName}::${process.pid}`})
+    });
 
     function callbackListener() {
         logger.info(`connect to ${config.TCP_INFO.HOST}:${config.TCP_INFO.PORT} success...`);
         reconnectTimes = 0;
-        client.write(heartBeatMessage);
+        helper.sendMessage(client, heartBeatMessage);
     }
 
     function connect() {
@@ -28,7 +28,7 @@ module.exports = function (config, helper) {
     connect();
 
     //send heartbeat message interval
-    setInterval(() => client.write(heartBeatMessage), config.HEARTBEAT_TIME);
+    setInterval(() => helper.sendMessage(client, heartBeatMessage), config.HEARTBEAT_TIME);
 
     let chunks = [];
     let size = 0;
@@ -59,7 +59,7 @@ module.exports = function (config, helper) {
                                 bailoutFunctions: analysisLib(profiler, null, true, true, {limit: item.data.bail_limit || config.FUNCTIONS_ANALYSIS.BAILOUT_FUNCTIONS_LIMIT}, config.filterFunction)
                             })
                         };
-                        client.write(JSON.stringify(result) + '\n\n');
+                        helper.sendMessage(client, result);
                     });
                 }
 
@@ -67,6 +67,7 @@ module.exports = function (config, helper) {
                     item.data = helper.jsonParse(item.data);
                     logger.info(`tcpclient->will start memory profiling...`);
                     heapSnapshot(item.data.uuid, config, (err, heapData) => {
+                        logger.info(`tcpclient->memory profiling end...`);
                         let result = {
                             type: config.MESSAGE_TYPE[5],
                             uuid: item.data.uuid,
@@ -74,12 +75,12 @@ module.exports = function (config, helper) {
                         };
 
                         if (err) {
-                            return client.write(JSON.stringify(result) + '\n\n');
+                            return helper.sendMessage(client, result);
                         }
 
                         //heap data is too big, so send it to child_process process
                         result.data = heapData;
-                        client.write(JSON.stringify(result) + '\n\n');
+                        helper.sendMessage(client, result);
                     });
                 }
             });

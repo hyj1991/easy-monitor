@@ -4,6 +4,8 @@ const basicAuth = require('basic-auth');
 const analysisLib = require('v8-analytics');
 
 module.exports = function (app, config, helper) {
+    const logger = helper.logger;
+
     return {
         BasicAuth(req, res, next){
             if (!config.monitorAuth || typeof config.monitorAuth !== 'function') {
@@ -141,8 +143,9 @@ module.exports = function (app, config, helper) {
                     }) + '\n\n');
 
                 helper.event.once(uuid, heapData => {
+                    logger.info(`monitorserver->start analysis heapsnapshot...`);
                     let {heapMap, leakPoint, statistics, rootIndex, aggregates} = analysisLib.memAnalytics(heapData, req.query.leak_limit);
-
+                    logger.info(`monitorserver->analysis heapsnapshot end...`);
                     /*const fs = require('fs');
                     fs.writeFileSync('./heapSnapshot.json', JSON.stringify({
                         heapMap,
