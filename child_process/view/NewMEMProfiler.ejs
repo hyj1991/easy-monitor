@@ -335,10 +335,14 @@ for(let i = 0; i < leakPointLength; i++){
         graphOptionsMap["<%- leak.id %>"] = {
             tooltip: {
                 show: true,
-                formatter: function (params, ticket, callback) {//回调函数
+                formatter: function (params, ticket, callback) {//callback
+                    if(!params || !params.data ) return 'error: params.data is empty!';
+                    if(params.data.source || params.data.target) return params.data.source + ' -> ' + params.data.target;
+
                     var graphTmp = myChart.getOption().series[0];
                     var id = graphTmp.nodes[params.dataIndex].id;
                     var index = graphTmp.nodes[params.dataIndex].index;
+
                     var linkMap = graphTmp.links.reduce((pre, next)=> {
                         let isShow = graphTmp.nodes.some(item=>item.id === next.source && Boolean(item.ignore) === false);
                         if(isShow){
@@ -405,13 +409,29 @@ for(let i = 0; i < leakPointLength; i++){
         myChart.setOption(graphOptionsMap["<%- leak.id %>"]);
 
         function openOrFold(param) {
+            var option = setExpandOff(myChart, param);
+
+            if(option){
+                myChart.setOption(option);
+            }
+        }
+
+        function findNode(arraySource, type, value, cb){
+            arraySource.forEach(item=>{
+                if(item[type] === value){
+                    cb(item);
+                }
+            });
+        }
+
+        function setExpandOff(myChart, param){
             var option = myChart.getOption();
             var nodesOption = option.series[0].nodes;
             var linksOption = option.series[0].links;
             var data = param.data;
             var linksNodes = [];
 
-            if (data != null && data != undefined) {
+            if (data != null && data != undefined && !data.source && !data.target) {
                 if (data.flag) {
 
                     for (var m in linksOption) {
@@ -432,7 +452,8 @@ for(let i = 0; i < leakPointLength; i++){
                         node.flag = false;
                         node.category = 0;
                     });
-                    myChart.setOption(option);
+
+                    return option;
                 } else {
                     for (var m in linksOption) {
                         if (linksOption[m].source == data.id) {
@@ -460,17 +481,10 @@ for(let i = 0; i < leakPointLength; i++){
                         node.flag = true;
                         node.category = 1;
                     });
-                    myChart.setOption(option);
+
+                    return option;
                 }
             }
-        }
-
-        function findNode(arraySource, type, value, cb){
-            arraySource.forEach(item=>{
-                if(item[type] === value){
-                    cb(item);
-                }
-            });
         }
 
         myChart.on('click', openOrFold);
