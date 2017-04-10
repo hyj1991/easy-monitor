@@ -239,12 +239,16 @@ for(let i = 0; i < leakPointLength; i++){
     let leak = leakPoint[i];
     let forceGraph = {nodes:[], links:[]};
 
+    let biggestList = {};
     let isRecorded = {};
     let distanceDisplay = 1;
     let distanceLimit = 20;
     let childrenLimit = 5;
+    let leakDistanceLimit = 8;
 
     let leakIndexList = [leak.index];
+    let rootDistance = heapMap[leak.index].distance;
+    biggestList[leak.index] = {id: heapMap[leak.index].id, source: null, retainedSize: heapMap[leak.index].retainedSize};
 
     while(leakIndexList.length !== 0 && distanceDisplay <= distanceLimit){
         let tmpIndexArr = [];
@@ -284,6 +288,11 @@ for(let i = 0; i < leakPointLength; i++){
                     tmpIndexArr.push(cIndex);
                 }
 
+                //I think
+                if(Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)){
+                    biggestList[cIndex] = {id: childDetail.id, source: nodeDetail.index, sourceId:nodeDetail.id, distance: childDetail.distance};
+                }
+
                 if(distanceDisplay === distanceLimit){
                     if(isRecorded[childDetail.id]) return;
                     isRecorded[childDetail.id] = true;
@@ -321,6 +330,13 @@ for(let i = 0; i < leakPointLength; i++){
         pre[next.index] = heapMap[next.index];
         return pre;
     },{});
+
+    Object.keys(biggestList).forEach(index=>{
+        let data = helper.catchNode(forceGraph.nodes, 'index', index);
+        if(data){
+            helper.setExpandOff(forceGraph, data);
+        }
+    });
 %>
 <script type="text/javascript">
     (function(){
@@ -400,7 +416,7 @@ for(let i = 0; i < leakPointLength; i++){
                         }
                     }
                 },
-                categories: [{name: 'main'}, {name: 'else'}],
+                categories: [{name: 'main'}, {name: 'else'}, {name: 'leak'}],
                 nodes: graphTmp.nodes,
                 links: graphTmp.links
             }]

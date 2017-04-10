@@ -1,7 +1,7 @@
 'use strict';
 const uuidV4 = require('uuid/v4');
 const basicAuth = require('basic-auth');
-const analysisLib = require('../../../v8-analytics');
+const analysisLib = require('v8-analytics');
 
 module.exports = function (app, config, helper) {
     return {
@@ -172,16 +172,16 @@ module.exports = function (app, config, helper) {
             }
 
             /*const heapSnapshot = require('/Users/huangyijun/git/examples/heapSnapshot.json');
-            res.render('NewMEMProfiler', {
-                leak_limit: req.query.leak_limit || 5,
-                processName: processId.split('::')[0],
-                processPid: processId.split('::')[1],
-                heapMap: heapSnapshot.heapMap,
-                leakPoint: heapSnapshot.leakPoint,
-                statistics: heapSnapshot.statistics,
-                aggregates: heapSnapshot.aggregates,
-                helper
-            });*/
+             res.render('NewMEMProfiler', {
+             leak_limit: req.query.leak_limit || 5,
+             processName: processId.split('::')[0],
+             processPid: processId.split('::')[1],
+             heapMap: heapSnapshot.heapMap,
+             leakPoint: heapSnapshot.leakPoint,
+             statistics: heapSnapshot.statistics,
+             aggregates: heapSnapshot.aggregates,
+             helper
+             });*/
         }
     }
 };

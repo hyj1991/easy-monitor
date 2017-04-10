@@ -28,6 +28,14 @@ const config = _loadConfig();
 
 logger.setLevel(config.LOG_LEVEL);
 
+function _findNode(arraySource, type, value, cb) {
+    arraySource.forEach(item => {
+        if (item[type] === value) {
+            cb(item);
+        }
+    })
+}
+
 module.exports = {
     logger,
 
@@ -80,5 +88,64 @@ module.exports = {
         }
 
         return str;
+    },
+
+    setExpandOff(forceGraph, data){
+        let nodesOption = forceGraph.nodes;
+        let linksOption = forceGraph.links;
+        let linksNodes = [];
+
+        if (data.flag) {
+            for (let m in linksOption) {
+                if (linksOption[m].source == data.id) {
+                    linksNodes.push(linksOption[m].target);
+                }
+            }
+            if (linksNodes != null && linksNodes != undefined) {
+                for (let p in linksNodes) {
+                    _findNode(nodesOption, 'id', linksNodes[p], node => {
+                        node.ignore = false;
+                        node.flag = true;
+                    });
+                }
+            }
+            _findNode(nodesOption, 'id', data.id, node => {
+                node.ignore = false;
+                node.flag = false;
+                node.category = 0;
+            });
+        } else {
+            for (let m in linksOption) {
+                if (linksOption[m].source == data.id) {
+                    linksNodes.push(linksOption[m].target);
+                }
+                if (linksNodes != null && linksNodes != undefined) {
+                    for (let n in linksNodes) {
+                        if (linksOption[m].source == linksNodes[n] && linksOption[m].target != data.id) {
+                            linksNodes.push(linksOption[m].target);
+                        }
+                    }
+                }
+            }
+
+            if (linksNodes != null && linksNodes != undefined) {
+                for (let p in linksNodes) {
+                    _findNode(nodesOption, 'id', linksNodes[p], node => {
+                        node.ignore = true;
+                        node.flag = true;
+                    });
+                }
+            }
+
+            _findNode(nodesOption, 'id', data.id, node => {
+                node.ignore = true;
+                node.flag = true;
+                node.category = 1;
+            });
+        }
+    },
+
+    catchNode(nodes, key, value){
+        return nodes.filter(item => Number(item[key]) === Number(value))[0];
     }
 };
