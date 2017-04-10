@@ -288,9 +288,9 @@ for(let i = 0; i < leakPointLength; i++){
                     tmpIndexArr.push(cIndex);
                 }
 
-                //I think
+                //TODO, filter reason
                 if(Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)){
-                    biggestList[cIndex] = {id: childDetail.id, source: nodeDetail.index, sourceId:nodeDetail.id, distance: childDetail.distance};
+                    biggestList[cIndex] = {id: childDetail.id, source: nodeDetail.index, sourceId:nodeDetail.id, distance: childDetail.distance, retainedSize: childDetail.retainedSize};
                 }
 
                 if(distanceDisplay === distanceLimit){

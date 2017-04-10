@@ -150,11 +150,11 @@ module.exports = function (app, config, helper) {
                         statistics,
                         aggregates,
                     }));*/
-                    console.log('done');
-                    // console.log(rootIndex);
-                    // console.log(leakPoint);
-                    // console.log(statistics);
-                    // console.log(aggregates);
+                    /*console.log('done');
+                    console.log(rootIndex);
+                    console.log(leakPoint);
+                    console.log(statistics);
+                    console.log(aggregates);*/
 
                     res.render('NewMEMProfiler', {
                         leak_limit: req.query.leak_limit || 5,
