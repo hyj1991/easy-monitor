@@ -135,6 +135,7 @@ module.exports = function (app, config, helper) {
             let processId = req.params.ProcessID;
             let socket = helper.getCachedSocket()[processId];
             if (socket) {
+                //console.time('cost');
                 socket.write(JSON.stringify({
                         type: config.MESSAGE_TYPE[4],
                         data: JSON.stringify({
@@ -147,18 +148,19 @@ module.exports = function (app, config, helper) {
                     let {heapMap, leakPoint, statistics, rootIndex, aggregates} = analysisLib.memAnalytics(heapData, req.query.leak_limit);
                     logger.info(`monitorserver->analysis heapsnapshot end...`);
                     /*const fs = require('fs');
-                    fs.writeFileSync('./heapSnapshot.json', JSON.stringify({
-                        heapMap,
-                        leakPoint,
-                        statistics,
-                        aggregates,
-                    }));*/
+                     fs.writeFileSync('./heapSnapshot.json', JSON.stringify({
+                     heapMap,
+                     leakPoint,
+                     statistics,
+                     aggregates,
+                     }));*/
                     /*console.log('done');
-                    console.log(rootIndex);
-                    console.log(leakPoint);
-                    console.log(statistics);
-                    console.log(aggregates);*/
+                     console.log(rootIndex);
+                     console.log(leakPoint);
+                     console.log(statistics);
+                     console.log(aggregates);*/
 
+                    //console.timeEnd('cost');
                     res.render('NewMEMProfiler', {
                         leak_limit: req.query.leak_limit || 5,
                         processName: processId.split('::')[0],
