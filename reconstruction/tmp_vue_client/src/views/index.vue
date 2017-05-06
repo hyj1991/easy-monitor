@@ -187,6 +187,10 @@
         </Row>
         <br>
 
+        <!-- Test Axios Results -->
+        {{ getIndexPageData() }}
+        This is indexPageData: {{ JSON.stringify(indexPageData) }}
+
         <!-- footer -->
         <div class="footer">
           <p>© 2017 , Powered By
@@ -202,7 +206,8 @@
                 e_pid_achilles: 'all',
                 e_opt_achilles: 'cpu',
                 e_pid_ares: 'all',
-                e_opt_ares: 'cpu'
+                e_opt_ares: 'cpu',
+                indexPageData: {}
             }
         },
 
@@ -210,6 +215,14 @@
             handle(name){
                 name = name || 'achilles';
                 console.log(this[`e_pid_${name}`], this[`e_opt_${name}`]);
+            },
+
+            getIndexPageData(){
+                    var vm = this;
+                    vm.indexPageData = {a: 1}
+                    axios.get('/axiosIndexPage')
+                         .then(response=> vm.indexPageData = (response.data))
+                         .catch(error=> vm.answer = 'Error! Could not reach the API. ' + error);
             }
         }
     }
