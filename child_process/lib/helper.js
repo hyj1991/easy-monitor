@@ -177,5 +177,13 @@ module.exports = {
 
         array.push(buf.slice(offset));
         return array;
+    },
+
+    writeFile(dirname, relate, data){
+        const path = require('path');
+        const fs = require('fs');
+
+        fs.writeFileSync(path.join(dirname, relate), data);
     }
+    
 };

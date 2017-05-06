@@ -46,7 +46,8 @@ module.exports = function (app, config, helper) {
                 }
                 return pre;
             }, {projectList: [], projectPidMap: {}});
-
+            
+            //helper.writeFile(__dirname, './index.json', JSON.stringify({projectList, projectPidMap}));
             res.render('NewIndex', {projectList, projectPidMap});
         },
 
