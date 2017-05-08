@@ -5,6 +5,13 @@ const routers = [
             title: ''
         },
         component: (resolve) => require(['./views/index.vue'], resolve)
+    },
+    {
+        path: '/profiler',
+        meta: {
+            title: 'abc'
+        },
+        component: (resolve) => require(['./views/index.vue'], resolve)
     }
 ];
 export default routers;

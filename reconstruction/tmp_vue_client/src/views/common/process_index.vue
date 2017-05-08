@@ -37,13 +37,14 @@
 
 <template>
 <div class="process_index">
+<!-- <div style="text-align:center">{{ choose }}</div> -->
 <Row type="flex" justify="center" class="code-row-bg">
     <Col span=10 style="text-align:center">
         <!-- title -->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
                 <h2>{{ processName }} 
-                    <Button :disabled="disabled" type="ghost" shape="circle" size="small">Start</Button>
+                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click=radioHandle()>Start</Button>
                 </h2>
             </Col>
         </Row>
@@ -96,12 +97,14 @@
 </template>
 
 <script>
+    import router from '../../main.js';
+
     export default {
         data(){
             return {
                 e_pid: 'all',
                 e_opt: 'cpu',
-                disabled: true,
+                disabled: true            
             }
         },
 
@@ -116,12 +119,25 @@
         props: ['singleProjectInfo'],
 
         methods: {
+            //if have process list 
             checkButtonAble(singleProjectInfo) {
                 if(singleProjectInfo && singleProjectInfo.processList){
                     if(Array.isArray(singleProjectInfo.processList) && singleProjectInfo.processList.length !== 0){
                         this.disabled = false;
                     }
                 }
+            },
+            
+            //jump to profiler
+            radioHandle() {
+                router.push({
+                    path: 'profiler', 
+                    query: {
+                        processName: this.processName,
+                        pid: this.e_pid,
+                        opt: this.e_opt
+                    }
+                });
             }
         },
 

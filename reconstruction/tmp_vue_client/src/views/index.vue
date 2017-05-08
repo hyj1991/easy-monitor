@@ -52,8 +52,8 @@
         <!-- footer -->
         <div class="footer">
           <p>© 2017 , Powered By
-                  <a href="https://github.com/hyj1991/easy-monitor.git">Easy-Monitor</a>
-                  , Author: <a href="https://github.com/hyj1991">hyj1991</a></p>
+                  <a href="https://github.com/hyj1991/easy-monitor.git" target="_Blank">Easy-Monitor</a>
+                  , Author: <a href="https://github.com/hyj1991" target="_Blank">hyj1991</a></p>
         </div>
     </div>
 </template>
@@ -62,14 +62,14 @@
     import processIndex from './common/process_index.vue';
 
     export default {
-        created(){
-            this.getIndexPageData();
-        },
-
         data () {
             return {
                 indexPageData: {}
             }
+        },
+
+        created(){
+            this.getIndexPageData();
         },
 
         methods: {
