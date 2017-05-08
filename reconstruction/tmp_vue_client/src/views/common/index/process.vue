@@ -98,6 +98,7 @@
 </template>
 
 <script>
+    import axios from 'axios';
     import router from '../../../main.js';
 
     export default {
@@ -112,18 +113,18 @@
         },
 
         mounted() {
-            this.checkButtonAble.call(this, this.singleProjectInfo);
+            this.check.call(this, this.singleProjectInfo);
         },
 
         updated() {
-            this.checkButtonAble.call(this, this.singleProjectInfo);
+            this.check.call(this, this.singleProjectInfo);
         },
 
         props: ['singleProjectInfo'],
 
         methods: {
             //if have process list 
-            checkButtonAble(singleProjectInfo) {
+            check(singleProjectInfo) {
                 if(singleProjectInfo && singleProjectInfo.processList){
                     if(Array.isArray(singleProjectInfo.processList) && singleProjectInfo.processList.length !== 0){
                         this.disabled = false;
@@ -137,34 +138,37 @@
             
             //jump to profiler
             radioHandle() {
-                const vm = this;                
+                const vm = this;  
+                const data = {
+                    processName: vm.processName,
+                    pid: vm.e_pid,
+                    opt: vm.e_opt
+                }
+
+                //notificate server do profiling
+                axios.post('/profiler', {data})
+
+                //if not loadingTime, jump immediately
                 if(!this.loadingTime){
                     router.push({
                         path: `profiler`, 
-                        query: {
-                            processName: vm.processName,
-                            pid: vm.e_pid,
-                            opt: vm.e_opt
-                        }
+                        query: data
                     });
                     return;
                 }
 
+                //if loadingTime, jump asyncly
                 this.loading = true;
                 this.$Message.success(`will do ${this.e_opt} profiling`);
-
                 setTimeout(()=> {
                     vm.loading = false;
                     router.push({
                         path: `profiler`, 
-                        query: {
-                            processName: vm.processName,
-                            pid: vm.e_pid,
-                            opt: vm.e_opt
-                        }
+                        query: datas
                     });
                 }, this.loadingTime);
             }
+           
         },
 
         computed: {

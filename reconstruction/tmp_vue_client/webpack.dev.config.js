@@ -37,6 +37,10 @@ module.exports = merge(webpackBaseConfig, {
             '/axiosIndexPage': {
                 target: 'http://localhost:12334',
                 changeOrigin: true
+            },
+            '/profiler': {
+                target: 'http://localhost:12334',
+                changeOrigin: true
             }
         }
     }
