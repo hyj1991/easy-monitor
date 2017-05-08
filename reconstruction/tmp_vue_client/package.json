@@ -15,9 +15,10 @@
   "author": "Aresn",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.16.1",
+    "iview": "^2.0.0-rc.8",
     "vue": "^2.2.6",
-    "vue-router": "^2.2.1",
-    "iview": "^2.0.0-rc.8"
+    "vue-router": "^2.2.1"
   },
   "devDependencies": {
     "autoprefixer-loader": "^2.0.0",
@@ -32,6 +33,7 @@
     "file-loader": "^0.8.5",
     "html-loader": "^0.3.0",
     "html-webpack-plugin": "^2.28.0",
+    "http-proxy-middleware": "^0.17.4",
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
     "style-loader": "^0.13.1",

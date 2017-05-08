@@ -7,7 +7,7 @@ const fs = require('fs');
 
 fs.open('./src/config/env.js', 'w', function (err, fd) {
     const buf = 'export default "development";';
-    fs.write(fd, buf, 0, buf.length, 0, function (err, written, buffer){});
+    fs.write(fd, buf, 0, buf.length, 0, function (err, written, buffer) { });
 });
 
 module.exports = merge(webpackBaseConfig, {
@@ -31,5 +31,13 @@ module.exports = merge(webpackBaseConfig, {
             template: './src/template/index.ejs',
             inject: false
         })
-    ]
+    ],
+    devServer: {
+        proxy: {
+            '/axiosIndexPage': {
+                target: 'http://localhost:12334',
+                changeOrigin: true
+            }
+        }
+    }
 });
