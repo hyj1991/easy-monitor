@@ -61,7 +61,7 @@
                         
                         <!-- process id list -->
                         <Radio-group v-model="e_pid" v-for="item in processList">
-                            <Radio :label="item.pid">
+                            <Radio :label="item.label">
                              <Icon :type="item.type"></Icon>
                              <span>{{ item.pid }}</span>
                             </Radio>
@@ -99,28 +99,44 @@
     export default {
         data(){
             return {
-                e_pid: 'All',
+                e_pid: 'all',
                 e_opt: 'cpu',
-                disabled: true
+                disabled: true,
             }
+        },
+
+        mounted() {
+            this.checkButtonAble.call(this, this.singleProjectInfo);
+        },
+
+        updated() {
+            this.checkButtonAble.call(this, this.singleProjectInfo);
         },
 
         props: ['singleProjectInfo'],
 
+        methods: {
+            checkButtonAble(singleProjectInfo) {
+                if(singleProjectInfo && singleProjectInfo.processList){
+                    if(Array.isArray(singleProjectInfo.processList) && singleProjectInfo.processList.length !== 0){
+                        this.disabled = false;
+                    }
+                }
+            }
+        },
+
         computed: {
             processName() {
-                if(!this.singleProjectInfo) {return 'No Project';}
+                if(!this.singleProjectInfo || !this.singleProjectInfo.projectName) {return 'No Project';}
                 return this.singleProjectInfo.projectName;
             },
 
             processList() {
-                if(!this.singleProjectInfo) return [];
-                //if have process, able button
-                this.disabled = false;
+                if(!this.singleProjectInfo || !this.singleProjectInfo.processList || this.singleProjectInfo.processList.length === 0) return [];
                 return this.singleProjectInfo.processList.reduce((pre, next)=>{
-                    pre.push({type: 'ios-pulse', pid: next});
+                    pre.push({type: 'ios-pulse', pid: next, label: next});
                     return pre;
-                },[{type: 'ios-browsers-outline', pid: 'All'}]);
+                },[{type: 'ios-browsers-outline', pid: 'All', label: 'all'}]);
             }
         }
     }
