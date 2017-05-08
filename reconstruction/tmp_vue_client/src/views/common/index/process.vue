@@ -44,7 +44,8 @@
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
                 <h2>{{ processName }} 
-                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click=radioHandle()>Start</Button>
+                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" 
+                    @click=radioHandle() :loading="loading">Start</Button>
                 </h2>
             </Col>
         </Row>
@@ -97,14 +98,16 @@
 </template>
 
 <script>
-    import router from '../../main.js';
+    import router from '../../../main.js';
 
     export default {
         data(){
             return {
                 e_pid: 'all',
                 e_opt: 'cpu',
-                disabled: true            
+                disabled: true,
+                loading: false,
+                loadingTime: false       
             }
         },
 
@@ -126,18 +129,41 @@
                         this.disabled = false;
                     }
                 }
+
+                if(singleProjectInfo && singleProjectInfo.loadingTime || singleProjectInfo.loadingTime === 0){
+                    this.loadingTime = singleProjectInfo.loadingTime;
+                }
             },
             
             //jump to profiler
             radioHandle() {
-                router.push({
-                    path: 'profiler', 
-                    query: {
-                        processName: this.processName,
-                        pid: this.e_pid,
-                        opt: this.e_opt
-                    }
-                });
+                const vm = this;                
+                if(!this.loadingTime){
+                    router.push({
+                        path: `profiler`, 
+                        query: {
+                            processName: vm.processName,
+                            pid: vm.e_pid,
+                            opt: vm.e_opt
+                        }
+                    });
+                    return;
+                }
+
+                this.loading = true;
+                this.$Message.success(`will do ${this.e_opt} profiling`);
+
+                setTimeout(()=> {
+                    vm.loading = false;
+                    router.push({
+                        path: `profiler`, 
+                        query: {
+                            processName: vm.processName,
+                            pid: vm.e_pid,
+                            opt: vm.e_opt
+                        }
+                    });
+                }, this.loadingTime);
             }
         },
 

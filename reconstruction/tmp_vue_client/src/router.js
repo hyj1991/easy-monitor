@@ -9,9 +9,9 @@ const routers = [
     {
         path: '/profiler',
         meta: {
-            title: 'abc'
+            title: ''
         },
-        component: (resolve) => require(['./views/index.vue'], resolve)
+        component: (resolve) => require(['./views/profiler.vue'], resolve)
     }
 ];
 export default routers;

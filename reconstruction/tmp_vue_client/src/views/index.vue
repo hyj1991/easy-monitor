@@ -59,7 +59,7 @@
 </template>
 <script>
     import axios from 'axios';
-    import processIndex from './common/process_index.vue';
+    import processIndex from './common/index/process.vue';
 
     export default {
         data () {
@@ -92,7 +92,7 @@
                 if(!projectPidMap) return [];
 
                 return Object.keys(projectPidMap).reduce((pre, next)=>{
-                    pre.push({projectName: next, processList: projectPidMap[next]})
+                    pre.push({projectName: next, processList: projectPidMap[next].list, loadingTime: projectPidMap[next].loading})
                     return pre;
                 },[]);
             }
