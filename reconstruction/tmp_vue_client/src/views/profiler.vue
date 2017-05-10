@@ -5,16 +5,6 @@
         }
     }
 </style>
-<style>
-    .overflow-ivu-poptip-ivu-poptip-rel {}
-
-    .overflow-ivu-poptip-ivu-poptip-rel.ivu-tooltip, .overflow-ivu-poptip-ivu-poptip-rel .ivu-tooltip-rel {
-        display: block;
-    }
-    .overflow-ivu-poptip-ivu-poptip-rel .ivu-tooltip-inner {
-        max-width: none;
-    }
-</style>
 
 <template>
     <div class="index">
