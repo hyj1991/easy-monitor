@@ -1,0 +1,550 @@
+<script src="/docs/Chart.js"></script><!doctype html>
+<html>
+<head>
+    <title>Easy-Monitor</title>
+    <link href="/docs/styles.css" rel="stylesheet">
+    <script src="/assets/jquery/jquery.min.js"></script>
+    <script src="/docs/prettify.js"></script>
+    <script src="/docs/Chart.js"></script>
+    <script type="text/javascript">try {
+            Typekit.load();
+        } catch (e) {
+        }</script>
+    <script src="/echarts.min.js"></script>
+</head>
+<body>
+<div class="redBorder"></div>
+<div class="greenBorder"></div>
+<div class="yellowBorder"></div>
+<div id="wrapper">
+    <nav>
+        <dl>
+        </dl>
+    </nav>
+
+    <div id="contentWrapper">
+        <h1 id="mainHeader">Memory Leak</h1>
+        <h2 id="introText"><a href="/MEMProfiler/<%- processName %>::<%- processPid %>">Pid:<%- processPid %></a>
+            Heapnapshot Statistics By <a href="/">Easy-Monitor</a></h2>
+
+        <article id="statistics">
+
+            <h1>Heap Status</h1>
+            <h2>Statistics</h2>
+            <div id="statstics" style="width: 600px;height:400px;"></div>
+
+            <h2>Summary</h2>
+            <p>Heap Memory Total is: <%- helper.formatSize(statistics.total) %>, Below is summary sort by constructor name:</p>
+            <%
+                let aggregatesList = Object.keys(aggregates);
+                let aggregatesLength = aggregatesList.length;
+                //aggregatesList.sort((o, n)=>Number(aggregates[o].maxRet) < Number(aggregates[n].maxRet) ? 1 : -1);
+                let longHtml = '<br />';
+                let shortHtml = '<br />';
+
+                for(let i = 0; i < aggregatesLength; i++){
+                    let aggregate = aggregates[aggregatesList[i]];
+                    let shallowSize = helper.formatSize(aggregate.self);
+                    let retainedSize = helper.formatSize(aggregate.maxRet);
+                    longHtml = longHtml + `${(i + 1)}. Constructor: "${aggregatesList[i]}", Distance: "${aggregate.distance>=1 && aggregate.distance || '-'}", Objects Count: "${aggregate.count}", Shallow Size: "${shallowSize}", Retained Size: "${retainedSize}"<br /><br />`;
+                    if(i < 10) {
+                        shortHtml = shortHtml + `${(i + 1)}. Constructor: "${aggregatesList[i]}", Distance: "${aggregate.distance >= 1 && aggregate.distance || '-'}", Objects Count: "${aggregate.count}", Shallow Size: "${shallowSize}", Retained Size: "${retainedSize}"<br /><br />`;
+                    }
+
+                    if(i === 10){
+                        shortHtml = shortHtml + '<a href="javascript:createAggregates()"><span class="rs-tag">&lt;...Show All Aggregates &gt;</span></a>'
+                    }
+
+                    if(i === aggregatesLength - 1){
+                        longHtml = longHtml+ '<a href="javascript:createAggregatesShort()"><span class="rs-tag">&lt;...Return Short Aggregates &gt;</span></a>'
+                    }
+                }
+            %>
+            <pre id="aggregates"><code><%- shortHtml %></code></pre>
+        </article>
+
+
+        <article id="LeakPoint">
+            <h1>Memory Leak</h1>
+            <h2>Suspicious Leak Point List</h2>
+            <p>I think the most probable leak point can be things who take maximum heap memory.</p>
+            <p>So I filter out the biggest <%- leak_limit %> nodes ( DESC by "RetainedSize" ): </p>
+            <pre><code><%
+                    let leakPointLength = leakPoint.length;
+                    for(let i = 0; i < leakPointLength; i++){
+                        let leak = leakPoint[i];
+                    %>
+<%- (i + 1) %>. name&id: "<%- heapMap[leak.index].name %>::<%- leak.id %>", distance:"<%- heapMap[leak.index].distance %>", type: "<%- heapMap[leak.index].type %>", retainedSize: "<%- leak.size %>bytes", taken "<%- ((leak.size / statistics.total) * 100).toFixed(2) %>%" of all heap memory.
+                    <% } %></code></pre>
+            <p>Below are gravity diagram, which can help you find leak point details.</p>
+
+            <%
+            for(let i = 0; i < leakPointLength; i++){
+                let leak = leakPoint[i];
+                let retainedSize = '';
+                let sizeTmp = leak.size;
+                if (sizeTmp / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp)} Bytes`;
+                } else if (sizeTmp / 1024 / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp / 1024)} KB`;
+                } else if (sizeTmp / 1024 / 1024 / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp / 1024 / 1024)} MB`;
+                } else {
+                    retainedSize = `${parseInt(sizeTmp / 1024 / 1024 / 1024)} GB`;
+                }
+            %>
+            <h2>Leak Point Detail: <%- leak.id %></h2>
+            <p><%- heapMap[leak.index].name %>::<%- leak.id %>, it's retainSize is: <%- retainedSize %>, below is
+                gravity diagram: </p>
+            <div id="<%- leak.id %>" style="width: 800px;height:400px;"></div>
+            <div id="<%- leak.id %>-detail""></div>
+            <% } %>
+
+        </article>
+    </div>
+</div>
+</body>
+<script>
+    function createAggregates(){
+        document.getElementById('aggregates').getElementsByTagName('code')[0].innerHTML = '<%- longHtml %>';
+        prettyPrint();
+    }
+
+    function createAggregatesShort(){
+        document.getElementById('aggregates').getElementsByTagName('code')[0].innerHTML = '<%- shortHtml %>';
+        prettyPrint();
+    }
+</script>
+<script>
+    $(document).ready(function () {
+
+        var $nav = $("nav dl");
+
+        $("article").each(function () {
+            var $el = $(this);
+            var $h1 = $el.find("h1");
+            var sectionTitle = $h1.html();
+            var articleId = $el.attr("id");
+            var $dt = $("<dt><a href=\"#" + articleId + "\">" + sectionTitle + "</a></dt>");
+
+            $dt.find("a").on("click", function (e) {
+                e.preventDefault();
+                $('html,body').animate({scrollTop: $h1.offset().top}, 400);
+            });
+
+
+            $nav.append($dt);
+
+            var $subtitles = $el.find("h2");
+
+            $subtitles.each(function () {
+                var $h2 = $(this);
+                var title = $h2.text();
+                var newID = articleId + "-" + camelCase(title);
+                $h2.attr("id", newID);
+                var $dd = $("<dd><a href=\"#" + newID + "\">" + title + "</a></dd>");
+
+                $dd.find("a").on("click", function (e) {
+                    e.preventDefault();
+                    $('html,body').animate({scrollTop: $h2.offset().top}, 400);
+                })
+                $nav.append($dd);
+
+            });
+
+            var $articles = $el.find("article");
+
+        });
+
+        prettyPrint();
+
+        function camelCase(str) {
+            var splitString = str.split(" ");
+
+            var returnedCamel = splitString[0].toLowerCase();
+
+            for (var i = 1; i < splitString.length; i++) {
+                returnedCamel += splitString[i].charAt(0).toUpperCase() + splitString[i].substring(1).toLowerCase();
+            }
+
+            return returnedCamel;
+
+        }
+    });
+</script>
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('statstics'));
+
+    // 指定图表的配置项和数据
+    var option = {
+        title: {
+            text: 'Pid:<%- processPid %>',
+            subtext: 'HeapSnapshot Statistics',
+            x: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: []
+        },
+        series: [
+            {
+                name: 'HeapSnapshot',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                data: [],
+                itemStyle: {
+                    emphasis: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+
+    option.series[0].data = <%- JSON.stringify(Object.keys(statistics).reduce((pre, next) => {
+        if (next !== 'total' && next !== 'v8heap') {
+            pre.push({name: next, value: statistics[next]})
+        }
+        return pre;
+    }, [])) %>
+
+        option.legend.data = <%- JSON.stringify(Object.keys(statistics).filter(key => key !== 'total' && key !== 'v8heap')) %>// 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+</script>
+<script>
+    var graphOptionsMap = {};
+</script>
+<%
+for(let i = 0; i < leakPointLength; i++){
+    let leak = leakPoint[i];
+    let graph = {nodes:[], links:[]};
+
+    let biggestLink = {};
+    let isRecorded = {};
+    let distanceDisplay = 1;
+    let distanceLimit = 7;
+    let childrenLimit = 3;
+    let leakIndexList = [leak.index];
+
+    while(leakIndexList.length !== 0 && distanceDisplay <= distanceLimit){
+        let tmpIndexArr = [];
+
+        leakIndexList.forEach(index=>{
+            let nodeDetail = heapMap[index];
+            let children = nodeDetail.children;
+
+            children.sort((o, n)=>{
+                if(Number(heapMap[o.index].retainedSize) > Number(heapMap[nodeDetail.retainedSize])) return 1;
+
+                return Number(heapMap[o.index].retainedSize) < Number(heapMap[n.index].retainedSize) ? 1 : -1
+            });
+            children = children.filter((item, index)=> index < childrenLimit);
+
+            if(isRecorded[nodeDetail.id]) return;
+            isRecorded[nodeDetail.id] = true;
+
+            let isMain = Boolean (leak.index === nodeDetail.index);
+            //let isBiggest = Boolean (biggestLink[nodeDetail.id]);
+
+            let size = 20, category = 1, ignore = true, flag = true;
+            if(isMain) {size = 30; category = 0; ignore = false}
+            //if(isBiggest) {size = 20; category = 0;}
+
+            graph.nodes.push({
+                index: nodeDetail.index,
+                name: nodeDetail.id,
+                attributes:{isMain},
+                id: nodeDetail.id,
+                size,
+                category,
+                ignore,
+                flag
+            });
+
+            children.forEach((child, index)=> {
+                let cIndex = child.index;
+                let childDetail = heapMap[cIndex];
+
+                //record root node
+                if(isMain && index === 0) {
+                    biggestLink[nodeDetail.id] = {child: childDetail.id, size: helper.formatSize(nodeDetail.retainedSize)};
+                    biggestLink[childDetail.id] = {child: null, size: helper.formatSize(childDetail.retainedSize)};
+                }
+
+                if(biggestLink[nodeDetail.id] && biggestLink[nodeDetail.id].child === null && index === 0){
+                    biggestLink[nodeDetail.id].child = childDetail.id;
+                    biggestLink[childDetail.id] = {child: null, size: helper.formatSize(childDetail.retainedSize)};
+                }
+
+                if(!isRecorded[childDetail.id]){
+                    tmpIndexArr.push(cIndex);
+                }
+
+                if(distanceDisplay === distanceLimit){
+                    if(isRecorded[childDetail.id]) return;
+                    isRecorded[childDetail.id] = true;
+
+                    let size = 20, category = 1, ignore = true, flag = true;
+                    //if(index === 0 && biggestLink[childDetail.id]){size = 20; category = 0}
+
+                    graph.nodes.push({
+                        index: childDetail.index,
+                        name: childDetail.id,
+                        attributes:{},
+                        id: childDetail.id,
+                        size,
+                        category,
+                        ignore,
+                        flag
+                    });
+                }
+
+                graph.links.push({
+                    source: nodeDetail.id,
+                    target: childDetail.id,
+                    sourceIndex: nodeDetail.index,
+                    targetIndex: childDetail.index,
+                    name_or_index: child.name_or_index
+                });
+            });
+        });
+
+        distanceDisplay++;
+        leakIndexList = tmpIndexArr;
+    }
+
+    let heapMapNeeded = graph.nodes.reduce((pre, next)=>{
+        pre[next.index] = heapMap[next.index];
+        return pre;
+    },{})
+%>
+<script type="text/javascript">
+    (function(){
+        var heapMap = <%- JSON.stringify(heapMapNeeded) %>
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('<%- leak.id %>'));
+        myChart.hideLoading();
+
+        var allGraph = <%- JSON.stringify(graph) %>;
+        var graph = filterNode(allGraph);
+
+        var categories = [{name: 'main'}, {name: 'else'}];
+
+        graph.nodes.forEach(function (node) {
+            node.itemStyle = null;//
+            node.symbolSize = node.size;//强制指定NODE的大小
+            // Use random x, y
+            node.x = node.y = null;
+            node.draggable = true;
+
+        });
+        graphOptionsMap["<%- leak.id %>"] = {
+            title: {
+                text: '',//文本标题
+                subtext: '',//副标题
+                top: 'top',//上下位置
+                left: 'left',//左右位置
+            },
+            tooltip: {
+                formatter: function (params, ticket, callback) {//回调函数
+                    var graph = allGraph;//获取已生成图形的Option
+                    var data = appendPath(graph.nodes[params.dataIndex].id, graph.nodes[params.dataIndex].index);
+                    document.getElementById("<%- leak.id %>-detail").innerHTML = '<p>'+ data.str + '</p>';
+                    return data.per;
+                }
+            },
+            legend: [{
+                // selectedMode: 'single',
+                data: categories.map(function (a) {//显示策略
+                    return a.name;
+                })
+            }],
+            animation: false,//是否开启动画
+            series : [
+                {
+                    name: '',
+                    type: 'graph',
+                    layout: 'force',
+                    data: graph.nodes,//NODE数据
+                    links: graph.links,//NODE边数据
+                    categories: categories,//策略
+                    roam: false,//是否开启滚轮缩放和拖拽漫游，默认为false（关闭），其他有效输入为true（开启），'scale'（仅开启滚轮缩放），'move'（仅开启拖拽漫游）
+                    label: {
+                        normal: {
+                            show:'false',
+                            position: 'right'
+                        }
+                    },
+                    slient:false,//是否响应点击事件，为false的时候就是响应
+                    force: {
+                        repulsion: 100
+                    }
+                }
+            ]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(graphOptionsMap["<%- leak.id %>"]);
+
+        myChart.on('click', function(param){
+            var linksNodes=[];//中间变量
+            var data=param.data;//表示当前选择的某一节点
+
+            var option = myChart.getOption();//获取已生成图形的Option
+            var nodesOption=allGraph.nodes;//获得所有节点的数组
+            var linksOption=allGraph.links;//获得所有连接的数组
+
+            function findNode(arraySource, type, value, cb){
+                arraySource.forEach(item=>{
+                    if(item[type] === value){
+                        cb(item);
+                    }
+                });
+            }
+
+            var mainNode = nodesOption.filter(node=>node.attributes.isMain);
+
+            /**判断是否选择到了连接线上*/
+            if(!data.source || !data.target){
+                /**
+                 判断所选节点的flag
+                 如果为真，则表示要展开数据,
+                 如果为假，则表示要折叠数据
+                 */
+                if (data.flag) {
+                    /**
+                     遍历连接关系数组
+                     最终获得所选择节点的一层子节点
+                     */
+                    for(var m in linksOption){
+                        //引用的连接关系的目标，既父节点是当前节点
+                        if(linksOption[m].source==data.id){
+                            linksNodes.push(linksOption[m].target);//获得子节点数组
+                        }
+                    }//for(var m in linksOption){...}
+
+                    /**
+                     遍历子节点数组
+                     设置对应的option属性
+                     */
+                    if(linksNodes != null && linksNodes != undefined){
+                        for(var p in linksNodes){
+                            findNode(nodesOption, 'id', linksNodes[p], function(node){
+                                node.ignore = false;
+                                node.flag = true;
+                            });
+                        }
+                    }
+                    //设置该节点的flag为false，下次点击折叠子孙节点
+                    findNode(nodesOption, 'id', data.id, node=>node.flag = false);
+                    //重绘
+
+                    var tmpGraph = filterNode(allGraph);
+                    tmpGraph.nodes.forEach(function (node) {
+                        node.itemStyle = null;//
+                        node.symbolSize = node.size;//强制指定NODE的大小
+                        // Use random x, y
+                        node.x = node.y = null;
+                        node.draggable = true;
+
+                    });
+                    option.series[0].data = tmpGraph.nodes;
+                    option.series[0].links = tmpGraph.links;
+                    myChart.setOption(option);
+                }else{
+                    /**
+                     遍历连接关系数组
+                     最终获得所选择节点的所有子孙子节点
+                     */
+                    for(var m in linksOption){
+                        //引用的连接关系的目标，既父节点是当前节点
+                        if(linksOption[m].source === data.id && linksOption[m].target !== data.id && linksOption[m].target !== mainNode.id){
+                            linksNodes.push(linksOption[m].target);//找到当前节点的第一层子节点
+                        }
+                        if(linksNodes != null && linksNodes != undefined){
+                            for(var n in linksNodes){
+                                //第一层子节点作为父节点，找到所有子孙节点
+                                if(linksOption[m].source === linksNodes[n] && linksOption[m].target !== data.id && linksOption[m].target !== mainNode.id){
+                                    linksNodes.push(linksOption[m].target);
+                                }
+                            }
+                        }
+                    }//for(var m in linksOption){...}
+
+                    /**
+                     遍历最终生成的连接关系数组
+                     */
+                    if(linksNodes != null && linksNodes != undefined){
+                        for(var p in linksNodes){
+                            findNode(nodesOption, 'id', linksNodes[p], function (node) {
+                                node.ignore = true;
+                                node.flag = true;
+                            });
+                        }
+                    }
+                    //设置该节点的flag为true，下次点击展开子节点
+                    findNode(nodesOption, 'id', data.id, node=>node.flag = true);
+                    //重绘
+                    var tmpGraph = filterNode(allGraph);
+                    tmpGraph.nodes.forEach(function (node) {
+                        node.itemStyle = null;//
+                        node.symbolSize = node.size;//强制指定NODE的大小
+                        // Use random x, y
+                        node.x = node.y = null;
+                        node.draggable = true;
+
+                    });
+                    option.series[0].data = tmpGraph.nodes;
+                    option.series[0].links = tmpGraph.links;
+
+                    myChart.setOption(option);
+                }//if (data.flag) {...}
+            }//if(data != null && data != undefined){...}
+        });
+
+        function filterNode(graph){
+            let tmp = {nodes: [], links: []};
+            tmp.nodes = graph.nodes.filter(node=>!node.ignore);
+            tmp.links = graph.links;
+
+            return tmp;
+        }
+
+        function appendPath(id, index) {
+            var str = '[' + heapMap[index].type + '] ' + heapMap[index].name + '::' + id;
+            var childName = heapMap[index].name + '::' + id;
+            var childRetainedSize = heapMap[index].retainedSize;
+            var links = graph.links;
+            var map = {};
+            for (i = 0; i < links.length; i++) {
+                map[links[i].target] = {source: links[i].source, index: links[i].sourceIndex, name_or_index: links[i].name_or_index, isSet: false};
+            }
+            var parentRetainedSize = heapMap[map[id].index].retainedSize;
+
+            while (true) {
+                if (map[id] == undefined || map[id].isSet) {
+                    break;
+                }
+                map[id].isSet = true;
+                var strTmp = '[' + heapMap[map[id].index].type + '] ' + heapMap[map[id].index].name + '::' + map[id].source + '\' <b>' + map[id].name_or_index + '</b>';
+
+                str = strTmp + " ---> " + str;
+                id = map[id].source;
+            }
+
+            var percentage = ((childRetainedSize / parentRetainedSize) * 100).toFixed(2) + '%';
+            return {str: str, per: childName + ', ' + percentage};
+        }
+    })()
+</script>
+<% } %>
+</html>

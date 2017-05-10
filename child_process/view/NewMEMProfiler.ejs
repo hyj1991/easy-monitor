@@ -1,0 +1,511 @@
+<script src="/docs/Chart.js"></script><!doctype html>
+<html>
+<head>
+    <title>Easy-Monitor</title>
+    <link href="/docs/styles.css" rel="stylesheet">
+    <script src="/assets/jquery/jquery.min.js"></script>
+    <script src="/docs/prettify.js"></script>
+    <script src="/docs/Chart.js"></script>
+    <script type="text/javascript">try {Typekit.load();} catch (e) {}</script>
+    <script src="/echarts2.min.js"></script>
+    <script src="/echarts.min.js"></script>
+</head>
+<body>
+<div class="redBorder"></div>
+<div class="greenBorder"></div>
+<div class="yellowBorder"></div>
+<div id="wrapper">
+    <nav>
+        <dl>
+        </dl>
+    </nav>
+
+    <div id="contentWrapper">
+        <h1 id="mainHeader">Memory Leak</h1>
+        <h2 id="introText"><a href="/MEMProfiler/<%- processName %>::<%- processPid %>">Pid:<%- processPid %></a>
+            Heapnapshot Statistics By <a href="/">Easy-Monitor</a></h2>
+
+        <article id="statistics">
+
+            <h1>Heap Status</h1>
+            <h2>Statistics</h2>
+            <div id="statstics" style="width: 600px;height:400px;"></div>
+
+            <h2>Summary</h2>
+            <p>Heap Memory Total is: <%- helper.formatSize(statistics.total) %>, Below is summary sort by constructor name:</p>
+            <%
+            let aggregatesList = Object.keys(aggregates);
+            let aggregatesLength = aggregatesList.length;
+            //aggregatesList.sort((o, n)=>Number(aggregates[o].maxRet) < Number(aggregates[n].maxRet) ? 1 : -1);
+            let longHtml = '<br />';
+            let shortHtml = '<br />';
+
+            for(let i = 0; i < aggregatesLength; i++){
+                let aggregate = aggregates[aggregatesList[i]];
+                let shallowSize = helper.formatSize(aggregate.self);
+                let retainedSize = helper.formatSize(aggregate.maxRet);
+                longHtml = longHtml + `${(i + 1)}. Constructor: "${aggregatesList[i]}", Distance: "${aggregate.distance>=1 && aggregate.distance || '-'}", Objects Count: "${aggregate.count}", Shallow Size: "${shallowSize}", Retained Size: "${retainedSize}"<br /><br />`;
+                if(i < 10) {
+                    shortHtml = shortHtml + `${(i + 1)}. Constructor: "${aggregatesList[i]}", Distance: "${aggregate.distance >= 1 && aggregate.distance || '-'}", Objects Count: "${aggregate.count}", Shallow Size: "${shallowSize}", Retained Size: "${retainedSize}"<br /><br />`;
+                }
+
+                if(i === 10){
+                    shortHtml = shortHtml + '<a href="javascript:createAggregates()"><span class="rs-tag">&lt;...Show All Aggregates &gt;</span></a>'
+                }
+
+                if(i === aggregatesLength - 1){
+                    longHtml = longHtml+ '<a href="javascript:createAggregatesShort()"><span class="rs-tag">&lt;...Return Short Aggregates &gt;</span></a>'
+                }
+            }
+            %>
+            <pre id="aggregates"><code><%- shortHtml %></code></pre>
+        </article>
+
+
+        <article id="LeakPoint">
+            <h1>Memory Leak</h1>
+            <h2>Suspicious Leak Point List</h2>
+            <p>I think the most probable leak point can be things who take maximum heap memory.</p>
+            <p>So I filter out the biggest <%- leak_limit %> nodes ( DESC by "RetainedSize" ): </p>
+            <pre><code><%
+                    let leakPointLength = leakPoint.length;
+                    for(let i = 0; i < leakPointLength; i++){
+                        let leak = leakPoint[i];
+                    %>
+<%- (i + 1) %>. name&id: "<%- heapMap[leak.index].name %>::<%- leak.id %>", distance:"<%- heapMap[leak.index].distance %>", type: "<%- heapMap[leak.index].type %>", retainedSize: "<%- leak.size %>bytes", taken "<%- ((leak.size / statistics.total) * 100).toFixed(2) %>%" of all heap memory.
+                    <% } %></code></pre>
+            <p>Below are gravity diagram, which can help you find leak point details.</p>
+            <%
+            for(let i = 0; i < leakPointLength; i++){
+                let leak = leakPoint[i];
+                let retainedSize = '';
+                let sizeTmp = leak.size;
+                if (sizeTmp / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp)} Bytes`;
+                } else if (sizeTmp / 1024 / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp / 1024)} KB`;
+                } else if (sizeTmp / 1024 / 1024 / 1024 < 1) {
+                    retainedSize = `${parseInt(sizeTmp / 1024 / 1024)} MB`;
+                } else {
+                    retainedSize = `${parseInt(sizeTmp / 1024 / 1024 / 1024)} GB`;
+                }
+            %>
+            <h2>Leak Point Detail: <%- leak.id %></h2>
+            <p><%- heapMap[leak.index].name %>::<%- leak.id %>, it's retainSize is: <%- retainedSize %>, below isgravity diagram: </p>
+            <p><att>Label: </att>(<b>percentage</b>) <b>parent's name_or_index: </b> [<b>type</b>, <b>name</b>, <b>retained size</b>, <b>distance</b>]</p>
+            <div id="<%- leak.id %>" style="width: 800px;height:600px;"></div>
+            <div id="<%- leak.id %>-detail"></div>
+    <% } %>
+
+    </article>
+</div>
+</div>
+</body>
+<script>
+    function createAggregates(){
+        document.getElementById('aggregates').getElementsByTagName('code')[0].innerHTML = '<%- longHtml %>';
+        prettyPrint();
+    }
+
+    function createAggregatesShort(){
+        document.getElementById('aggregates').getElementsByTagName('code')[0].innerHTML = '<%- shortHtml %>';
+        prettyPrint();
+    }
+</script>
+<script>
+    $(document).ready(function () {
+
+        var $nav = $("nav dl");
+
+        $("article").each(function () {
+            var $el = $(this);
+            var $h1 = $el.find("h1");
+            var sectionTitle = $h1.html();
+            var articleId = $el.attr("id");
+            var $dt = $("<dt><a href=\"#" + articleId + "\">" + sectionTitle + "</a></dt>");
+
+            $dt.find("a").on("click", function (e) {
+                e.preventDefault();
+                $('html,body').animate({scrollTop: $h1.offset().top}, 400);
+            });
+
+
+            $nav.append($dt);
+
+            var $subtitles = $el.find("h2");
+
+            $subtitles.each(function () {
+                var $h2 = $(this);
+                var title = $h2.text();
+                var newID = articleId + "-" + camelCase(title);
+                $h2.attr("id", newID);
+                var $dd = $("<dd><a href=\"#" + newID + "\">" + title + "</a></dd>");
+
+                $dd.find("a").on("click", function (e) {
+                    e.preventDefault();
+                    $('html,body').animate({scrollTop: $h2.offset().top}, 400);
+                })
+                $nav.append($dd);
+
+            });
+
+            var $articles = $el.find("article");
+
+        });
+
+        prettyPrint();
+
+        function camelCase(str) {
+            var splitString = str.split(" ");
+
+            var returnedCamel = splitString[0].toLowerCase();
+
+            for (var i = 1; i < splitString.length; i++) {
+                returnedCamel += splitString[i].charAt(0).toUpperCase() + splitString[i].substring(1).toLowerCase();
+            }
+
+            return returnedCamel;
+
+        }
+    });
+</script>
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('statstics'));
+
+    // 指定图表的配置项和数据
+    var option = {
+        title: {
+            text: 'Pid:<%- processPid %>',
+            subtext: 'HeapSnapshot Statistics',
+            x: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: []
+        },
+        series: [
+            {
+                name: 'HeapSnapshot',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                data: [],
+                itemStyle: {
+                    emphasis: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+
+    option.series[0].data = <%- JSON.stringify(Object.keys(statistics).reduce((pre, next) => {
+        if (next !== 'total' && next !== 'v8heap') {
+            pre.push({name: next, value: statistics[next]})
+        }
+        return pre;
+    }, [])) %>
+
+        option.legend.data = <%- JSON.stringify(Object.keys(statistics).filter(key => key !== 'total' && key !== 'v8heap')) %>// 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+</script>
+<script>
+    var graphOptionsMap = {};
+    function formatSize(size){
+        let str = '';
+        if (size / 1024 < 1) {
+            str = `${size} bytes`;
+        } else if (size / 1024 / 1024 < 1) {
+            str = `${(size / 1024).toFixed(2)} KB`;
+        } else if (size / 1024 / 1024 / 1024 < 1) {
+            str = `${(size / 1024 / 1024).toFixed(2)} MB`;
+        } else {
+            str = `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
+        }
+
+        return str;
+    }
+</script>
+<%
+for(let i = 0; i < leakPointLength; i++){
+    let leak = leakPoint[i];
+    let forceGraph = {nodes:[], links:[]};
+
+    let biggestList = {};
+    let isRecorded = {};
+    let distanceDisplay = 1;
+    let distanceLimit = 15;
+    let childrenLimit = 5;
+    let leakDistanceLimit = 8;
+
+    let leakIndexList = [leak.index];
+    let rootDistance = heapMap[leak.index].distance;
+    biggestList[leak.index] = {id: heapMap[leak.index].id, source: null, retainedSize: heapMap[leak.index].retainedSize};
+
+    while(leakIndexList.length !== 0 && distanceDisplay <= distanceLimit){
+        let tmpIndexArr = [];
+        leakIndexList.forEach(index=>{
+            let nodeDetail = heapMap[index];
+            let children = nodeDetail.children;
+
+            //tip: child's distance === parent.distance + 1
+            if(children.length > 100) children = children.slice(0, 100);
+            children = children.filter(item=>Boolean(Number(heapMap[item.index].distance) === (1+Number(nodeDetail.distance))));
+            children.sort((o, n)=>Number(heapMap[o.index].retainedSize) < Number(heapMap[n.index].retainedSize) ? 1 : -1);
+            children = children.filter((item, index)=> index < childrenLimit);
+
+            if(isRecorded[nodeDetail.id]) return;
+            isRecorded[nodeDetail.id] = true;
+
+            let isMain = Boolean (leak.index === Number(nodeDetail.index));
+
+            let size = 30, category = 1, ignore = true, flag = true;
+            if(isMain) {size = 40; category = 0; ignore = false}
+
+            forceGraph.nodes.push({
+                index: nodeDetail.index,
+                name: nodeDetail.id,
+                attributes:{isMain},
+                id: nodeDetail.id,
+                size,
+                category,
+                ignore,
+                flag
+            });
+
+            children.forEach((child, index)=> {
+                let cIndex = child.index;
+                let childDetail = heapMap[cIndex];
+
+                if(!isRecorded[childDetail.id]){
+                    tmpIndexArr.push(cIndex);
+                }
+
+                //TODO, filter reason
+                if(Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)){
+                    biggestList[cIndex] = {id: childDetail.id, source: nodeDetail.index, sourceId:nodeDetail.id, distance: childDetail.distance, retainedSize: childDetail.retainedSize};
+                }
+
+                if(distanceDisplay === distanceLimit){
+                    if(isRecorded[childDetail.id]) return;
+                    isRecorded[childDetail.id] = true;
+
+                    let size = 30, category = 1, ignore = true, flag = true;
+                    if(distanceDisplay === 2){ignore = false}
+
+                    forceGraph.nodes.push({
+                        index: childDetail.index,
+                        name: childDetail.id,
+                        attributes:{},
+                        id: childDetail.id,
+                        size,
+                        category,
+                        ignore,
+                        flag
+                    });
+                }
+
+                forceGraph.links.push({
+                    source: nodeDetail.id,
+                    target: childDetail.id,
+                    sourceIndex: nodeDetail.index,
+                    targetIndex: childDetail.index,
+                    name_or_index: child.name_or_index
+                });
+            });
+        });
+
+        distanceDisplay++;
+        leakIndexList = tmpIndexArr;
+    }
+
+    let heapMapNeeded = forceGraph.nodes.reduce((pre, next)=>{
+        pre[next.index] = heapMap[next.index];
+        return pre;
+    },{});
+
+    Object.keys(biggestList).forEach(index=>{
+        let data = helper.catchNode(forceGraph.nodes, 'index', index);
+        if(data){
+            helper.setExpandOff(forceGraph, data);
+        }
+    });
+%>
+<script type="text/javascript">
+    (function(){
+        var heapMap = <%- JSON.stringify(heapMapNeeded) %>
+
+        var graphTmp = <%- JSON.stringify(forceGraph) %>;
+        graphTmp.nodes.forEach(function (node) {
+            node.label = node.name;
+            node.symbolSize = node.size;
+        });
+        var myChart = echarts2.init(document.getElementById('<%- leak.id %>'), 'macarons');
+        graphOptionsMap["<%- leak.id %>"] = {
+            tooltip: {
+                show: true,
+                formatter: function (params, ticket, callback) {//callback
+                    if(!params || !params.data ) return 'error: params.data is empty!';
+                    if(params.data.source || params.data.target) return params.data.source + ' -> ' + params.data.target;
+
+                    var graphTmp = myChart.getOption().series[0];
+                    var id = graphTmp.nodes[params.dataIndex].id;
+                    var index = graphTmp.nodes[params.dataIndex].index;
+
+                    var linkMap = graphTmp.links.reduce((pre, next)=> {
+                        let isShow = graphTmp.nodes.some(item=>item.id === next.source && Boolean(item.ignore) === false);
+                        if(isShow){
+                            pre[next.target] = {source: next.source, index: next.sourceIndex, name_or_index: next.name_or_index};
+                        }
+                        return pre;
+                    }, {});
+
+                    var result = {};
+                    result.tracePath = function(id, index){
+                        let str = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ')';
+                        let keyList = [];
+                        while(id){
+                            if(!linkMap[id]){
+                                break;
+                            }
+
+                            index = linkMap[id].index;
+
+                            let strTmp = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ') \' <b>' + linkMap[id].name_or_index + '</b> ---> ';
+                            str = strTmp + str;
+                            keyList.push(linkMap[id].name_or_index);
+
+                            id = linkMap[id].source;
+
+                        }
+
+                        keyList = Array.from(new Set(keyList));
+                        str = '<att>I. Reference List: </att>' + str + '<br /><br />';
+                        str = str + '<att>II. Leak Key: </att>' + keyList.join(', ');
+                        return str;
+                    };
+                    result.showStr = function (id, index){
+                        var detailTmp = heapMap[index];
+                        let percentage = '100.00%';
+                        if(linkMap[id]){
+                            percentage = ((detailTmp.retainedSize / heapMap[linkMap[id].index].retainedSize) * 100).toFixed(2) + '%';
+                        }
+                        return '(' + percentage + ') ' + (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
+                    };
+                    document.getElementById("<%- leak.id %>-detail").innerHTML = '<p>'+ result.tracePath(id, index) + '</p>';
+                    return result.showStr(id, index);
+                }
+            },
+            series: [{
+                type: 'force',
+                name: "leak tree",
+                itemStyle: {
+                    normal: {
+                        label: {show: true},
+                        nodeStyle: {
+                            brushType: 'both',
+                            borderColor: 'rgba(255,215,0,0.4)',
+                            borderWidth: 1
+                        }
+                    }
+                },
+                categories: [{name: 'main'}, {name: 'else'}, {name: 'leak'}],
+                nodes: graphTmp.nodes,
+                links: graphTmp.links
+            }]
+        };
+
+        myChart.setOption(graphOptionsMap["<%- leak.id %>"]);
+
+        function openOrFold(param) {
+            var option = setExpandOff(myChart, param);
+
+            if(option){
+                myChart.setOption(option);
+            }
+        }
+
+        function findNode(arraySource, type, value, cb){
+            arraySource.forEach(item=>{
+                if(item[type] === value){
+                    cb(item);
+                }
+            });
+        }
+
+        function setExpandOff(myChart, param){
+            var option = myChart.getOption();
+            var nodesOption = option.series[0].nodes;
+            var linksOption = option.series[0].links;
+            var data = param.data;
+            var linksNodes = [];
+
+            if (data != null && data != undefined && !data.source && !data.target) {
+                if (data.flag) {
+
+                    for (var m in linksOption) {
+
+                        if (linksOption[m].source == data.id) {
+                            linksNodes.push(linksOption[m].target);
+                        }
+                    }
+                    if (linksNodes != null && linksNodes != undefined) {
+                        for (var p in linksNodes) {
+                            findNode(nodesOption, 'id', linksNodes[p], node=>{
+                                node.ignore = false;
+                                node.flag = true;
+                            });
+                        }
+                    }
+                    findNode(nodesOption, 'id', data.id, node=>{
+                        node.flag = false;
+                        node.category = 0;
+                    });
+
+                    return option;
+                } else {
+                    for (var m in linksOption) {
+                        if (linksOption[m].source == data.id) {
+                            linksNodes.push(linksOption[m].target);
+                        }
+                        if (linksNodes != null && linksNodes != undefined) {
+                            for (var n in linksNodes) {
+                                if (linksOption[m].source == linksNodes[n] && linksOption[m].target != data.id) {
+                                    linksNodes.push(linksOption[m].target);
+                                }
+                            }
+                        }
+                    }
+
+                    if (linksNodes != null && linksNodes != undefined) {
+                        for (var p in linksNodes) {
+                            findNode(nodesOption, 'id', linksNodes[p], node=>{
+                                node.ignore = true;
+                                node.flag = true;
+                            });
+                        }
+                    }
+
+                    findNode(nodesOption, 'id', data.id, node=>{
+                        node.flag = true;
+                        node.category = 1;
+                    });
+
+                    return option;
+                }
+            }
+        }
+
+        myChart.on('click', openOrFold);
+    })();
+</script>
+<% } %>
+</html>

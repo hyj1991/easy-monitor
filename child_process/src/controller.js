@@ -1,8 +1,11 @@
 'use strict';
 const uuidV4 = require('uuid/v4');
 const basicAuth = require('basic-auth');
+const analysisLib = require('v8-analytics');
 
 module.exports = function (app, config, helper) {
+    const logger = helper.logger;
+
     return {
         BasicAuth(req, res, next){
             if (!config.monitorAuth || typeof config.monitorAuth !== 'function') {
@@ -43,7 +46,8 @@ module.exports = function (app, config, helper) {
                 }
                 return pre;
             }, {projectList: [], projectPidMap: {}});
-
+            
+            //helper.writeFile(__dirname, './index.json', JSON.stringify({projectList, projectPidMap}));
             res.render('NewIndex', {projectList, projectPidMap});
         },
 
@@ -125,6 +129,65 @@ module.exports = function (app, config, helper) {
                     })
                 });
             }
+        },
+
+        MEMProfiler(req, res, next){
+            const uuid = uuidV4();
+            let processId = req.params.ProcessID;
+            let socket = helper.getCachedSocket()[processId];
+            if (socket) {
+                //console.time('cost');
+                socket.write(JSON.stringify({
+                        type: config.MESSAGE_TYPE[4],
+                        data: JSON.stringify({
+                            uuid
+                        })
+                    }) + '\n\n');
+
+                helper.event.once(uuid, heapData => {
+                    logger.info(`monitorserver->start analysis heapsnapshot...`);
+                    let {heapMap, leakPoint, statistics, rootIndex, aggregates} = analysisLib.memAnalytics(heapData, req.query.leak_limit);
+                    logger.info(`monitorserver->analysis heapsnapshot end...`);
+                    /*const fs = require('fs');
+                     fs.writeFileSync('./heapSnapshot.json', JSON.stringify({
+                     heapMap,
+                     leakPoint,
+                     statistics,
+                     aggregates,
+                     }));*/
+                    /*console.log('done');
+                     console.log(rootIndex);
+                     console.log(leakPoint);
+                     console.log(statistics);
+                     console.log(aggregates);*/
+
+                    //console.timeEnd('cost');
+                    res.render('NewMEMProfiler', {
+                        leak_limit: req.query.leak_limit || 5,
+                        processName: processId.split('::')[0],
+                        processPid: processId.split('::')[1],
+                        heapMap,
+                        leakPoint,
+                        statistics,
+                        aggregates,
+                        helper
+                    });
+                });
+            } else {
+                res.redirect('/');
+            }
+
+            /*const heapSnapshot = require('/Users/huangyijun/git/examples/heapSnapshot.json');
+             res.render('NewMEMProfiler', {
+             leak_limit: req.query.leak_limit || 5,
+             processName: processId.split('::')[0],
+             processPid: processId.split('::')[1],
+             heapMap: heapSnapshot.heapMap,
+             leakPoint: heapSnapshot.leakPoint,
+             statistics: heapSnapshot.statistics,
+             aggregates: heapSnapshot.aggregates,
+             helper
+             });*/
         }
     }
 };

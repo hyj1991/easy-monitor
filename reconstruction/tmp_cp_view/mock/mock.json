@@ -1,0 +1,29 @@
+{
+    "indexPage": {
+        "projectPidMap": {
+            "Closure Leak": {
+                "list": [
+                    "51301",
+                    "51302",
+                    "51303"
+                ],
+                "loading": 0
+            },
+            "Ares": {
+                "list": [
+                    "65871",
+                    "65872",
+                    "65873"
+                ],
+                "loading": 2000
+            },
+            "Achilles": {
+                "list": [
+                    "3233",
+                    "3234"
+                ],
+                "loading": 0
+            }
+        }
+    }
+}
