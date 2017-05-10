@@ -1,42 +1,8 @@
 <style scoped lang="less">
-    .process_index {
-        h2 {
-            font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 3.2em;
-            font-weight: 100;
-            color: #657180;
-        }
-    }
-
-    .header {
-        font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
-        font-weight: 300;
-        margin: 10px 0 10px;
-        position: relative;
-    }
-
-    .header:before {
-        content: "";
-        display: block;
-        width: 100%;
-        height: 1px;
-        background: #eee;
-        position: absolute;
-        top: 10px;
-        left: 0;
-    }
-
-    .header span {
-        display: inline-block;
-        background: #fff;
-        padding: 0 18px 0 18px;
-        position: relative;
-        font-size: 14px;
-    }
 </style>
 
 <template>
-<div class="process_index">
+<div class="index">
 <!-- <div style="text-align:center">{{ choose }}</div> -->
 <Row type="flex" justify="center" class="code-row-bg">
     <Col span=10 style="text-align:center">
@@ -146,7 +112,7 @@
                 }
 
                 //notificate server do profiling
-                axios.post('/profiler', {data})
+                axios.post('/axiosProfiler', {data}).catch(err=> console.error(err));
 
                 //if not loadingTime, jump immediately
                 if(!this.loadingTime){
@@ -164,7 +130,7 @@
                     vm.loading = false;
                     router.push({
                         path: `profiler`, 
-                        query: datas
+                        query: data
                     });
                 }, this.loadingTime);
             }

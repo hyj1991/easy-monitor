@@ -1,32 +1,9 @@
 <style scoped lang="less">
-    .index {
-        h1 {    
-            font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 6.0em;
-            font-weight: 100;
-            color: #2c3e50;
-        }
-
-        h2 {
-            font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 3.2em;
-            font-weight: 100;
-            color: #657180;
-        }
-
-        p {
-            font-size: 1.3em;
-            font-weight: 300;
-            color: #657180;
-        }
-    }
-    
     .footer {
         padding: 50px 0;
         color: #fff;
         text-align: center;
     }
-
 </style>
 
 <template>
@@ -46,7 +23,7 @@
         <!-- Project List by Axios Results -->
         <process-index 
             v-for="(item, index) in getProjectInfoList" 
-            :singleProjectInfo="getProjectInfoList[index]">
+            :singleProjectInfo="item">
         </process-index>
 
         <!-- footer -->
@@ -75,9 +52,9 @@
         methods: {
             getIndexPageData(){
                 const vm = this;
-                axios.get('/axiosIndexPage')
+                axios.post('/axiosIndexPage')
                      .then(response=> vm.indexPageData = response.data)
-                     .catch(error=> vm.answer = 'Error! Could not reach the API. ' + error);
+                     .catch(error=> vm.answer = {error: 'Error! Could not reach the API. ' + error});
             }
         },
 
