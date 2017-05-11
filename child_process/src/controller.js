@@ -123,6 +123,7 @@ module.exports = function (app, config, helper) {
             } else {
                 let promiseList = socketList.map(item => getProcessProfilerP(item));
                 Promise.all(promiseList).then(result => {
+                    //helper.writeFile(__dirname, './cpu.json', JSON.stringify({projectName, data: result}));
                     res.render('CPUProfilerProject', {
                         projectName,
                         data: result

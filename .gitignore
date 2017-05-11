@@ -5,4 +5,3 @@ build
 npm-debug.log
 tmp
 coverage
-dist
