@@ -39,7 +39,8 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
     const data = body && body.data;
     if (!data) res.send(JSON.stringify({ success: false, msg: 'body can not be empty!' }));
 
-    const key = `${body.processName}_${body.pid}_${body.opt}`;
+    const key = `${data.processName}_${data.serverName}_${data.pid}_${data.opt}`;
+
     if (profilerData[key]) {
         res.send(JSON.stringify({ success: true, msg: `${key} already exist!` }));
         return
@@ -66,8 +67,8 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
 });
 
 app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
-    const body = req.body;
-    const key = `${body.processName}_${body.pid}_${body.opt}`;
+    const body = req.body && req.body.data || {};
+    const key = `${body.processName}_${body.serverName}_${body.pid}_${body.opt}`;
 
     if (!profilerData[key]) {
         res.send(JSON.stringify({ success: false, msg: `${key} task do not exist!` }));
