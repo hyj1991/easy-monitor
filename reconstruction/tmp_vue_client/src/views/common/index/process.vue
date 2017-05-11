@@ -98,38 +98,15 @@
             return {
                 e_pid: 'all',
                 e_opt: 'cpu',
-                disabled: true,
                 loading: false,
-                loadingTime: false,
                 server: '',
                 pidList: []
             }
         },
 
-        mounted() {
-            this.check.call(this, this.singleProjectInfo);
-        },
-
-        updated() {
-            this.check.call(this, this.singleProjectInfo);
-        },
-
         props: ['singleProjectInfo'],
 
-        methods: {
-            //if have process list 
-            check(singleProjectInfo) {
-                if(singleProjectInfo && singleProjectInfo.serverList){
-                    if(Array.isArray(singleProjectInfo.serverList) && singleProjectInfo.serverList.length !== 0){
-                        this.disabled = false;
-                    }
-                }
-
-                if(singleProjectInfo && singleProjectInfo.loadingTime || singleProjectInfo.loadingTime === 0){
-                    this.loadingTime = singleProjectInfo.loadingTime;
-                }
-            },
-            
+        methods: { 
             //jump to profiler
             radioHandle() {
                 const vm = this;  
@@ -171,11 +148,6 @@
         },
 
         computed: {
-            processName() {
-                if(!this.singleProjectInfo || !this.singleProjectInfo.projectName) {return 'No Project';}
-                return this.singleProjectInfo.projectName;
-            },
-
             serverName() {
                 return this.server;
             },
@@ -191,12 +163,33 @@
                 return results;
             },
 
-            processList() {
-                
+            processName() {
+                if(!this.singleProjectInfo || !this.singleProjectInfo.projectName) {return 'No Project';}
+                return this.singleProjectInfo.projectName;
+            },
+
+            processList() {         
                 return this.pidList.reduce((pre, next)=>{
                     pre.push({type: 'ios-pulse', pid: next, label: next});
                     return pre;
                 },[{type: 'ios-browsers-outline', pid: 'All', label: 'all'}]);
+            },
+
+            disabled() {
+                if(!Array.isArray(this.pidList)) return true;
+                if(this.pidList.length === 0) return true;
+                if(this.e_opt === 'mem' && this.e_pid === 'all') return true;
+
+                return false;
+            },
+
+            loadingTime() {
+                const singleProjectInfo = this.singleProjectInfo;
+                if(singleProjectInfo && singleProjectInfo.loadingTime){
+                    return singleProjectInfo.loadingTime;
+                }
+
+                return false;
             }
         }
     }
