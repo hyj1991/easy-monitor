@@ -12,7 +12,7 @@ const profilerData = {};
 app.set('views', path.join(__dirname, './view'));
 app.set('view engine', 'ejs');
 
-app.use(express.static(path.join(__dirname, '../tmp_vue_client')));
+app.use(express.static(path.join(__dirname, './public')));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
 

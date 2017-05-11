@@ -13,8 +13,8 @@ fs.open('./src/config/env.js', 'w', function (err, fd) {
 
 module.exports = merge(webpackBaseConfig, {
     output: {
-        path: path.join(__dirname, './dist/prod/'),
-        publicPath: '/dist/prod/',
+        path: path.join(__dirname, '../tmp_cp_view/public/dist/'),
+        publicPath: '/dist/',
         filename: '[name].js',
         chunkFilename: '[name].chunk.js'
     },
