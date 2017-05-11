@@ -15,7 +15,7 @@
 
         <!-- project title -->
         <Row type="flex" justify="center" class="code-row-bg">
-            <Col span=16 style="text-align:center"><h1>Achilles</h1></Col>
+            <Col span=16 style="text-align:center"><h1>{{ processName }}</h1></Col>
             <br>
         </Row>
         <br>
@@ -38,7 +38,7 @@
         </div>
 
         <!-- navigation float bar -->
-        <navigation :allProfiler="profilerComputed">
+        <navigation :list="profilerComputed" needHome=true>
         </navigation>
         
     </div>
@@ -130,8 +130,14 @@ export default {
     },
 
     computed: {
+        processName(){
+            return this.params.processName;
+        },
+
         profilerComputed(){
             return this.axiosData.profiler.map(item=> {
+                item.navi = `Pid-${item.processPid}`;
+                item.href = `pid_${item.processPid}`;
                 item.uniqueKey = `${item.machineUnique}_${item.projectName}_${item.processPid}`;
                 return item;
             });

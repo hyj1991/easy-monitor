@@ -22,9 +22,13 @@
 
         <!-- Project List by Axios Results -->
         <process-index 
-            v-for="(item, index) in getProjectInfoList" 
-            :singleProjectInfo="item">
+            v-for="(item, index) in projectInfoList.list" 
+            :singleProjectInfo="projectInfoList.map[item]">
         </process-index>
+
+        <!-- multiple project navigation -->
+        <navigation :list="projectList">
+        </navigation>
 
         <!-- footer -->
         <div class="footer">
@@ -36,6 +40,7 @@
 </template>
 <script>
     import axios from 'axios';
+    import navigation from './common/navigation.vue';
     import processIndex from './common/index/process.vue';
 
     export default {
@@ -59,19 +64,68 @@
         },
 
         components: {
+            navigation,
             processIndex
         },
 
         computed: {
-            getProjectInfoList(){
+            projectPidMap() {
                 const indexPageData = this.indexPageData && this.indexPageData.data || {};
-                const projectPidMap = indexPageData.projectPidMap;
-                if(!projectPidMap) return [];
+                const projectPidMap = indexPageData.projectPidMap || {};
+                return projectPidMap;
+            },
 
-                return Object.keys(projectPidMap).reduce((pre, next)=>{
-                    pre.push({projectName: next, processList: projectPidMap[next].list, loadingTime: projectPidMap[next].loading})
+            sortedProjectList() {
+                const originalList = Object.keys(this.projectPidMap);
+                originalList.sort();
+                return originalList;
+            },
+
+            projectInfoList() {
+                const indexPageData = this.indexPageData && this.indexPageData.data || {};
+                const seg = indexPageData.seg;
+
+                const results = this.sortedProjectList.reduce((pre, next)=> {
+                    let nextName = next;
+                    let nextServer = "";
+                    let nextList = this.projectPidMap[next].list;
+                    let nextLoding = this.projectPidMap[next].loading;
+                    if(seg) {
+                        nextName = next.split(seg)[0];
+                        nextServer = next.split(seg)[1];
+                    }
+
+                    if(pre[nextName]) {
+                        if(pre[nextName][nextServer]){
+                            pre[nextName][nextServer] = pre[nextName][nextServer].concat(nextList);
+                        }else{
+                            pre[nextName].serverList.push(nextServer);
+                            pre[nextName][nextServer] = nextList;
+                        }
+
+                    } else {
+                        pre[nextName] = {
+                            projectName: nextName,
+                            serverList: [nextServer],
+                            loadingTime: nextLoding
+                        };
+                        pre[nextName][nextServer] = nextList;
+                    }
+
                     return pre;
-                },[]);
+                }, {});
+
+                return {
+                    list: Object.keys(results),
+                    map: results
+                }
+            },
+
+            projectList() {
+                return this.projectInfoList.list.map(item=> ({
+                    navi: item,
+                    href: item
+                }));
             }
         }
     }

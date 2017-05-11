@@ -1,5 +1,18 @@
 <style scoped lang="less">
 </style>
+<style>
+.ivu-select-input-my-style {}
+.ivu-select-input-my-style .ivu-select-input {
+    text-align: center;
+    padding: 0;
+    font-size: 1.0em;
+    height: 27px;
+    font-weight: 200;
+}
+.ivu-select-input-my-style.ivu-select-small .ivu-select-input {
+    height: 20px;
+}
+</style>
 
 <template>
 <div class="index">
@@ -9,9 +22,9 @@
         <!-- title -->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
-                <h2>{{ processName }} 
+                <h2 :id="processName">{{ processName }} 
                     <Button :disabled="disabled" type="ghost" shape="circle" size="small" 
-                    @click=radioHandle() :loading="loading">Start</Button>
+                    @click="radioHandle" :loading="loading">Start</Button>
                 </h2>
             </Col>
         </Row>
@@ -21,6 +34,19 @@
             <Col span=22>
                 <Card>
                     <div style="text-align:center">
+                        <!-- choose server -->
+                        <header class="header">
+                            <span>所在服务器</span>
+                        </header>
+                        
+                        <!-- server list -->
+                        <Row type="flex" justify="center" class="code-row-bg">
+                            <Col span=8>
+                                <Select size="small" v-model="server" filterable class="ivu-select-input-my-style" @on-change="selectHandle">
+                                    <Option v-for="item in serverList" :value="item.value" :key="item">{{ item.label }}</Option>
+                                </Select>
+                            </Col>
+                        </Row>
 
                         <!-- choose process -->
                         <header class="header">
@@ -74,7 +100,9 @@
                 e_opt: 'cpu',
                 disabled: true,
                 loading: false,
-                loadingTime: false       
+                loadingTime: false,
+                server: '',
+                pidList: []
             }
         },
 
@@ -91,8 +119,8 @@
         methods: {
             //if have process list 
             check(singleProjectInfo) {
-                if(singleProjectInfo && singleProjectInfo.processList){
-                    if(Array.isArray(singleProjectInfo.processList) && singleProjectInfo.processList.length !== 0){
+                if(singleProjectInfo && singleProjectInfo.serverList){
+                    if(Array.isArray(singleProjectInfo.serverList) && singleProjectInfo.serverList.length !== 0){
                         this.disabled = false;
                     }
                 }
@@ -107,6 +135,7 @@
                 const vm = this;  
                 const data = {
                     processName: vm.processName,
+                    serverName: vm.serverName,
                     pid: vm.e_pid,
                     opt: vm.e_opt
                 }
@@ -133,6 +162,10 @@
                         query: data
                     });
                 }, this.loadingTime);
+            },
+
+            selectHandle(data) {
+                this.pidList = this.singleProjectInfo[data] || [];
             }
            
         },
@@ -143,9 +176,24 @@
                 return this.singleProjectInfo.projectName;
             },
 
+            serverName() {
+                return this.server;
+            },
+
+            serverList() {
+                const serverList = this.singleProjectInfo.serverList;
+                const results = serverList.map(item=> ({
+                    label: item,
+                    value: item
+                }));
+                this.server = results[0].label;                 
+                
+                return results;
+            },
+
             processList() {
-                if(!this.singleProjectInfo || !this.singleProjectInfo.processList || this.singleProjectInfo.processList.length === 0) return [];
-                return this.singleProjectInfo.processList.reduce((pre, next)=>{
+                
+                return this.pidList.reduce((pre, next)=>{
                     pre.push({type: 'ios-pulse', pid: next, label: next});
                     return pre;
                 },[{type: 'ios-browsers-outline', pid: 'All', label: 'all'}]);

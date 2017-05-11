@@ -6,8 +6,8 @@
 
 <template>
 <div class="navigation-bar">
-    <Row type="flex" justify="center" class="code-row-bg">
-        <Col span=22 style="text-align:left">
+    <Row type="flex" justify="center" class="code-row-bg" v-if="needHome">
+        <Col span=24 style="text-align:left">
             <router-link to="/index">
                 <p>· Home</p>
             </router-link>
@@ -15,25 +15,25 @@
     </Row>
 
     <Row type="flex" justify="center" class="code-row-bg" v-for="item in navigationList">
-        <Col span=22 style="text-align:left">
+        <Col span=24 style="text-align:left">
             <a :href="item.href">
-                <p>· Pid-{{ item.pid }} </p>
+                <p>· {{ item.navi }}</p>
             </a>
         </Col>
-    </Row>    
+    </Row>
 </div>
 </template>
 
 <script>
     export default {
-        props: ['allProfiler'],
+        props: ['list', 'needHome'],
 
         computed: {
             navigationList() {
-                if(!Array.isArray(this.allProfiler)) this.allProfiler = [];
-                return this.allProfiler.map(item=> ({
-                    pid: item.processPid,
-                    href: `#pid_${item.processPid}`
+                if(!Array.isArray(this.list)) this.list = [];
+                return this.list.map(item=> ({
+                    navi: item.navi,
+                    href: `#${item.href}`
                 }));
             }
         }
