@@ -1,5 +1,9 @@
 const routers = [
     {
+        path: '/',
+        redirect: '/index'
+    },
+    {
         path: '/index',
         meta: {
             title: ''
