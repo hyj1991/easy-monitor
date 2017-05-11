@@ -21,7 +21,7 @@ app.all('*', function preCheck(req, res, next) {
     next();
 });
 
-app.get('/index', function index(req, res, next) {
+app.get(['/', '/index', '/profiler'], function index(req, res, next) {
     console.log(`Request On...`);
     const json = { data: mock.indexPage };
 
