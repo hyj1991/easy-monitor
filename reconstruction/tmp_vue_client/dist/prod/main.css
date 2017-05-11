@@ -1,4 +1,15 @@
-.footer[data-v-35263ade]{padding:50px 0;color:#fff;text-align:center}.index h1[data-v-998d870c]{font-size:5em}.index h2[data-v-60264ba5]{font-size:3em}
+.footer[data-v-35263ade]{padding:50px 0;color:#fff;text-align:center}.index p[data-v-3bb034f7]{font-size:1em}
+.ivu-select-input-my-style .ivu-select-input {
+  text-align: center;
+  padding: 0;
+  font-size: 1.0em;
+  height: 27px;
+  font-weight: 200;
+}
+.ivu-select-input-my-style.ivu-select-small .ivu-select-input {
+  height: 20px;
+}
+.index h1[data-v-998d870c]{font-size:5em}.index h2[data-v-60264ba5]{font-size:3em}
 .overflow-ivu-poptip-ivu-poptip-rel.ivu-tooltip,
 .overflow-ivu-poptip-ivu-poptip-rel .ivu-tooltip-rel {
   display: block;
@@ -10,7 +21,7 @@ p[data-v-2c130f69]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-2c130f69]{
 .spin-col .ivu-alert-error {
   border: 0px;
 }
-.index p[data-v-3bb034f7]{font-size:1em}/** global common style **/
+/** global common style **/
 .index h1 {    
             font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
             font-size: 6.0em;
