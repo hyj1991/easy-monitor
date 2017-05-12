@@ -47,7 +47,6 @@
     </div>
 </template>
 <script>
-import Vue from 'vue';
 import axios from 'axios';
 import cpuModule from './common/profiler/cpu.vue';
 import memModule from './common/profiler/mem.vue';
@@ -98,7 +97,10 @@ export default {
 
     methods: {
         startProfiling(data){
-            axios.post('/axiosProfiler', {data}).catch(err=> console.error(err));
+            data.tag = 'profiler.vue';
+            axios.post('/axiosProfiler', {data})
+                 .then(response=> {response.data})
+                 .catch(err=> console.error(err));
         },
 
         checkStat(data){

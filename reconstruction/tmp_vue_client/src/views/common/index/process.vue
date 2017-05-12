@@ -114,11 +114,14 @@
                     processName: vm.processName,
                     serverName: vm.serverName,
                     pid: vm.e_pid,
-                    opt: vm.e_opt
+                    opt: vm.e_opt,
+                    tag: 'process.vue'
                 }
 
                 //notificate server do profiling
-                axios.post('/axiosProfiler', {data}).catch(err=> console.error(err));
+                axios.post('/axiosProfiler', {data})
+                     .then(response=> {})
+                     .catch(err=> console.error(err));
 
                 //if not loadingTime, jump immediately
                 if(!this.loadingTime){

@@ -63,7 +63,6 @@
             },
 
             server_error() {
-                console.log(12333, this.singleProfiler);
                 return this.error || (this.singleProfiler && this.singleProfiler.error) || false;
             },
         }
