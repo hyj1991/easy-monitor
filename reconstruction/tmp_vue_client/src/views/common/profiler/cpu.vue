@@ -29,14 +29,13 @@
         <Col span=16>
             <Card>
                 <!-- cpu profiling not end, show loding spin -->
-                <loading-spin v-if="!done" 
-                              :notdone="!done" 
-                              :loadingMsg="loadingMsg"
-                              :error="error">
+                <loading-spin v-if="server_error || !listInfo.done" 
+                              :loadingMsg="listInfo.loadingMsg"
+                              :error="server_error">
                 </loading-spin>
 
                 <!-- if get cpu profiling data, show this -->
-                <div style="text-align:center" v-if="done">
+                <div style="text-align:center" v-if="!server_error && listInfo.done">
                     <!-- exec time > your set limit time -->
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
@@ -121,7 +120,7 @@
             }
         }, 
 
-        props: ['singleProfiler', 'done', 'loadingMsg', 'error'],
+        props: ['singleProfiler', 'error'],
 
         components: {
             loadingSpin
@@ -163,35 +162,42 @@
 
         computed: {
             singleProfilerData() {
-                const data = this.singleProfiler.data || {};
+                const data = this.singleProfiler && this.singleProfiler.data || {};
+                const timeout = data.timeout || 200;
                 const longFunctions = data.longFunctions || [];
                 const topExecutingFunctions = data.topExecutingFunctions || [];
                 const bailoutFunctions = data.bailoutFunctions || [];
 
-                return {longFunctions, topExecutingFunctions, bailoutFunctions};
+                return {timeout, longFunctions, topExecutingFunctions, bailoutFunctions};
             },
 
             listInfo() {
+                const singleProfiler = this.singleProfiler || {};
+                const singleProfilerData = this.singleProfilerData || {};
+
+                const done = singleProfiler.done;
+                const loadingMsg = singleProfiler.loadingMsg;
                 const long = {
-                    timeout: this.singleProfiler.timeout,
-                    number: this.singleProfilerData.longFunctions.length
+                    timeout: singleProfilerData.timeout,
+                    number: singleProfilerData.longFunctions.length
                 }
-
                 const top = {
-                    number: this.singleProfilerData.topExecutingFunctions.length
+                    number: singleProfilerData.topExecutingFunctions.length
                 }
-
                 const bail = {
-                    number: this.singleProfilerData.bailoutFunctions.length
+                    number: singleProfilerData.bailoutFunctions.length
                 }
-
                 const process = {
-                    pid: this.singleProfiler.processPid,
-                    href: `pid_${this.singleProfiler.processPid}`,
-                    machineUnique: this.singleProfiler.machineUnique
+                    pid: singleProfiler.processPid,
+                    href: `pid_${singleProfiler.processPid}`,
+                    machineUnique: singleProfiler.machineUnique
                 }
 
-                return {long, top, bail, process};
+                return {long, top, bail, process, done, loadingMsg};
+            },
+
+            server_error() {
+                return this.error || (this.singleProfiler && this.singleProfiler.error) || false;
             },
 
             data_long() {

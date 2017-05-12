@@ -26,15 +26,18 @@
                 v-for="(item, index) in profilerComputed"
                 :singleProfiler="item"
                 :key="item.uniqueKey"
-                :done="item.done" 
-                :loadingMsg="item.loadingMsg"
                 :error="error">
             </cpu-module>  
         </div>
 
         <!-- render mem profiling -->
         <div v-if="memProfiling">
-            DO MEM
+            <mem-module
+                v-for="(item, index) in profilerComputed"
+                :singleProfiler="item"
+                :key="item.uniqueKey"
+                :error="error">
+            </mem-module>
         </div>
 
         <!-- navigation float bar -->
@@ -47,6 +50,7 @@
 import Vue from 'vue';
 import axios from 'axios';
 import cpuModule from './common/profiler/cpu.vue';
+import memModule from './common/profiler/mem.vue';
 import navigation from './common/navigation.vue';
 
 export default {
@@ -61,6 +65,7 @@ export default {
                 profiler: []
             },
             axiosDone: {
+                //control when to stop interval
                 profilerDetail: false
             }
         }
@@ -87,6 +92,7 @@ export default {
 
     components: {
         cpuModule,
+        memModule,
         navigation
     },
 
@@ -111,7 +117,11 @@ export default {
                          const data = response && response.data || {};
                          if(data.success && data.msg){
                              const msg = JSON.parse(data.msg);
-                             vm.axiosDone.profilerDetail = Boolean(msg.done);
+                             const axiosProfilerDetailDone = Boolean(msg.done);
+                             if(axiosProfilerDetailDone && msg.error){
+                                 vm.error = msg.error;
+                             }
+                             vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
                              if(Array.isArray(msg.results)){
                                  vm.axiosData.profiler = msg.results;
                              }

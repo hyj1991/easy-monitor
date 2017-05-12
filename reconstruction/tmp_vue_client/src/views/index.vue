@@ -26,11 +26,11 @@
             :singleProjectInfo="projectInfoList.map[item]">
         </process-index>
 
-        <!-- multiple project navigation -->
+        <!-- Multiple project navigation -->
         <navigation :list="projectList">
         </navigation>
 
-        <!-- footer -->
+        <!-- Footer -->
         <div class="footer">
           <p>© 2017 , Powered By
                   <a href="https://github.com/hyj1991/easy-monitor.git" target="_Blank">Easy-Monitor</a>

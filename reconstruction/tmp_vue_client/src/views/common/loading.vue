@@ -26,13 +26,15 @@
 </style>
 
 <template>
-<div class="spin-col" v-if="notdone">
+<div class="spin-col">
+    <!-- if not error, show loading msg -->
     <Spin fix v-if="!error">
         <Icon type="load-c" size=18 class="spin-icon-load"></Icon>
         <div><p>{{ loadingMsg || defaultLoadingMsg }}</p></div>
     </Spin>
 
-     <Alert type="error" show-icon v-if="error">
+    <!-- if error, show error msg -->
+    <Alert type="error" show-icon v-if="error">
         Inner Error
         <span slot="desc">
             Detail: {{ error }}
@@ -48,6 +50,6 @@
                 defaultLoadingMsg: 'Loading...'
             }
         },
-        props: ['notdone', 'loadingMsg', 'error']
+        props: ['loadingMsg', 'error']
     }
 </script>
