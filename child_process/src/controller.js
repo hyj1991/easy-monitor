@@ -147,6 +147,7 @@ module.exports = function (app, config, helper) {
 
                 helper.event.once(uuid, heapData => {
                     logger.info(`monitorserver->start analysis heapsnapshot...`);
+                    //helper.writeFile(__dirname, './mem.json', JSON.stringify({heapData}));
                     let {heapMap, leakPoint, statistics, rootIndex, aggregates} = analysisLib.memAnalytics(heapData, req.query.leak_limit);
                     logger.info(`monitorserver->analysis heapsnapshot end...`);
                     /*const fs = require('fs');
@@ -163,6 +164,16 @@ module.exports = function (app, config, helper) {
                      console.log(aggregates);*/
 
                     //console.timeEnd('cost');
+                    /*helper.writeFile(__dirname, './mem.json', JSON.stringify({
+                        leak_limit: req.query.leak_limit || 5,
+                        processName: processId.split('::')[0],
+                        processPid: processId.split('::')[1],
+                        heapMap,
+                        leakPoint,
+                        statistics,
+                        aggregates,
+                    }));*/
+                    
                     res.render('NewMEMProfiler', {
                         leak_limit: req.query.leak_limit || 5,
                         processName: processId.split('::')[0],

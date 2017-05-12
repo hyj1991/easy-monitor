@@ -4,7 +4,6 @@ module.exports = {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
             "processPid": "57128",
-            "timeout": 500,
             "done": false,
             "loadingMsg": "开始进行 CPU 数据采集...",
             "data": {}
@@ -14,7 +13,6 @@ module.exports = {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
             "processPid": "57129",
-            "timeout": 300,
             "done": false,
             "loadingMsg": "开始进行 CPU 数据采集...",
             "data": {}
@@ -26,7 +24,6 @@ module.exports = {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
             "processPid": "57128",
-            "timeout": 500,
             "done": false,
             "loadingMsg": "CPU 数据采集完毕, 开始进行分析...",
             "data": {}
@@ -36,7 +33,6 @@ module.exports = {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
             "processPid": "57129",
-            "timeout": 300,
             "done": false,
             "loadingMsg": "CPU 数据采集完毕, 开始进行分析...",
             "data": {}
@@ -48,10 +44,11 @@ module.exports = {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
             "processPid": "57128",
-            "timeout": 500,
             "done": true,
-            "loadingMsg": "完成",
+            //"error": "huangyijun.local 服务器发生内部错误！",
+            "loadingMsg": "CPU 采集数据分析完成！",
             "data": {
+                "timeout": 500,
                 "longFunctions": [{
                     "type": "timeout",
                     "funcName": "tmpArr.forEach.item",
@@ -90,10 +87,10 @@ module.exports = {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
             "processPid": "57129",
-            "timeout": 300,
             "done": true,
-            "loadingMsg": "完成",
+            "loadingMsg": "CPU 采集数据分析完成！",
             "data": {
+                "timeout": 500,
                 "longFunctions": [{
                     "type": "timeout",
                     "funcName": "tmpArr.forEach.item",

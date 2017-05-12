@@ -2,10 +2,14 @@
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
+const analytic = require('v8-analytics');
 const app = express();
 const mock = require('./mock/mock.json');
 const cpu = require('./mock/cpu.js');
+const mem = require('./mock/mem.js');
+const heapDate = require('./mock/mem.json');
 const _ = require('lodash');
+const moment = require('moment');
 
 const profilerData = {};
 
@@ -17,7 +21,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
 
 app.all('*', function preCheck(req, res, next) {
-    console.log('Go to', req.path);
+    console.log('Go to', req.path, req.method);
     next();
 });
 
@@ -28,46 +32,88 @@ app.get(['/', '/index', '/profiler'], function index(req, res, next) {
     res.render('index', json);
 });
 
+//获取首页信息
 app.post('/axiosIndexPage', function axiosIndexPage(req, res, next) {
     const json = { data: mock.indexPage };
 
     res.send(JSON.stringify(json));
 });
 
+//触发服务器开始采集 CPU/MEM 数据
 app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
     const body = req.body;
     const data = body && body.data;
+    console.log('axiosProfiler', JSON.stringify(data));
     if (!data) res.send(JSON.stringify({ success: false, msg: 'body can not be empty!' }));
 
     const key = `${data.processName}_${data.serverName}_${data.pid}_${data.opt}`;
-
     if (profilerData[key]) {
         res.send(JSON.stringify({ success: true, msg: `${key} already exist!` }));
-        return
+        return;
     }
 
-    profilerData[key] = {
-        done: false,
-        results: cpu.init,
-        error: null
+    if (data.opt === 'cpu') {
+        _cpuOperator();
     }
 
-    //3s 后设置 profiling 结束
-    setTimeout(()=>{
-        profilerData[key].results = cpu.middle;
-    }, 3000);
-
-    //5s 后设置数据，模拟成功
-    setTimeout(()=>{
-        profilerData[key].done = true;
-        profilerData[key].results = cpu.end;
-    }, 5000);
+    if (data.opt === 'mem') {
+        _memOpreator();
+    }
 
     res.send(JSON.stringify({ success: true, msg: `${key} task created!` }));
+
+
+    function _memOpreator() {
+        //立即 初始化 memory 操作数据
+        profilerData[key] = {
+            done: false,
+            results: mem.init,
+            error: null
+        }
+
+        //2s 后设置 profiling 结束
+        setTimeout(() => {
+            profilerData[key].results = mem.middle1;
+        }, 1000);
+
+        //5s 后设置 数据压缩上报 结束
+        setTimeout(() => {
+            profilerData[key].results = mem.middle2;
+        }, 2000);
+
+        //7s 后设置 数据压缩上报 结束
+        setTimeout(() => {
+            profilerData[key].done = true;
+            profilerData[key].results = mem.end;
+        }, 3000);
+    }
+
+
+    function _cpuOperator() {
+        //立即 初始化 cpu 操作数据
+        profilerData[key] = {
+            done: false,
+            results: cpu.init,
+            error: null
+        }
+
+        //3s 后设置 profiling 结束
+        setTimeout(() => {
+            profilerData[key].results = cpu.middle;
+        }, 3000);
+
+        //5s 后设置数据，模拟成功
+        setTimeout(() => {
+            profilerData[key].done = true;
+            profilerData[key].results = cpu.end;
+        }, 5000);
+    }
 });
 
+//客户端定时向服务器查询数据
 app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
     const body = req.body && req.body.data || {};
+    console.log('axiosProfilerDetail', JSON.stringify(body));
     const key = `${body.processName}_${body.serverName}_${body.pid}_${body.opt}`;
 
     if (!profilerData[key]) {
@@ -75,10 +121,11 @@ app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
         return;
     }
 
-    res.send(JSON.stringify({success: true, msg: JSON.stringify(profilerData[key])}));
+    res.send(JSON.stringify({ success: true, msg: JSON.stringify(profilerData[key]) }));
 
-    //获取一次成功数据后清空操作
-    if (profilerData[key].done){
+    //获取一次成功数据后清空操作，此处逻辑可以定制
+    if (profilerData[key].done) {
+        console.log(`[${moment().format('llll')}]`, `clear ${key}...`);
         profilerData[key] = null;
     }
 });
