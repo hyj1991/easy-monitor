@@ -21,6 +21,25 @@ p[data-v-2c130f69]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-2c130f69]{
 .spin-col .ivu-alert-error {
   border: 0px;
 }
+.index p[data-v-5dee9152]{font-size:1.1em}.i-circle-custom h1[data-v-5dee9152]{color:#3f414d;font-size:28px;font-weight:400}.i-circle-custom p[data-v-5dee9152]{color:#657180;font-size:14px;margin:10px 0 15px}.i-circle-custom span[data-v-5dee9152]{display:block;padding-top:15px;color:#657180;font-size:14px}.i-circle-custom span[data-v-5dee9152]:before{content:"";display:block;width:50px;height:1px;margin:0 auto;background:#e0e3e6;position:relative;top:-10px}.i-circle-custom span i[data-v-5dee9152]{font-style:normal;color:#3f414d}
+.reset-alert.ivu-alert-error,
+.reset-alert.ivu-alert-warning,
+.remove-alert-border.ivu-alert-success {
+  border: 0px;
+}
+.reset-alert.ivu-alert {
+  padding: 8px 16px;
+  margin-bottom: inherit;
+}
+.reset-button.ivu-btn-small {
+  padding: inherit;
+}
+.remove-alert-border.ivu-alert {
+  padding: 8px 16px;
+}
+.timeline-self .ivu-timeline-item-content {
+  top: -5px;
+}
 /** global common style **/
 .index h1 {    
             font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;

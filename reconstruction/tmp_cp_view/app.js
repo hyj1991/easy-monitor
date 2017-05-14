@@ -7,9 +7,28 @@ const app = express();
 const mock = require('./mock/mock.json');
 const cpu = require('./mock/cpu.js');
 const mem = require('./mock/mem.js');
-const heapDate = require('./mock/mem.json');
+const heapData_error = require('./mock/mem_error.json').heapData;
+const heapData_warning = require('./mock/mem_warning.json').heapData;
+const heapData_healthy = require('./mock/mem_healthy.json').heapData;
 const _ = require('lodash');
 const moment = require('moment');
+
+function getAnalysis(heapData) {
+    const { heapMap, leakPoint, statistics, rootIndex, aggregates } = analytic.memAnalytics(heapData);
+    const heapUsed = leakPoint.reduce((pre, next) => {
+        pre[next.index] = heapMap[next.index];
+        return pre;
+    }, {});
+    //加入 root 节点信息
+    heapUsed[rootIndex] = heapMap[rootIndex];
+
+    return { heapUsed, leakPoint, statistics, rootIndex, aggregates }
+}
+
+const r_error = getAnalysis(heapData_error);
+const r_warning = getAnalysis(heapData_warning);
+const r_healthy = getAnalysis(heapData_healthy);
+//console.log(aggregates);
 
 const profilerData = {};
 
@@ -74,18 +93,21 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
         //2s 后设置 profiling 结束
         setTimeout(() => {
             profilerData[key].results = mem.middle1;
-        }, 1000);
+        }, 2000);
 
         //5s 后设置 数据压缩上报 结束
         setTimeout(() => {
             profilerData[key].results = mem.middle2;
-        }, 2000);
+        }, 4000);
 
         //7s 后设置 数据压缩上报 结束
         setTimeout(() => {
+            mem.end[0].data = r_warning;
+            mem.end[1].data = r_error;
+            mem.end[2].data = r_healthy;
             profilerData[key].done = true;
             profilerData[key].results = mem.end;
-        }, 3000);
+        }, 6000);
     }
 
 
