@@ -40,6 +40,20 @@ p[data-v-2c130f69]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-2c130f69]{
 .timeline-self .ivu-timeline-item-content {
   top: -5px;
 }
+.ivu-select-input-my-style-mem .ivu-select-input {
+  text-align: center;
+  padding: 0;
+  font-size: 1.0em;
+  height: 27px;
+  font-weight: 200;
+}
+.ivu-select-input-my-style-mem .ivu-select-item {
+  text-align: left;
+  font-weight: 200;
+}
+.ivu-select-input-my-style-mem.ivu-select-single .ivu-select-input {
+  height: 30px;
+}
 /** global common style **/
 .index h1 {    
             font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
