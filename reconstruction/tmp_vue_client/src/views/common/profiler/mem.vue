@@ -41,6 +41,7 @@
     .reset-button {}
     .remove-alert-border {}
     .timeline-self {}
+    .ivu-select-input-my-style-mem {}
 
     .reset-alert.ivu-alert-error, .reset-alert.ivu-alert-warning, .remove-alert-border.ivu-alert-success{
         border: 0px;
@@ -61,6 +62,23 @@
 
     .timeline-self .ivu-timeline-item-content {
         top: -5px;
+    }
+
+    .ivu-select-input-my-style-mem .ivu-select-input {
+        text-align: center;
+        padding: 0;
+        font-size: 1.0em;
+        height: 27px;
+        font-weight: 200;
+    }  
+
+    .ivu-select-input-my-style-mem .ivu-select-item {
+        text-align: left;
+        font-weight: 200;
+    }
+
+    .ivu-select-input-my-style-mem.ivu-select-single .ivu-select-input {
+        height: 30px;
     }
 </style>
 
@@ -182,10 +200,8 @@
                     </Row>
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=8>
-                            <Select v-model="node_id" placeholder="请输入需要搜索的节点 ID" filterable style="text-align:left">
-                                <Option v-for="item in idList" :value="item.value" :key="item">
-                                    <p>{{ item.label }}</p>
-                                </Option>
+                            <Select v-model="node_id" placeholder="请输入需要搜索的节点 ID" filterable @on-change="selectHandle" class="ivu-select-input-my-style-mem">
+                                <Option v-for="item in idList" :value="item.value" :key="item">{{ item.label }}</Option>
                             </Select>
                         </Col>
                     </Row>
@@ -246,6 +262,10 @@
                 }
 
                 return str;
+            },
+
+            selectHandle(data) {
+                //console.log(12333, data, this.node_id);
             }
         },
 
@@ -323,7 +343,6 @@
                 const heapUsed = singleProfilerData.heapUsed || {};
                 const indexList = Object.keys(heapUsed);
                 indexList.sort((o, n)=>Number(heapUsed[o].distance) < Number(heapUsed[n].distance) ? -1 : 1);
-                console.log(indexList);
                 return indexList.map(item=>{
                     const detail = heapUsed[item] || {};
                     const data = `${detail.name}::${detail.id}`;
