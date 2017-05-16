@@ -65,39 +65,37 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
     console.log('axiosProfiler', JSON.stringify(data));
     if (!data) res.send(JSON.stringify({ success: false, msg: 'body can not be empty!' }));
 
-    const key = `${data.processName}_${data.serverName}_${data.pid}_${data.opt}`;
-    if (profilerData[key]) {
-        res.send(JSON.stringify({ success: true, msg: `${key} already exist!` }));
-        return;
-    }
+    const keyList = data.pidList.map(id => `${data.processName}_${data.serverName}_${id}_${data.opt}`);
+    const notInitKeyList = keyList.filter(key => !profilerData[key]);
 
-    if (data.opt === 'cpu') {
-        _cpuOperator();
-    }
+    notInitKeyList.forEach(key => {
+        if (data.opt === 'cpu') {
+            _cpuOperator(key);
+        }
 
-    if (data.opt === 'mem') {
-        _memOpreator();
-    }
+        if (data.opt === 'mem') {
+            _memOpreator(key);
+        }
+    });
 
-    res.send(JSON.stringify({ success: true, msg: `${key} task created!` }));
+    res.send(JSON.stringify({ success: true, msg: `${JSON.stringify(notInitKeyList)} task created!` }));
 
-
-    function _memOpreator() {
+    function _memOpreator(key) {
         //立即 初始化 memory 操作数据
         profilerData[key] = {
             done: false,
-            results: mem.init,
+            results: mem.init.filter(item => Boolean(~key.indexof(item.processPid))),
             error: null
         }
 
         //2s 后设置 profiling 结束
         setTimeout(() => {
-            profilerData[key].results = mem.middle1;
+            profilerData[key].results = mem.middle1.filter(item => Boolean(~key.indexof(item.processPid)));
         }, 2000);
 
         //5s 后设置 数据压缩上报 结束
         setTimeout(() => {
-            profilerData[key].results = mem.middle2;
+            profilerData[key].results = mem.middle2.filter(item => Boolean(~key.indexof(item.processPid)));
         }, 4000);
 
         //7s 后设置 数据压缩上报 结束
@@ -111,23 +109,25 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
     }
 
 
-    function _cpuOperator() {
+    function _cpuOperator(key) {
+        const pid = key.split("_")[2];
+
         //立即 初始化 cpu 操作数据
         profilerData[key] = {
             done: false,
-            results: cpu.init,
-            error: null
+            results: cpu.init[pid] || {}
         }
 
         //3s 后设置 profiling 结束
         setTimeout(() => {
-            profilerData[key].results = cpu.middle;
+            profilerData[key].results = cpu.middle[pid] || {};
         }, 3000);
 
         //5s 后设置数据，模拟成功
         setTimeout(() => {
             profilerData[key].done = true;
-            profilerData[key].results = cpu.end;
+            profilerData[key].results = cpu.end[pid] || {};
+            profilerData[key].error =  !cpu.end[pid] && "当前进程没有数据，请稍后刷新页面再试..." || null;
         }, 5000);
     }
 });

@@ -1,50 +1,45 @@
 module.exports = {
-    init: [
-        {
+    init: {
+        "3233": {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
-            "processPid": "57128",
-            "done": false,
+            "processPid": "3233",
             "loadingMsg": "开始进行 CPU 数据采集...",
             "data": {}
         },
 
-        {
+        "3234": {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
-            "processPid": "57129",
-            "done": false,
+            "processPid": "3234",
             "loadingMsg": "开始进行 CPU 数据采集...",
             "data": {}
         }
-    ],
+    },
 
-    middle: [
-        {
+    middle: {
+        "3233": {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
-            "processPid": "57128",
-            "done": false,
+            "processPid": "3233",
             "loadingMsg": "CPU 数据采集完毕, 开始进行分析...",
             "data": {}
         },
-
-        {
+        "3234": {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
-            "processPid": "57129",
-            "done": false,
+            "processPid": "3234",
             "loadingMsg": "CPU 数据采集完毕, 开始进行分析...",
             "data": {}
         }
-    ],
+    }
 
-    end: [
-        {
+    ,
+    end: {
+        "3233": {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
-            "processPid": "57128",
-            "done": true,
+            "processPid": "3233",
             //"error": "huangyijun.local 服务器发生内部错误！",
             "loadingMsg": "CPU 采集数据分析完成！",
             "data": {
@@ -83,11 +78,10 @@ module.exports = {
             }
         },
 
-        {
+        "3234": {
             "machineUnique": "huangyijun.local",
             "projectName": "Closure Leak",
-            "processPid": "57129",
-            "done": true,
+            "processPid": "3234",
             "loadingMsg": "CPU 采集数据分析完成！",
             "data": {
                 "timeout": 500,
@@ -117,5 +111,5 @@ module.exports = {
                 "bailoutFunctions": []
             }
         }
-    ]
+    }
 }

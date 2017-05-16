@@ -23,10 +23,11 @@
         <!-- render cpu profiling -->
         <div v-if="cpuProfiling">
             <cpu-module 
-                v-for="(item, index) in profilerComputed"
-                :singleProfiler="item"
-                :key="item.uniqueKey"
-                :error="error">
+                v-for="(item, index) in pidList"
+                :pid="item"
+                :rawParams="params"
+                :startProfiling="startProfiling"
+            >
             </cpu-module>  
         </div>
 
@@ -57,16 +58,7 @@ export default {
         return {
             params: {},
             cpuProfiling: false,
-            memProfiling: false,
-            checkStatTimer: null,
-            error: null,
-            axiosData: {
-                profiler: []
-            },
-            axiosDone: {
-                //control when to stop interval
-                profilerDetail: false
-            }
+            memProfiling: false
         }
     },
 
@@ -75,18 +67,10 @@ export default {
         this.params = params;
         this.cpuProfiling = Boolean(params.opt === 'cpu');
         this.memProfiling = Boolean(params.opt === 'mem');
+        if(!Array.isArray(params.pidList)) params.pidList = [params.pidList];
 
         //send start profiling msg to server
-        this.startProfiling(params);
-
-        //check profiling results intervally
-        this.checkStat(params);
-    },
-
-    //hook
-    beforeDestroy() {
-        //destroy interval
-        this.checkStatTimer && clearInterval(this.checkStatTimer);
+        this.startProfiling(params, 'profiler.vue');
     },
 
     components: {
@@ -96,48 +80,11 @@ export default {
     },
 
     methods: {
-        startProfiling(data){
-            data.tag = 'profiler.vue';
+        startProfiling(data, tag) {
+            data.tag = tag;
             axios.post('/axiosProfiler', {data})
                  .then(response=> {response.data})
                  .catch(err=> console.error(err));
-        },
-
-        checkStat(data){
-            const vm = this;
-            _send(data);
-            this.checkStatTimer = setInterval(()=>{
-                if(vm.axiosDone.profilerDetail){
-                    return clearInterval(vm.checkStatTimer);
-                }
-                _send(data);
-            }, 1000);
-
-            function _send(){
-                axios.post('/axiosProfilerDetail', {data})
-                     .then(response=> {
-                         const data = response && response.data || {};
-                         if(data.success && data.msg){
-                             const msg = JSON.parse(data.msg);
-                             const axiosProfilerDetailDone = Boolean(msg.done);
-                             if(axiosProfilerDetailDone && msg.error){
-                                 vm.error = msg.error;
-                             }
-                             vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
-                             if(Array.isArray(msg.results)){
-                                 vm.axiosData.profiler = msg.results;
-                             }
-                         }else{
-                             //const errorMsg = 'Server Inner Error, Please refresh this page!';
-                             //vm.error = data.msg || errorMsg;
-                             //clearInterval(vm.checkStatTimer);
-                         }
-                     }).catch(err=> {
-                         const errorMsg = `${err}, Please refresh this page!`;
-                         vm.error = errorMsg;
-                         clearInterval(vm.checkStatTimer);
-                     });
-            }
         }
     },
 
@@ -146,12 +93,21 @@ export default {
             return this.params.processName;
         },
 
+        pidList() {
+            let pidList = [];
+            if(this.params && this.params.pidList && Array.isArray(this.params.pidList)) {
+                pidList = this.params.pidList;
+            }
+
+            return pidList;
+        },
+
         profilerComputed(){
-            return this.axiosData.profiler.map(item=> {
-                item.navi = `Pid-${item.processPid}`;
-                item.href = `pid_${item.processPid}`;
-                item.uniqueKey = `${item.machineUnique}_${item.projectName}_${item.processPid}`;
-                return item;
+            return this.pidList.map(item=> {
+                const tmp = {};
+                tmp.navi = `Pid-${item}`;
+                tmp.href = `pid_${item}`;
+                return tmp;
             });
         }
     }

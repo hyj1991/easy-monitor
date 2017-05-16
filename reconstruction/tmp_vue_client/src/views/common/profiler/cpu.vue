@@ -21,7 +21,7 @@
     <Row type="flex" justify="center" class="code-row-bg">
         <!-- cpu module title -->
         <Col span=16 style="text-align:center" :id="listInfo.process.href">
-            <h2>PID-{{ listInfo.process.pid }}</h2>
+            <h2>PID-{{ pid }}</h2>
         </Col>
         <br>
 
@@ -90,6 +90,8 @@
 </template>
 
 <script> 
+    import axios from 'axios';
+    import lodash from 'lodash';
     import loadingSpin from '../loading.vue';
 
     export default {
@@ -97,6 +99,17 @@
             return {
                 spinShow: true,
                 
+                singleProfiler: null,
+                
+                error: null,
+                
+                checkStatTimer: null,
+
+                axiosDone: {
+                    //control when to stop interval
+                    profilerDetail: false
+                },   
+
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '执行时长', key: 'execTime', align: 'center' },
@@ -120,7 +133,19 @@
             }
         }, 
 
-        props: ['singleProfiler', 'error'],
+        created() {
+            const data = lodash.merge({}, this.rawParams, {pid: this.pid});
+            this.startProfiling(data, 'cpu.vue');
+            this.checkStat(data);
+        },
+
+        //hook
+        beforeDestroy() {
+            //destroy interval
+            this.checkStatTimer && clearInterval(this.checkStatTimer);
+        },
+
+        props: ['pid', 'rawParams', 'startProfiling'],
 
         components: {
             loadingSpin
@@ -157,6 +182,44 @@
                             </div>
                         </Tooltip>
                         </div>`;
+            },
+
+            checkStat(data){
+                const vm = this;
+                _send(data);
+                this.checkStatTimer = setInterval(()=>{
+                    if(vm.axiosDone.profilerDetail){
+                        return clearInterval(vm.checkStatTimer);
+                    }
+                    _send(data);
+                }, 1000);
+
+                function _send(){
+                    axios
+                    .post('/axiosProfilerDetail', {data})
+                    .then(response=> {
+                        const data = response && response.data || {};
+                        console.log('/axiosProfilerDetail', data);
+                        if(data.success && data.msg){
+                            const msg = JSON.parse(data.msg);
+                            const axiosProfilerDetailDone = Boolean(msg.done);
+                            if(axiosProfilerDetailDone && msg.error){
+                                vm.error = msg.error;
+                            }
+                            vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
+                            vm.singleProfiler = msg.results;
+                        }else{
+                            //const errorMsg = 'Server Inner Error, Please refresh this page!';
+                            //vm.error = data.msg || errorMsg;
+                            //clearInterval(vm.checkStatTimer);
+                        }
+                    })
+                    .catch(err=> {
+                        const errorMsg = `${err}, Please refresh this page!`;
+                        vm.error = errorMsg;
+                        clearInterval(vm.checkStatTimer);
+                    });
+                }
             }
         },
 
@@ -175,7 +238,7 @@
                 const singleProfiler = this.singleProfiler || {};
                 const singleProfilerData = this.singleProfilerData || {};
 
-                const done = singleProfiler.done;
+                const done = this.axiosDone.profilerDetail;
                 const loadingMsg = singleProfiler.loadingMsg;
                 const long = {
                     timeout: singleProfilerData.timeout,
@@ -187,10 +250,11 @@
                 const bail = {
                     number: singleProfilerData.bailoutFunctions.length
                 }
+
                 const process = {
-                    pid: singleProfiler.processPid,
-                    href: `pid_${singleProfiler.processPid}`,
-                    machineUnique: singleProfiler.machineUnique
+                    pid: this.pid,
+                    href: `pid_${this.pid}`,
+                    machineUnique: `${singleProfiler.machineUnique}_${singleProfiler.projectName}_${this.pid}`
                 }
 
                 return {long, top, bail, process, done, loadingMsg};
@@ -202,28 +266,28 @@
 
             data_long() {
                 return this.singleProfilerData.longFunctions.map(item=> ({
-                            functionName: item.funcName,
-                            execTime: this.formatTime(item.execTime),
-                            execPercentage: item.percentage,
-                            filePath: item.url
-                        }));
+                    functionName: item.funcName,
+                    execTime: this.formatTime(item.execTime),
+                    execPercentage: item.percentage,
+                    filePath: item.url
+                }));
             },
 
             data_top() {
                 return this.singleProfilerData.topExecutingFunctions.map(item=> ({
-                            functionName: item.funcName,
-                            execTime: this.formatTime(item.execTime),
-                            execPercentage: item.percentage,
-                            filePath: item.url
-                        }));
+                    functionName: item.funcName,
+                    execTime: this.formatTime(item.execTime),
+                    execPercentage: item.percentage,
+                    filePath: item.url
+                }));
             },
 
             data_bail() {
                 return this.singleProfilerData.bailoutFunctions.map(item=> ({
-                            functionName: item.funcName,
-                            bailoutReason: item.bailoutReason,
-                            filePath: item.url
-                        }));
+                    functionName: item.funcName,
+                    bailoutReason: item.bailoutReason,
+                    filePath: item.url
+                }));
             }
         }
     }

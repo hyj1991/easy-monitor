@@ -118,6 +118,12 @@
                     tag: 'process.vue'
                 }
 
+                if(data.pid === 'all') {
+                    data.pidList = this.pidList;
+                }else {
+                    data.pidList = [data.pid];
+                }
+
                 //notificate server do profiling
                 axios.post('/axiosProfiler', {data})
                      .then(response=> {})

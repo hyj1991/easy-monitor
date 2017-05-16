@@ -35,9 +35,9 @@
 
     <!-- if error, show error msg -->
     <Alert type="error" show-icon v-if="error">
-        Inner Error
+        服务器内部错误
         <span slot="desc">
-            Detail: {{ error }}
+            详情: {{ error }}
         </span>
     </Alert>
 </div>
