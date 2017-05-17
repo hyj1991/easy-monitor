@@ -82,7 +82,7 @@ export default {
     methods: {
         startProfiling(data, tag) {
             data.tag = tag;
-            axios.post('/axiosProfiler', {data})
+            axios.post(config.default.axiosPath.startProfiler, {data})
                  .then(response=> {response.data})
                  .catch(err=> console.error(err));
         }

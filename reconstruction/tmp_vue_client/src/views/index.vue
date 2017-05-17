@@ -57,7 +57,7 @@
         methods: {
             getIndexPageData(){
                 const vm = this;
-                axios.post('/axiosIndexPage')
+                axios.post(config.default.axiosPath.indexPage)
                      .then(response=> vm.indexPageData = response.data)
                      .catch(error=> vm.answer = {error: 'Error! Could not reach the API. ' + error});
             }

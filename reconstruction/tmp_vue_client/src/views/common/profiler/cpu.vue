@@ -196,10 +196,9 @@
 
                 function _send(){
                     axios
-                    .post('/axiosProfilerDetail', {data})
+                    .post(config.default.axiosPath.getProfilerDetail, {data})
                     .then(response=> {
                         const data = response && response.data || {};
-                        console.log('/axiosProfilerDetail', data);
                         if(data.success && data.msg){
                             const msg = JSON.parse(data.msg);
                             const axiosProfilerDetailDone = Boolean(msg.done);

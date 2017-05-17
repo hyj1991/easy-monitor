@@ -125,7 +125,7 @@
                 }
 
                 //notificate server do profiling
-                axios.post('/axiosProfiler', {data})
+                axios.post(config.default.axiosPath.startProfiler, {data})
                      .then(response=> {})
                      .catch(err=> console.error(err));
 

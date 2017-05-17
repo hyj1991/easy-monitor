@@ -10,6 +10,11 @@ module.exports = {
     output: {
         path: path.join(__dirname, './dist')
     },
+    plugins: [
+        new webpack.ProvidePlugin({
+            config: path.join(__dirname, './src/config/config.js')
+        })
+    ],
     module: {
         rules: [
             {
