@@ -23,8 +23,9 @@
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
                 <h2 :id="processName">{{ processName }}
-                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click="radioHandle" :loading="loading" style="position:absolute;top:20px;margin-left:23px">
-                            <p style="font-size:1.1em">Start</p>
+                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click="radioHandle" :loading="loading" 
+                            style="position:absolute;top:20px;margin-left:23px;color:#657180;font-weight:200;">
+                        Start
                     </Button>
                 </h2>
             </Col>
