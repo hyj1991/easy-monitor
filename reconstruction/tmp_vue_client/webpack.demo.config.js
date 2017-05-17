@@ -19,10 +19,6 @@ module.exports = merge(webpackBaseConfig, {
         chunkFilename: '[name].chunk.js'
     },
     plugins: [
-        new webpack.ProvidePlugin({
-            config: path.join(__dirname, './src/config/config.demo.js')
-        }),
-
         new ExtractTextPlugin({
             filename: '[name].css',
             allChunks: true

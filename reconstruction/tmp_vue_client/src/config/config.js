@@ -1,4 +1,5 @@
 import Env from './env';
+import lodash from 'lodash';
 
 let config = {
     env: Env,
@@ -13,4 +14,7 @@ let config = {
         profiler: '/profiler'
     }
 };
+
+lodash.merge(config, require(`./config.${Env}.js`));
+
 export default config;
