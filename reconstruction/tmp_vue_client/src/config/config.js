@@ -6,6 +6,11 @@ let config = {
         indexPage: '/axiosIndexPage',
         startProfiler: '/axiosProfiler',
         getProfilerDetail: '/axiosProfilerDetail'
+    },
+
+    vueRouter: {
+        index: '/index',
+        profiler: '/profiler'
     }
 };
 export default config;
