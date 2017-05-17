@@ -22,9 +22,10 @@
         <!-- title -->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
-                <h2 :id="processName">{{ processName }} 
-                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" 
-                    @click="radioHandle" :loading="loading">Start</Button>
+                <h2 :id="processName">{{ processName }}
+                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click="radioHandle" :loading="loading" style="position:absolute;top:20px;margin-left:23px">
+                            <p style="font-size:1.1em">Start</p>
+                    </Button>
                 </h2>
             </Col>
         </Row>
@@ -64,7 +65,7 @@
                         
                         <!-- choose option -->
                         <header class="header">
-                            <span>操作</span>
+                            <span>解析类型</span>
                         </header>
 
                         <!-- options list -->

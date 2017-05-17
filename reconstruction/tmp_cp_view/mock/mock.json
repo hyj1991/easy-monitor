@@ -3,7 +3,7 @@
         "seg" : "#-#",
 
         "projectPidMap": {
-            "Closure Leak#-#huangyijun.local": {
+            "Mercury#-#huangyijun.local": {
                 "list": [
                     "51301",
                     "51302",
@@ -11,7 +11,7 @@
                 ],
                 "loading": 0
             },
-            "Ares#-#huangyijun.local": {
+            "Venus#-#huangyijun.local": {
                 "list": [
                     "65871",
                     "65872",
@@ -19,14 +19,14 @@
                 ],
                 "loading": 2000
             },
-            "Achilles#-#huangyijun.local": {
+            "Jupitor#-#huangyijun.local": {
                 "list": [
                     "3233",
                     "3234"
                 ],
                 "loading": 0
             },
-            "Closure Leak#-#guojunlong.local": {
+            "Mercury#-#guojunlong.local": {
                 "list": [
                     "2301"
                 ],
