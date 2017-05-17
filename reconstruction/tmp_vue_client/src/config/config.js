@@ -10,6 +10,7 @@ let config = {
     },
 
     vueRouter: {
+        root: '/',
         index: '/index',
         profiler: '/profiler'
     }
@@ -18,7 +19,7 @@ let config = {
 let env_config = {};
 try {
     env_config = require(`./config.${config.env}.js`).default
-}catch(e){
+} catch (e) {
 
 }
 

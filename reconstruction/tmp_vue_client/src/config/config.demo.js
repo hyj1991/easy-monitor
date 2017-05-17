@@ -10,7 +10,7 @@ let config = {
 
     vueRouter: {
         root: '/easy-monitor/demo',
-	index: '/easy-monitor/demo/index',
+	    index: '/easy-monitor/demo/index',
         profiler: '/easy-monitor/demo/profiler'
     }
 };
