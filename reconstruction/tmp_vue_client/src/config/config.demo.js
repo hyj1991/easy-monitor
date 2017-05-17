@@ -9,7 +9,8 @@ let config = {
     },
 
     vueRouter: {
-        index: '/easy-monitor/demo/index',
+        root: '/easy-monitor/demo',
+	index: '/easy-monitor/demo/index',
         profiler: '/easy-monitor/demo/profiler'
     }
 };

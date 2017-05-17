@@ -1,6 +1,6 @@
 const routers = [
     {
-        path: '/',
+        path: config.default.vueRouter.root,
         redirect: config.default.vueRouter.index
     },
     {
