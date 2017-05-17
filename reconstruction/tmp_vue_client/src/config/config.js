@@ -15,6 +15,13 @@ let config = {
     }
 };
 
-lodash.merge(config, require(`./config.${Env}.js`));
+let env_config = {};
+try {
+    env_config = require(`./config.${config.env}.js`).default
+}catch(e){
+
+}
+
+lodash.merge(config, env_config);
 
 export default config;

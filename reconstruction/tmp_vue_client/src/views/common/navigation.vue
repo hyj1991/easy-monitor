@@ -8,7 +8,7 @@
 <div class="navigation-bar">
     <Row type="flex" justify="center" class="code-row-bg" v-if="needHome">
         <Col span=24 style="text-align:left">
-            <router-link to="/index">
+            <router-link :to="config.default.vueRouter.index">
                 <p>· Home</p>
             </router-link>
         </Col>
@@ -26,6 +26,12 @@
 
 <script>
     export default {
+        data() {
+            return {
+                config
+            }
+        },
+
         props: ['list', 'needHome'],
 
         computed: {
