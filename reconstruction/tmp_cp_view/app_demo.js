@@ -17,12 +17,14 @@ function getAnalysis(heapData) {
     const { heapMap, leakPoint, statistics, rootIndex, aggregates } = analytic.memAnalytics(heapData);
     const heapUsed = leakPoint.reduce((pre, next) => {
         pre[next.index] = heapMap[next.index];
+        pre[next.index].children = [];
         return pre;
     }, {});
     //加入 root 节点信息
     heapUsed[rootIndex] = heapMap[rootIndex];
+    heapUsed[rootIndex].children = [];
 
-    return { heapUsed, leakPoint, statistics, rootIndex, aggregates }
+    return { heapUsed, leakPoint, statistics, rootIndex }
 }
 
 const r_error = getAnalysis(heapData_error);
@@ -81,30 +83,36 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
     res.send(JSON.stringify({ success: true, msg: `${JSON.stringify(notInitKeyList)} task created!` }));
 
     function _memOpreator(key) {
+        const pid = key.split("_")[2];
+
         //立即 初始化 memory 操作数据
         profilerData[key] = {
             done: false,
-            results: mem.init.filter(item => Boolean(~key.indexof(item.processPid))),
-            error: null
+            results: mem.init(pid) || {}
         }
 
         //2s 后设置 profiling 结束
         setTimeout(() => {
-            profilerData[key].results = mem.middle1.filter(item => Boolean(~key.indexof(item.processPid)));
+            profilerData[key].results = mem.middle1(pid) || {};
         }, 2000);
 
         //5s 后设置 数据压缩上报 结束
         setTimeout(() => {
-            profilerData[key].results = mem.middle2.filter(item => Boolean(~key.indexof(item.processPid)));
+            profilerData[key].results = mem.middle2(pid) || {};
+            if(Number(pid) === 51301) {
+                profilerData[key].error = '当前进程没有获取到 Memory 数据，请稍后刷新页面再试...';
+                clearTimeout(end_mem);
+            }
         }, 4000);
 
         //7s 后设置 数据压缩上报 结束
-        setTimeout(() => {
-            mem.end[0].data = r_warning;
-            mem.end[1].data = r_error;
-            mem.end[2].data = r_healthy;
+        const end_mem = setTimeout(() => {
+            const endData = mem.end(pid);
+            const randomNum = Number(pid) % 3;
+            endData.data = randomNum === 1 && r_healthy || randomNum === 2 && r_warning || r_error;
             profilerData[key].done = true;
-            profilerData[key].results = mem.end;
+            profilerData[key].results = endData;
+            // profilerData[key].error = "";
         }, 6000);
     }
 
@@ -115,19 +123,23 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
         //立即 初始化 cpu 操作数据
         profilerData[key] = {
             done: false,
-            results: cpu.init[pid] || {}
+            results: cpu.init(pid) || {}
         }
 
         //3s 后设置 profiling 结束
-        setTimeout(() => {
-            profilerData[key].results = cpu.middle[pid] || {};
+        const middle_cpu = setTimeout(() => {
+            profilerData[key].results = cpu.middle(pid) || {};
+            if (Number(pid) === 51301) {
+                profilerData[key].error = '当前进程没有获取到 CPU 数据，请稍后刷新页面再试...';
+                clearTimeout(end_cpu);
+            }
         }, 3000);
 
         //5s 后设置数据，模拟成功
-        setTimeout(() => {
+        const end_cpu = setTimeout(() => {
             profilerData[key].done = true;
-            profilerData[key].results = cpu.end[pid] || {};
-            profilerData[key].error =  !cpu.end[pid] && "当前进程没有数据，请稍后刷新页面再试..." || null;
+            profilerData[key].results = cpu.end(pid) || {};
+            // profilerData[key].error = "当前进程没有获取到 CPU 数据，请稍后刷新页面再试...";
         }, 5000);
     }
 });
@@ -146,7 +158,7 @@ app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
     res.send(JSON.stringify({ success: true, msg: JSON.stringify(profilerData[key]) }));
 
     //获取一次成功数据后清空操作，此处逻辑可以定制
-    if (profilerData[key].done) {
+    if (profilerData[key].done || profilerData[key].error) {
         console.log(`[${moment().format('llll')}]`, `clear ${key}...`);
         profilerData[key] = null;
     }

@@ -87,7 +87,7 @@
     <Row type="flex" justify="center" class="code-row-bg">
         <!-- memory module title -->
         <Col span=16 style="text-align:center" :id="listInfo.process.href">
-            <h2>PID-{{ listInfo.process.pid }}</h2>
+            <h2>PID-{{ pid }}</h2>
         </Col>
         <br>
 
@@ -213,11 +213,25 @@
 </template>
 
 <script>
+    import axios from 'axios';
+    import lodash from 'lodash';
     import loadingSpin from '../loading.vue';
 
     export default {
         data() {
             return {
+                singleProfiler: null,
+                
+                error: null,
+
+                checkStatTimer: null,
+
+                axiosDone: {
+                    //control when to stop interval
+                    profilerDetail: false
+                },
+
+                //1.healthy 2.warning 3.leaking
                 process_status: 1,
 
                 circle_color: {
@@ -237,8 +251,20 @@
                 node_id: ''
             }
         },
+
+        created() {
+            const data = lodash.merge({}, this.rawParams, {pid: this.pid});
+            this.startProfiling(data, 'mem.vue');
+            this.checkStat(data);
+        },
+
+        //hook
+        beforeDestroy() {
+            //destroy interval
+            this.checkStatTimer && clearInterval(this.checkStatTimer);
+        },
         
-        props: ['singleProfiler', 'error'],
+        props: ['pid', 'rawParams', 'startProfiling'],
 
         components: {
             loadingSpin
@@ -250,7 +276,7 @@
             },
 
             formatSize(size){
-                let str = '';
+                let str =   '';
                 if (size / 1024 < 1) {
                     str = `${(size).toFixed(2)} bytes`;
                 } else if (size / 1024 / 1024 < 1) {
@@ -266,6 +292,45 @@
 
             selectHandle(data) {
                 //console.log(12333, data, this.node_id);
+            },
+
+            checkStat(data){
+                const vm = this;
+                _send(data);
+                this.checkStatTimer = setInterval(()=>{
+                    if(vm.axiosDone.profilerDetail){
+                        return clearInterval(vm.checkStatTimer);
+                    }
+                    _send(data);
+                }, 1000);
+
+                function _send(){
+                    axios
+                    .post(config.default.axiosPath.getProfilerDetail, {data})
+                    .then(response=> {
+                        const data = response && response.data || {};
+                        if(Number(vm.pid) === 51301) console.log(data);
+                        if(data.success && data.msg){
+                            const msg = JSON.parse(data.msg);
+                            let axiosProfilerDetailDone = Boolean(msg.done);
+                            if(msg.error){
+                                axiosProfilerDetailDone = true;
+                                vm.error = msg.error;
+                            }
+                            vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
+                            vm.singleProfiler = msg.results;
+                        }else{
+                            //const errorMsg = 'Server Inner Error, Please refresh this page!';
+                            //vm.error = data.msg || errorMsg;
+                            //clearInterval(vm.checkStatTimer);
+                        }
+                    })
+                    .catch(err=> {
+                        const errorMsg = `${err}, Please refresh this page!`;
+                        vm.error = errorMsg;
+                        clearInterval(vm.checkStatTimer);
+                    });
+                }
             }
         },
 
@@ -299,7 +364,7 @@
                 const singleProfiler = this.singleProfiler || {};
                 const singleProfilerData = this.singleProfilerData || {};
 
-                const done = singleProfiler.done;
+                const done = this.axiosDone.profilerDetail;
                 const loadingMsg = singleProfiler.loadingMsg;
                 
                 const process = {

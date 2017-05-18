@@ -96,9 +96,7 @@
 
     export default {
         data() {
-            return {
-                spinShow: true,
-                
+            return {                
                 singleProfiler: null,
                 
                 error: null,
@@ -199,10 +197,12 @@
                     .post(config.default.axiosPath.getProfilerDetail, {data})
                     .then(response=> {
                         const data = response && response.data || {};
+                        console.log(data);
                         if(data.success && data.msg){
                             const msg = JSON.parse(data.msg);
-                            const axiosProfilerDetailDone = Boolean(msg.done);
-                            if(axiosProfilerDetailDone && msg.error){
+                            let axiosProfilerDetailDone = Boolean(msg.done);
+                            if(msg.error){
+                                axiosProfilerDetailDone = true;
                                 vm.error = msg.error;
                             }
                             vm.axiosDone.profilerDetail = axiosProfilerDetailDone;

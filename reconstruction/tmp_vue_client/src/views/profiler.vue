@@ -34,10 +34,10 @@
         <!-- render mem profiling -->
         <div v-if="memProfiling">
             <mem-module
-                v-for="(item, index) in profilerComputed"
-                :singleProfiler="item"
-                :key="item.uniqueKey"
-                :error="error">
+                v-for="(item, index) in pidList"
+                :pid="item"
+                :rawParams="params"
+                :startProfiling="startProfiling">
             </mem-module>
         </div>
 

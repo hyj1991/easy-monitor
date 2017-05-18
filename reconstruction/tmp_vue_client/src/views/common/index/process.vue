@@ -189,7 +189,8 @@
             disabled() {
                 if(!Array.isArray(this.pidList)) return true;
                 if(this.pidList.length === 0) return true;
-                if(this.e_opt === 'mem' && this.e_pid === 'all') return true;
+                //TODO, if project has only one server, don't permit do all memory profiling
+                //if(this.e_opt === 'mem' && this.e_pid === 'all' && this.serverList.length < 2 && this.processList.length != 2) return true;
 
                 return false;
             },
