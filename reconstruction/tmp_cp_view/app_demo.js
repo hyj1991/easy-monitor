@@ -15,6 +15,7 @@ const moment = require('moment');
 const prettyBytes = require('pretty-bytes');
 const gzipSize = require('gzip-size');
 const compression = require('compression');
+const mem_calculator = require('./mem_calculator.js');
 
 function getAnalysis(heapData) {
     const { heapMap, leakPoint, statistics, rootIndex, aggregates } = analytic.memAnalytics(heapData);
@@ -25,7 +26,11 @@ function getAnalysis(heapData) {
     //加入 root 节点信息
     heapUsed[rootIndex] = heapMap[rootIndex];
 
-    return { heapUsed, leakPoint, statistics, rootIndex, aggregates }
+    const mem_data = mem_calculator(heapUsed, heapMap, leakPoint, rootIndex);
+    const forceGraph = mem_data.forceGraph;
+    const searchList = mem_data.searchList.map(item => item.index);
+
+    return { heapUsed, leakPoint, statistics, rootIndex, aggregates, forceGraph, searchList }
 }
 
 function mbStringLength(s) {
@@ -200,4 +205,4 @@ app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
     }
 });
 
-app.listen(12334);
+app.listen(12334, () => console.log('server start at 12334...'));

@@ -2,7 +2,7 @@
 </style>
 
 <template>
-    <div ref="statistics" :style="self_style || default_style"></div>
+    <div class="index" ref="statistics" :style="self_style || default_style"></div>
 </template>
 
 <script>

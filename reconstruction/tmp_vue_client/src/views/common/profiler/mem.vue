@@ -147,7 +147,7 @@
                         <!-- show this when leaking -->
                         <Col span=8 v-if="this.process_status !== 1">
                             <div v-for="item in leakPoint">
-                                <Button type="text" long size="small" style="height:28px"   class="reset-button">
+                                <Button type="text" long size="small" style="height:28px" class="reset-button" @click="leakHandle(item.name)">
                                     <Alert :type="item.type" class="reset-alert">
                                         <p><Icon type="speedometer"></Icon>&nbsp;&nbsp;{{ item.name }}</p>
                                     </Alert>
@@ -222,7 +222,17 @@
                     :data="statistics"
                     :message="echart3Message">
                 </echart3>
-                <!-- <Table border :columns="columns_type" :data="dataType"></Table> -->
+            </Modal>
+            <!-- Modals Force -->
+            <Modal
+                v-model="force"
+                :title="`[ ${modal_node_id} ] 引力图`"
+                width="1000">
+                <force 
+                    :forceGraph="forceGraphLeakPoint"
+                    :heapMap="singleProfilerData.heapUsed"
+                    :formatSize="formatSize">
+                </force>
             </Modal>
         </Col>
     </Row>
@@ -232,6 +242,7 @@
 <script>
     import axios from 'axios';
     import lodash from 'lodash';
+    import force from './force.vue';
     import loadingSpin from '../loading.vue';
     import echart3 from '../echart3.vue';
 
@@ -241,6 +252,10 @@
                 constructor: false,
                 
                 type: false,
+
+                force: false,
+
+                modal_node_id: null,
 
                 singleProfiler: null,
                 
@@ -284,7 +299,7 @@
         },
 
         //hook
-        beforeDestroy() {
+        beforeDestroy(data) {
             //destroy interval
             this.checkStatTimer && clearInterval(this.checkStatTimer);
         },
@@ -292,6 +307,7 @@
         props: ['pid', 'rawParams', 'startProfiling'],
 
         components: {
+            force,
             echart3,
             loadingSpin
         },
@@ -365,7 +381,6 @@
                     .then(response=> {
                         vm.axiosSended = false;
                         const data = response && response.data || {};
-                        console.log(data);
                         if(data.success && data.msg){
                             const msg = JSON.parse(data.msg);
                             let axiosProfilerDetailDone = Boolean(msg.done);
@@ -397,9 +412,15 @@
                 this.constructor = true;
             },
 
-            selectHandle(data) {
-                //console.log(12333, data, this.node_id);
+            selectHandle(id) {
+                this.modal_node_id = id;
+                this.force = true;
             },
+
+            leakHandle(id) {
+                this.modal_node_id = id;
+                this.force = true;
+            }
         },
 
         computed: {
@@ -410,6 +431,8 @@
                 const leakPoint = data.leakPoint || [];
                 const rootIndex = data.rootIndex || 0;
                 const aggregates = data.aggregates || [];
+                const searchList = data.searchList || [];
+                const forceGraph = data.forceGraph || {};
 
                 //compute maxRetainedSize percentage
                 const maxRetainedSize = leakPoint[0] && heapUsed[leakPoint[0].index].retainedSize || 0;
@@ -419,14 +442,14 @@
                 const maxRetainedColor = maxRetainedStatus === 1 && this.circle_color.healthy || maxRetainedStatus === 2 && this.circle_color.warning || this.circle_color.leaking;
                 const maxRetainedString = maxRetainedPercentage <=0 && '暂无信息' || `${maxRetainedPercentage} %`;
                 const maxRetainedInfo = {
-                        percentage: maxRetainedPercentage,
-                        color: maxRetainedColor,
-                        string: maxRetainedString,
-                        status: maxRetainedStatusString
+                    percentage: maxRetainedPercentage,
+                    color: maxRetainedColor,
+                    string: maxRetainedString,
+                    status: maxRetainedStatusString
                 }
 
                 this.process_status = maxRetainedStatus;
-                return {maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex, aggregates};
+                return {maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex, aggregates, forceGraph, searchList};
             },
 
             listInfo() {
@@ -479,7 +502,8 @@
                     const status = percentage < 60 && 2 || 3;
                     const type = status === 2 && 'warning' || 'error';
                     const name = `${detail.name}::${detail.id}`;
-                    pre.push({type, name});
+                    const id = detail.id;
+                    pre.push({type, name, id});
                     return pre;
                 },[]).filter((item, index)=> index < 5);
             },
@@ -487,7 +511,7 @@
             idList() {
                 const singleProfilerData = this.singleProfilerData || {};
                 const heapUsed = singleProfilerData.heapUsed || {};
-                const indexList = Object.keys(heapUsed);
+                const indexList = singleProfilerData.searchList || [];
                 indexList.sort((o, n)=>Number(heapUsed[o].distance) < Number(heapUsed[n].distance) ? -1 : 1);
                 return indexList.map(item=>{
                     const detail = heapUsed[item] || {};
@@ -546,6 +570,12 @@
                         }
                     ]
                 }
+            },
+
+            forceGraphLeakPoint() {
+                const all = this.singleProfilerData.forceGraph;
+                const leakGraph = all[this.modal_node_id];
+                return leakGraph;
             }
         }
     }
