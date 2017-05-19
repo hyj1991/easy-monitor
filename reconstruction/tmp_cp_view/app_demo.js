@@ -12,19 +12,37 @@ const heapData_warning = require('./mock/mem_warning.json').heapData;
 const heapData_healthy = require('./mock/mem_healthy.json').heapData;
 const _ = require('lodash');
 const moment = require('moment');
+const prettyBytes = require('pretty-bytes');
+const gzipSize = require('gzip-size');
 
 function getAnalysis(heapData) {
     const { heapMap, leakPoint, statistics, rootIndex, aggregates } = analytic.memAnalytics(heapData);
     const heapUsed = leakPoint.reduce((pre, next) => {
         pre[next.index] = heapMap[next.index];
-        pre[next.index].children = [];
         return pre;
     }, {});
     //加入 root 节点信息
     heapUsed[rootIndex] = heapMap[rootIndex];
-    heapUsed[rootIndex].children = [];
 
-    return { heapUsed, leakPoint, statistics, rootIndex }
+    return { heapUsed, leakPoint, statistics, rootIndex, aggregates }
+}
+
+function mbStringLength(s) {
+    var totalLength = 0;
+    var i;
+    var charCode;
+    for (i = 0; i < s.length; i++) {
+        charCode = s.charCodeAt(i);
+        if (charCode < 0x007f) {
+            totalLength = totalLength + 1;
+        } else if ((0x0080 <= charCode) && (charCode <= 0x07ff)) {
+            totalLength += 2;
+        } else if ((0x0800 <= charCode) && (charCode <= 0xffff)) {
+            totalLength += 3;
+        }
+    }
+    //alert(totalLength);
+    return totalLength;
 }
 
 const r_error = getAnalysis(heapData_error);
@@ -94,16 +112,16 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
         //2s 后设置 profiling 结束
         setTimeout(() => {
             profilerData[key].results = mem.middle1(pid) || {};
-        }, 2000);
+        }, 1000);
 
         //5s 后设置 数据压缩上报 结束
         setTimeout(() => {
             profilerData[key].results = mem.middle2(pid) || {};
-            if(Number(pid) === 51301) {
+            if (Number(pid) === 51301) {
                 profilerData[key].error = '当前进程没有获取到 Memory 数据，请稍后刷新页面再试...';
                 clearTimeout(end_mem);
             }
-        }, 4000);
+        }, 2000);
 
         //7s 后设置 数据压缩上报 结束
         const end_mem = setTimeout(() => {
@@ -113,7 +131,7 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
             profilerData[key].done = true;
             profilerData[key].results = endData;
             // profilerData[key].error = "";
-        }, 6000);
+        }, 3000);
     }
 
 
@@ -155,7 +173,23 @@ app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
         return;
     }
 
-    res.send(JSON.stringify({ success: true, msg: JSON.stringify(profilerData[key]) }));
+    const data = profilerData[key];
+    if (data.done === true && !data.set) {
+        data.done = false;
+        let loadingMsgTmp = data.results.loadingMsg;
+        let dataTmp = data.results.data;
+        let gzip = gzipSize.sync(JSON.stringify(data));
+        data.results.loadingMsg = `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
+        data.results.data = null;
+        setImmediate(() => {
+            data.results.loadingMsg = loadingMsgTmp;
+            data.results.data = dataTmp;
+            data.done = true;
+            //表示已经设置过一次了，无需再次设置
+            data.set = true;
+        });
+    }
+    res.send(JSON.stringify({ success: true, msg: JSON.stringify(data) }));
 
     //获取一次成功数据后清空操作，此处逻辑可以定制
     if (profilerData[key].done || profilerData[key].error) {

@@ -106,7 +106,9 @@
                 axiosDone: {
                     //control when to stop interval
                     profilerDetail: false
-                },   
+                },
+
+                axiosSended: false,
 
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
@@ -184,20 +186,26 @@
 
             checkStat(data){
                 const vm = this;
+
                 _send(data);
                 this.checkStatTimer = setInterval(()=>{
+                    //if has done, clear interval
                     if(vm.axiosDone.profilerDetail){
                         return clearInterval(vm.checkStatTimer);
                     }
+                    //if sended, do not sent
+                    if(vm.axiosSended) return;
+                    
+                    vm.axiosSended = true;
                     _send(data);
                 }, 1000);
 
-                function _send(){
+                function _send(data){
                     axios
                     .post(config.default.axiosPath.getProfilerDetail, {data})
                     .then(response=> {
+                        vm.axiosSended = false;
                         const data = response && response.data || {};
-                        console.log(data);
                         if(data.success && data.msg){
                             const msg = JSON.parse(data.msg);
                             let axiosProfilerDetailDone = Boolean(msg.done);

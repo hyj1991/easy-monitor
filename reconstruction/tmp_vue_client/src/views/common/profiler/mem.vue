@@ -178,10 +178,10 @@
                         <Col span= 22>
                             <p style="font-size:1.0em">
                                 点击
-                                <Button type="text" size="small" style="background:#ebf5ff">
+                                <Button type="text" size="small" style="background:#ebf5ff" @click="typeHandle">
                                         <p style="font-size:1.0em">Type</p>
                                 </Button> 
-                                <Button type="text" size="small" style="background:#ebf5ff">
+                                <Button type="text" size="small" style="background:#ebf5ff" @click="constructorHandle">
                                     <p style="font-size:1.0em">Constructor</p>
                                 </Button>
                                 获取按照节点 [ 类型 / 构造器 ] 分类的详情
@@ -207,6 +207,23 @@
                     </Row>
                 </div>
             </Card>
+            <!-- Modals Constructor -->
+            <Modal
+                v-model="constructor"
+                title="构造器分类详情"
+                width="950">
+                <Table border :columns="columns_constructor" :data="dataConstructor"></Table>
+            </Modal>
+            <!-- Modals Type -->
+            <Modal
+                v-model="type"
+                title="类型概览">
+                <echart3 
+                    :data="statistics"
+                    :message="echart3Message">
+                </echart3>
+                <!-- <Table border :columns="columns_type" :data="dataType"></Table> -->
+            </Modal>
         </Col>
     </Row>
 </div>
@@ -216,10 +233,15 @@
     import axios from 'axios';
     import lodash from 'lodash';
     import loadingSpin from '../loading.vue';
+    import echart3 from '../echart3.vue';
 
     export default {
         data() {
             return {
+                constructor: false,
+                
+                type: false,
+
                 singleProfiler: null,
                 
                 error: null,
@@ -231,6 +253,8 @@
                     profilerDetail: false
                 },
 
+                axiosSended: false,
+
                 //1.healthy 2.warning 3.leaking
                 process_status: 1,
 
@@ -240,13 +264,14 @@
                     leaking: '#ff3300'
                 },
 
-                columns: [
-                    { title: '节点名称', label: 'name', align: 'center' },
-                    { title: '距离根节点', label: 'distance', align: 'center' },
-                    { title: '类型', label: 'type', align: 'center' },
-                    { title: 'retainedSize', label: 'retainedSize', align: 'center' },
-                    { title: '占比', label: 'percentage', align: 'center' }
-                ],
+                columns_constructor: [
+                    { title: '构造器', key: 'constructor', align: 'center' },
+                    { title: '类型', key: 'type', align: 'center' },
+                    { title: '距离根节点', key: 'distance', align: 'center' },
+                    { title: '对象数量', key: 'object_count', align: 'center', sortable: true },
+                    { title: '浅引用大小', key: 'shallow_size', align: 'center', sortable: true, sortMethod: this.sortBySize },
+                    { title: '保留引用大小', key: 'retained_size', align: 'center', sortable: true, sortMethod: this.sortBySize }
+                ],       
 
                 node_id: ''
             }
@@ -263,10 +288,11 @@
             //destroy interval
             this.checkStatTimer && clearInterval(this.checkStatTimer);
         },
-        
+
         props: ['pid', 'rawParams', 'startProfiling'],
 
         components: {
+            echart3,
             loadingSpin
         },
 
@@ -278,7 +304,7 @@
             formatSize(size){
                 let str =   '';
                 if (size / 1024 < 1) {
-                    str = `${(size).toFixed(2)} bytes`;
+                    str = `${(size).toFixed(2)} Bytes`;
                 } else if (size / 1024 / 1024 < 1) {
                     str = `${(size / 1024).toFixed(2)} KB`;
                 } else if (size / 1024 / 1024 / 1024 < 1) {
@@ -290,26 +316,56 @@
                 return str;
             },
 
-            selectHandle(data) {
-                //console.log(12333, data, this.node_id);
+            sortBySize(o, n, t) {
+                if(~o.indexOf("GB")){
+                    o = o.slice(0, o.indexOf("GB") - 1) * 1024 * 1024 * 1024;
+                } else if(~o.indexOf("MB")) {
+                    o = o.slice(0, o.indexOf("MB") - 1) * 1024 * 1024;
+                } else if(~o.indexOf("KB")) {
+                    o = o.slice(0, o.indexOf("KB") - 1) * 1024;
+                } else if(~o.indexOf("Bytes")) {
+                    o = o.slice(0, o.indexOf("Bytes") - 1);
+                }
+
+                if(~n.indexOf("GB")){
+                    n = n.slice(0, n.indexOf("GB") - 1) * 1024 * 1024 * 1024;
+                } else if(~n.indexOf("MB")) {
+                    n = n.slice(0, n.indexOf("MB") - 1) * 1024 * 1024;
+                } else if(~n.indexOf("KB")) {
+                    n = n.slice(0, n.indexOf("KB") - 1) * 1024;
+                } else if(~n.indexOf("Bytes")) {
+                    n = n.slice(0, n.indexOf("Bytes") - 1);
+                }
+
+                o = Number(o);
+                n = Number(n);
+
+                if(t === 'desc') return o < n ? 1 : -1;
+                if(t === 'asc') return o < n ? -1 : 1;
             },
 
             checkStat(data){
                 const vm = this;
                 _send(data);
                 this.checkStatTimer = setInterval(()=>{
+                    //if has done, clear interval
                     if(vm.axiosDone.profilerDetail){
                         return clearInterval(vm.checkStatTimer);
                     }
+                     //if sended, do not sent
+                    if(vm.axiosSended) return;
+                    
+                    vm.axiosSended = true;
                     _send(data);
                 }, 1000);
 
-                function _send(){
+                function _send(data){
                     axios
                     .post(config.default.axiosPath.getProfilerDetail, {data})
                     .then(response=> {
+                        vm.axiosSended = false;
                         const data = response && response.data || {};
-                        if(Number(vm.pid) === 51301) console.log(data);
+                        console.log(data);
                         if(data.success && data.msg){
                             const msg = JSON.parse(data.msg);
                             let axiosProfilerDetailDone = Boolean(msg.done);
@@ -331,7 +387,19 @@
                         clearInterval(vm.checkStatTimer);
                     });
                 }
-            }
+            },
+
+            typeHandle() {
+                this.type = true;
+            },
+
+            constructorHandle() {
+                this.constructor = true;
+            },
+
+            selectHandle(data) {
+                //console.log(12333, data, this.node_id);
+            },
         },
 
         computed: {
@@ -341,6 +409,7 @@
                 const statistics = data.statistics || {};
                 const leakPoint = data.leakPoint || [];
                 const rootIndex = data.rootIndex || 0;
+                const aggregates = data.aggregates || [];
 
                 //compute maxRetainedSize percentage
                 const maxRetainedSize = leakPoint[0] && heapUsed[leakPoint[0].index].retainedSize || 0;
@@ -357,7 +426,7 @@
                 }
 
                 this.process_status = maxRetainedStatus;
-                return {maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex};
+                return {maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex, aggregates};
             },
 
             listInfo() {
@@ -383,9 +452,21 @@
             statistics() {
                 const statistics = this.singleProfilerData && this.singleProfilerData.statistics || {};
                 const total = statistics.total || 0;
+                const v8heap = statistics.v8heap || 0;
+                const native = statistics.native || 0;
+                const code = statistics.code || 0;
+                const jsArrays = statistics.jsArrays || 0;
+                const strings = statistics.strings || 0;
+                const system = statistics.system || 0;
                 return {
-                    total,
-                    totalString: this.formatSize(total)
+                    statistics, total, v8heap, native, code, jsArrays, strings, system,
+                    totalString: this.formatSize(total),
+                    v8heapString: this.formatSize(v8heap),
+                    nativeString: this.formatSize(native),
+                    codeString: this.formatSize(code),
+                    jsArraysString: this.formatSize(jsArrays),
+                    stringsString: this.formatSize(strings),
+                    systemString: this.formatSize(system)
                 }
             },
 
@@ -416,6 +497,55 @@
                         label: data
                     };
                 });
+            },
+
+            dataConstructor() {
+                const singleProfilerData = this.singleProfilerData || {};
+                const aggregates = singleProfilerData.aggregates || [];
+                return Object.keys(aggregates).map(constructor=> {
+                    const type = aggregates[constructor].type;
+                    const distance = aggregates[constructor].distance;
+                    const object_count = aggregates[constructor].count;
+                    const shallow_size = this.formatSize(aggregates[constructor].self);
+                    const retained_size = this.formatSize(aggregates[constructor].maxRet);
+
+                    return { constructor, type, distance, object_count, shallow_size, retained_size };
+                });
+            },
+
+            echart3Message() {
+                return {
+                    title: {
+                        text: `Pid:${this.pid}`,
+                        subtext: 'HeapSnapshot Statistics',
+                        x: 'center'  
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        data: []
+                    },
+                    series: [
+                        {
+                            name: 'HeapSnapshot',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: [],
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                }
             }
         }
     }
