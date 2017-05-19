@@ -14,6 +14,7 @@ const _ = require('lodash');
 const moment = require('moment');
 const prettyBytes = require('pretty-bytes');
 const gzipSize = require('gzip-size');
+const compression = require('compression');
 
 function getAnalysis(heapData) {
     const { heapMap, leakPoint, statistics, rootIndex, aggregates } = analytic.memAnalytics(heapData);
@@ -55,6 +56,7 @@ const profilerData = {};
 app.set('views', path.join(__dirname, './view'));
 app.set('view engine', 'ejs');
 
+app.use(compression());
 app.use(express.static(path.join(__dirname, './public')));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
