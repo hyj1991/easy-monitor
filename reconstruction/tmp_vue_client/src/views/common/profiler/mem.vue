@@ -85,24 +85,24 @@
 <template>
 <div>
     <Row type="flex" justify="center" class="code-row-bg">
-        <!-- memory module title -->
+        <!-- memory 模块标题 -->
         <Col span=16 style="text-align:center" :id="listInfo.process.href">
             <h2>PID-{{ pid }}</h2>
         </Col>
         <br>
 
-        <!-- memory module body -->
+        <!-- memory 模块体 -->
         <Col span=16>
             <Card>
-                <!-- memory profiling not end, show loding spin -->
+                <!-- memory 数据采集尚未结束，或者出现服务器错误，则展示 -->
                 <loading-spin v-if="server_error || !listInfo.done" 
                               :loadingMsg="listInfo.loadingMsg"
                               :error="server_error">
                 </loading-spin>
 
-                <!-- show memory profiling results -->
+                <!-- memory 数据采集结束，展示此 -->
                 <div style="text-align:center" v-if="!server_error && listInfo.done">
-                    <!-- leak status overview -->
+                    <!-- 根据 retainedSize 最大节点占比，来给出内存泄漏风险提示 -->
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
@@ -127,7 +127,7 @@
                         </Col>
                     </Row>
 
-                    <!-- if not healthy, show suspicous leak point -->
+                    <!-- 如果给出内存泄漏风险提示较高，则展示疑似泄漏的内存点 -->
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
@@ -157,7 +157,7 @@
                         </Col>
                     </Row>
 
-                    <!-- v8 engine's heap memory details -->
+                    <!-- 展示 v8 引擎堆内分配内存的一些细节 -->
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
@@ -190,7 +190,7 @@
                     </Row>
                     <br>
 
-                    <!-- search node by id -->
+                    <!-- 任意搜索提供的节点引力图 -->
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
@@ -207,7 +207,7 @@
                     </Row>
                 </div>
             </Card>
-            <!-- Modals Constructor -->
+            <!-- 以下是 modal 框 -->
             <Modal
                 v-model="constructor"
                 title="构造器分类详情"
@@ -248,37 +248,13 @@
 
     export default {
         data() {
-            return {
-                constructor: false,
-                
-                type: false,
-
-                force: false,
-
-                modal_node_id: null,
-
-                singleProfiler: null,
-                
-                error: null,
-
-                checkStatTimer: null,
-
-                axiosDone: {
-                    //control when to stop interval
-                    profilerDetail: false
-                },
-
-                axiosSended: false,
-
-                //1.healthy 2.warning 3.leaking
-                process_status: 1,
-
-                circle_color: {
-                    healthy: '#5cb85c',
-                    warning: '#ff9900',
-                    leaking: '#ff3300'
-                },
-
+            return { 
+                constructor: false, type: false, force: false, modal_node_id: null,
+                singleProfiler: null, error: null, checkStatTimer: null,
+                axiosDone: { profilerDetail: false },
+                axiosSended: false, node_id: '',
+                process_status: 1, //1.healthy 2.warning 3.leaking 
+                circle_color: { healthy: '#5cb85c', warning: '#ff9900', leaking: '#ff3300' },
                 columns_constructor: [
                     { title: '构造器', key: 'constructor', align: 'center' },
                     { title: '类型', key: 'type', align: 'center' },
@@ -286,9 +262,7 @@
                     { title: '对象数量', key: 'object_count', align: 'center', sortable: true },
                     { title: '浅引用大小', key: 'shallow_size', align: 'center', sortable: true, sortMethod: this.sortBySize },
                     { title: '保留引用大小', key: 'retained_size', align: 'center', sortable: true, sortMethod: this.sortBySize }
-                ],       
-
-                node_id: ''
+                ]
             }
         },
 
@@ -306,277 +280,29 @@
 
         props: ['pid', 'rawParams', 'startProfiling'],
 
-        components: {
-            force,
-            echart3,
-            loadingSpin
-        },
+        components: { force, echart3, loadingSpin },
 
         methods: {
-            formatPercentage(num, limit=2) {
-                return Number(Number(num * 100).toFixed(limit));
-            },
-
-            formatSize(size){
-                let str =   '';
-                if (size / 1024 < 1) {
-                    str = `${(size).toFixed(2)} Bytes`;
-                } else if (size / 1024 / 1024 < 1) {
-                    str = `${(size / 1024).toFixed(2)} KB`;
-                } else if (size / 1024 / 1024 / 1024 < 1) {
-                    str = `${(size / 1024 / 1024).toFixed(2)} MB`;
-                } else {
-                    str = `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
-                }
-
-                return str;
-            },
-
-            sortBySize(o, n, t) {
-                if(~o.indexOf("GB")){
-                    o = o.slice(0, o.indexOf("GB") - 1) * 1024 * 1024 * 1024;
-                } else if(~o.indexOf("MB")) {
-                    o = o.slice(0, o.indexOf("MB") - 1) * 1024 * 1024;
-                } else if(~o.indexOf("KB")) {
-                    o = o.slice(0, o.indexOf("KB") - 1) * 1024;
-                } else if(~o.indexOf("Bytes")) {
-                    o = o.slice(0, o.indexOf("Bytes") - 1);
-                }
-
-                if(~n.indexOf("GB")){
-                    n = n.slice(0, n.indexOf("GB") - 1) * 1024 * 1024 * 1024;
-                } else if(~n.indexOf("MB")) {
-                    n = n.slice(0, n.indexOf("MB") - 1) * 1024 * 1024;
-                } else if(~n.indexOf("KB")) {
-                    n = n.slice(0, n.indexOf("KB") - 1) * 1024;
-                } else if(~n.indexOf("Bytes")) {
-                    n = n.slice(0, n.indexOf("Bytes") - 1);
-                }
-
-                o = Number(o);
-                n = Number(n);
-
-                if(t === 'desc') return o < n ? 1 : -1;
-                if(t === 'asc') return o < n ? -1 : 1;
-            },
-
-            checkStat(data){
-                const vm = this;
-                _send(data);
-                this.checkStatTimer = setInterval(()=>{
-                    //if has done, clear interval
-                    if(vm.axiosDone.profilerDetail){
-                        return clearInterval(vm.checkStatTimer);
-                    }
-                     //if sended, do not sent
-                    if(vm.axiosSended) return;
-                    
-                    vm.axiosSended = true;
-                    _send(data);
-                }, 1000);
-
-                function _send(data){
-                    axios
-                    .post(config.default.axiosPath.getProfilerDetail, {data})
-                    .then(response=> {
-                        vm.axiosSended = false;
-                        const data = response && response.data || {};
-                        if(data.success && data.msg){
-                            const msg = JSON.parse(data.msg);
-                            let axiosProfilerDetailDone = Boolean(msg.done);
-                            if(msg.error){
-                                axiosProfilerDetailDone = true;
-                                vm.error = msg.error;
-                            }
-                            vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
-                            vm.singleProfiler = msg.results;
-                        }else{
-                            //const errorMsg = 'Server Inner Error, Please refresh this page!';
-                            //vm.error = data.msg || errorMsg;
-                            //clearInterval(vm.checkStatTimer);
-                        }
-                    })
-                    .catch(err=> {
-                        const errorMsg = `${err}, Please refresh this page!`;
-                        vm.error = errorMsg;
-                        clearInterval(vm.checkStatTimer);
-                    });
-                }
-            },
-
-            typeHandle() {
-                this.type = true;
-            },
-
-            constructorHandle() {
-                this.constructor = true;
-            },
-
-            selectHandle(id) {
-                this.modal_node_id = id;
-                this.force = true;
-            },
-
-            leakHandle(id) {
-                this.modal_node_id = id;
-                this.force = true;
-            }
+            formatPercentage(num, limit=2) { return this.$_js.mem.methods.formatPercentage.call(this, num, limit); },
+            formatSize(size){ return this.$_js.mem.methods.formatSize.call(this, size); },
+            sortBySize(o, n, t) { return this.$_js.mem.methods.sortBySize.apply(this, [o, n, t]); },
+            checkStat(data){ this.$_js.mem.methods.checkStat.call(this, data); },
+            typeHandle() { this.$_js.mem.methods.typeHandle.call(this); },
+            constructorHandle() { this.$_js.mem.methods.constructorHandle.call(this); },
+            selectHandle(id) { this.$_js.mem.methods.selectHandle.call(this, id); },
+            leakHandle(id) { this.$_js.mem.methods.leakHandle.call(this, id); }
         },
 
         computed: {
-            singleProfilerData() {
-                const data = this.singleProfiler && this.singleProfiler.data || {};
-                const heapUsed = data.heapUsed || {};
-                const statistics = data.statistics || {};
-                const leakPoint = data.leakPoint || [];
-                const rootIndex = data.rootIndex || 0;
-                const aggregates = data.aggregates || [];
-                const searchList = data.searchList || [];
-                const forceGraph = data.forceGraph || {};
-
-                //compute maxRetainedSize percentage
-                const maxRetainedSize = leakPoint[0] && heapUsed[leakPoint[0].index].retainedSize || 0;
-                const maxRetainedPercentage = statistics.total && this.formatPercentage(maxRetainedSize / statistics.total) || 0;
-                const maxRetainedStatus = maxRetainedPercentage < 30 && 1 || maxRetainedPercentage < 60 && 2 || 3;
-                const maxRetainedStatusString = maxRetainedStatus === 1 && '良好' || maxRetainedStatus === 2 && '风险' || '泄露';
-                const maxRetainedColor = maxRetainedStatus === 1 && this.circle_color.healthy || maxRetainedStatus === 2 && this.circle_color.warning || this.circle_color.leaking;
-                const maxRetainedString = maxRetainedPercentage <=0 && '暂无信息' || `${maxRetainedPercentage} %`;
-                const maxRetainedInfo = {
-                    percentage: maxRetainedPercentage,
-                    color: maxRetainedColor,
-                    string: maxRetainedString,
-                    status: maxRetainedStatusString
-                }
-
-                this.process_status = maxRetainedStatus;
-                return {maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex, aggregates, forceGraph, searchList};
-            },
-
-            listInfo() {
-                const singleProfiler = this.singleProfiler || {};
-                const singleProfilerData = this.singleProfilerData || {};
-
-                const done = this.axiosDone.profilerDetail;
-                const loadingMsg = singleProfiler.loadingMsg;
-                
-                const process = {
-                    pid: singleProfiler.processPid,
-                    href: `pid_${singleProfiler.processPid}`,
-                    machineUnique: singleProfiler.machineUnique
-                }
-
-                return {done, loadingMsg, process};
-            },
-
-            server_error() {
-                return this.error || (this.singleProfiler && this.singleProfiler.error) || false;
-            },
-
-            statistics() {
-                const statistics = this.singleProfilerData && this.singleProfilerData.statistics || {};
-                const total = statistics.total || 0;
-                const v8heap = statistics.v8heap || 0;
-                const native = statistics.native || 0;
-                const code = statistics.code || 0;
-                const jsArrays = statistics.jsArrays || 0;
-                const strings = statistics.strings || 0;
-                const system = statistics.system || 0;
-                return {
-                    statistics, total, v8heap, native, code, jsArrays, strings, system,
-                    totalString: this.formatSize(total),
-                    v8heapString: this.formatSize(v8heap),
-                    nativeString: this.formatSize(native),
-                    codeString: this.formatSize(code),
-                    jsArraysString: this.formatSize(jsArrays),
-                    stringsString: this.formatSize(strings),
-                    systemString: this.formatSize(system)
-                }
-            },
-
-            leakPoint() {
-                const leakPoint = this.singleProfilerData && this.singleProfilerData.leakPoint || [];
-                const heapUsed = this.singleProfilerData.heapUsed;
-                return leakPoint.reduce((pre, next)=> {
-                    const detail = heapUsed[next.index] || {retainedSize: 0};
-                    const percentage = this.statistics.total && this.formatPercentage(detail.retainedSize / this.statistics.total) || 0;
-                    const status = percentage < 60 && 2 || 3;
-                    const type = status === 2 && 'warning' || 'error';
-                    const name = `${detail.name}::${detail.id}`;
-                    const id = detail.id;
-                    pre.push({type, name, id});
-                    return pre;
-                },[]).filter((item, index)=> index < 5);
-            },
-
-            idList() {
-                const singleProfilerData = this.singleProfilerData || {};
-                const heapUsed = singleProfilerData.heapUsed || {};
-                const indexList = singleProfilerData.searchList || [];
-                indexList.sort((o, n)=>Number(heapUsed[o].distance) < Number(heapUsed[n].distance) ? -1 : 1);
-                return indexList.map(item=>{
-                    const detail = heapUsed[item] || {};
-                    const data = `${detail.name}::${detail.id}`;
-                    return {
-                        value: data,
-                        label: data
-                    };
-                });
-            },
-
-            dataConstructor() {
-                const singleProfilerData = this.singleProfilerData || {};
-                const aggregates = singleProfilerData.aggregates || [];
-                return Object.keys(aggregates).map(constructor=> {
-                    const type = aggregates[constructor].type;
-                    const distance = aggregates[constructor].distance;
-                    const object_count = aggregates[constructor].count;
-                    const shallow_size = this.formatSize(aggregates[constructor].self);
-                    const retained_size = this.formatSize(aggregates[constructor].maxRet);
-
-                    return { constructor, type, distance, object_count, shallow_size, retained_size };
-                });
-            },
-
-            echart3Message() {
-                return {
-                    title: {
-                        text: `Pid:${this.pid}`,
-                        subtext: 'HeapSnapshot Statistics',
-                        x: 'center'  
-                    },
-                    tooltip: {
-                        trigger: 'item',
-                        formatter: "{a} <br/>{b} : {c} ({d}%)"
-                    },
-                    legend: {
-                        orient: 'vertical',
-                        left: 'left',
-                        data: []
-                    },
-                    series: [
-                        {
-                            name: 'HeapSnapshot',
-                            type: 'pie',
-                            radius: '55%',
-                            center: ['50%', '60%'],
-                            data: [],
-                            itemStyle: {
-                                emphasis: {
-                                    shadowBlur: 10,
-                                    shadowOffsetX: 0,
-                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-
-            forceGraphLeakPoint() {
-                const all = this.singleProfilerData.forceGraph;
-                const leakGraph = all[this.modal_node_id];
-                return leakGraph;
-            }
+            singleProfilerData() { return this.$_js.mem.computed.singleProfilerData.call(this); },
+            listInfo() { return this.$_js.mem.computed.listInfo.call(this); },
+            server_error() { return this.$_js.mem.computed.server_error.call(this); },
+            statistics() { return this.$_js.mem.computed.statistics.call(this); },
+            leakPoint() { return this.$_js.mem.computed.leakPoint.call(this); },
+            idList() { return this.$_js.mem.computed.idList.call(this); },
+            dataConstructor() { return this.$_js.mem.computed.dataConstructor.call(this); },
+            echart3Message() { return this.$_js.mem.computed.echart3Message.call(this); },
+            forceGraphLeakPoint() { return this.$_js.mem.computed.forceGraphLeakPoint.call(this); }
         }
     }
 </script>

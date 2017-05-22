@@ -8,19 +8,18 @@
 
 <template>
     <div class="index">
-        <!-- <div style="text-align:center">Params: {{ params }}</div> -->
-        <!-- Reserved Header Bar -->
+        <!-- 预留 Header Bar -->
         <Row><Col style="height:20px;"></Col></Row>
         <br>
 
-        <!-- project title -->
+        <!-- 项目名称 -->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=16 style="text-align:center"><h1>{{ processName }}</h1></Col>
             <br>
         </Row>
         <br>
 
-        <!-- render cpu profiling -->
+        <!-- 渲染 cpu - profiling 组件 -->
         <div v-if="cpuProfiling">
             <cpu-module 
                 v-for="(item, index) in pidList"
@@ -31,7 +30,7 @@
             </cpu-module>  
         </div>
 
-        <!-- render mem profiling -->
+        <!-- 渲染 mem - profiling 组件 -->
         <div v-if="memProfiling">
             <mem-module
                 v-for="(item, index) in pidList"
@@ -41,25 +40,20 @@
             </mem-module>
         </div>
 
-        <!-- navigation float bar -->
+        <!-- 悬浮导航栏 -->
         <navigation :list="profilerComputed" needHome=true>
         </navigation>
         
     </div>
 </template>
 <script>
-import axios from 'axios';
 import cpuModule from './common/profiler/cpu.vue';
 import memModule from './common/profiler/mem.vue';
 import navigation from './common/navigation.vue';
 
 export default {
     data() {
-        return {
-            params: {},
-            cpuProfiling: false,
-            memProfiling: false
-        }
+        return { params: {}, cpuProfiling: false, memProfiling: false }
     },
 
     created() {
@@ -69,47 +63,19 @@ export default {
         this.memProfiling = Boolean(params.opt === 'mem');
         if(!Array.isArray(params.pidList)) params.pidList = [params.pidList];
 
-        //send start profiling msg to server
         this.startProfiling(params, 'profiler.vue');
     },
 
-    components: {
-        cpuModule,
-        memModule,
-        navigation
-    },
+    components: { cpuModule, memModule, navigation },
 
     methods: {
-        startProfiling(data, tag) {
-            data.tag = tag;
-            axios.post(config.default.axiosPath.startProfiler, {data})
-                 .then(response=> {response.data})
-                 .catch(err=> console.error(err));
-        }
+        startProfiling(data, tag) { this.$_js.profiler.methods.startProfiling.call(this, data, tag); }
     },
 
     computed: {
-        processName(){
-            return this.params.processName;
-        },
-
-        pidList() {
-            let pidList = [];
-            if(this.params && this.params.pidList && Array.isArray(this.params.pidList)) {
-                pidList = this.params.pidList;
-            }
-
-            return pidList;
-        },
-
-        profilerComputed(){
-            return this.pidList.map(item=> {
-                const tmp = {};
-                tmp.navi = `Pid-${item}`;
-                tmp.href = `pid_${item}`;
-                return tmp;
-            });
-        }
+        processName(){ return this.$_js.profiler.computed.processName.call(this); },
+        pidList() { return this.$_js.profiler.computed.pidList.call(this); },
+        profilerComputed(){ return this.$_js.profiler.computed.profilerComputed.call(this); }
     }
 }
 </script>

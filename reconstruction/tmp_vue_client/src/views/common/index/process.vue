@@ -16,10 +16,9 @@
 
 <template>
 <div class="index">
-<!-- <div style="text-align:center">{{ choose }}</div> -->
 <Row type="flex" justify="center" class="code-row-bg">
     <Col span=10 style="text-align:center">
-        <!-- title -->
+        <!-- 组件标题 & 开始按钮-->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
                 <h2 :id="processName">{{ processName }}
@@ -31,17 +30,17 @@
             </Col>
         </Row>
         
-        <!-- body -->
+        <!-- 组件内容 -->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=22>
                 <Card>
                     <div style="text-align:center">
-                        <!-- choose server -->
+                        <!-- 选择所在服务器 -->
                         <header class="header">
                             <span>所在服务器</span>
                         </header>
                         
-                        <!-- server list -->
+                        <!-- 选择器: 服务列表 -->
                         <Row type="flex" justify="center" class="code-row-bg">
                             <Col span=8>
                                 <Select size="small" v-model="server" filterable class="ivu-select-input-my-style" @on-change="selectHandle">
@@ -50,12 +49,12 @@
                             </Col>
                         </Row>
 
-                        <!-- choose process -->
+                        <!-- 选择进程 -->
                         <header class="header">
                             <span>选择进程</span>
                         </header>
                         
-                        <!-- process id list -->
+                        <!-- 进程 pid 列表 -->
                         <Radio-group v-model="e_pid" v-for="item in processList">
                             <Radio :label="item.label">
                              <Icon :type="item.type"></Icon>
@@ -64,12 +63,12 @@
                         </Radio-group>
                         <br>
                         
-                        <!-- choose option -->
+                        <!-- 选择解析类型 -->
                         <header class="header">
                             <span>解析类型</span>
                         </header>
 
-                        <!-- options list -->
+                        <!-- 解析操作类型列表 -->
                         <Radio-group v-model="e_opt">
                             <Radio label="cpu">
                                 <Icon type="ios-gear-outline"></Icon>
@@ -93,116 +92,26 @@
 
 <script>
     import axios from 'axios';
-    import router from '../../../main.js';
 
     export default {
         data(){
-            return {
-                e_pid: 'all',
-                e_opt: 'cpu',
-                loading: false,
-                server: '',
-                pidList: []
-            }
+            return { e_pid: 'all', e_opt: 'cpu', loading: false, server: '', pidList: [] }
         },
 
         props: ['singleProjectInfo'],
 
         methods: { 
-            //jump to profiler
-            radioHandle() {
-                const vm = this;  
-                const data = {
-                    processName: vm.processName,
-                    serverName: vm.serverName,
-                    pid: vm.e_pid,
-                    opt: vm.e_opt,
-                    tag: 'process.vue'
-                }
-
-                if(data.pid === 'all') {
-                    data.pidList = this.pidList;
-                }else {
-                    data.pidList = [data.pid];
-                }
-
-                //notificate server do profiling
-                axios.post(config.default.axiosPath.startProfiler, {data})
-                     .then(response=> {})
-                     .catch(err=> console.error(err));
-
-                //if not loadingTime, jump immediately
-                if(!this.loadingTime){
-                    router.push({
-                        path: `profiler`, 
-                        query: data
-                    });
-                    return;
-                }
-
-                //if loadingTime, jump asyncly
-                this.loading = true;
-                this.$Message.success(`will do ${this.e_opt} profiling`);
-                setTimeout(()=> {
-                    vm.loading = false;
-                    router.push({
-                        path: `profiler`, 
-                        query: data
-                    });
-                }, this.loadingTime);
-            },
-
-            selectHandle(data) {
-                this.pidList = this.singleProjectInfo[data] || [];
-            }
-           
+            radioHandle() { this.$_js.process.methods.radioHandle.call(this); },
+            selectHandle(data) { this.$_js.process.methods.selectHandle.call(this, data); }
         },
 
         computed: {
-            serverName() {
-                return this.server;
-            },
-
-            serverList() {
-                const serverList = this.singleProjectInfo.serverList;
-                const results = serverList.map(item=> ({
-                    label: item,
-                    value: item
-                }));
-                this.server = results[0].label;                 
-                
-                return results;
-            },
-
-            processName() {
-                if(!this.singleProjectInfo || !this.singleProjectInfo.projectName) {return 'No Project';}
-                return this.singleProjectInfo.projectName;
-            },
-
-            processList() {         
-                return this.pidList.reduce((pre, next)=>{
-                    pre.push({type: 'ios-pulse', pid: next, label: next});
-                    return pre;
-                },[{type: 'ios-browsers-outline', pid: 'All', label: 'all'}]);
-            },
-
-            disabled() {
-                if(!Array.isArray(this.pidList)) return true;
-                if(this.pidList.length === 0) return true;
-                //TODO, if project has only one server, don't permit do all memory profiling
-                //if(this.e_opt === 'mem' && this.e_pid === 'all' && this.serverList.length < 2 && this.processList.length != 2) return true;
-
-                return false;
-            },
-
-            loadingTime() {
-                const singleProjectInfo = this.singleProjectInfo;
-                if(singleProjectInfo && singleProjectInfo.loadingTime){
-                    return singleProjectInfo.loadingTime;
-                }
-
-                return false;
-            }
+            serverName() { return this.$_js.process.computed.serverName.call(this); },
+            serverList() { return this.$_js.process.computed.serverList.call(this); },
+            processName() { return this.$_js.process.computed.processName.call(this); },
+            processList() { return this.$_js.process.computed.processList.call(this); },
+            disabled() { return this.$_js.process.computed.disabled.call(this); },
+            loadingTime() { return this.$_js.process.computed.loadingTime.call(this); }
         }
     }
 </script>

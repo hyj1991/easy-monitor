@@ -3,12 +3,14 @@ import iView from 'iview';
 import VueRouter from 'vue-router';
 import Routers from './router';
 import Util from './libs/util';
+import _Js from './javascript/vue';
 import App from './app.vue';
 import 'iview/dist/styles/iview.css';
 
 
 Vue.use(VueRouter);
 Vue.use(iView);
+Vue.use(_Js);
 
 // 路由配置 
 const RouterConfig = {
