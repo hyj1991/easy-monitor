@@ -5,19 +5,12 @@ import profiler from './profiler';
 import cpu from './cpu';
 import mem from './mem';
 import force from './force';
+import echart3 from './echart3';
 
 const vue = {};
 
 function install(Vue, options) {
-    const _js = {};
-    _js.cpu = cpu;
-    _js.mem = mem;
-    _js.index = index;
-    _js.process = process;
-    _js.profiler = profiler;
-    _js.force = force;
-
-    Vue.prototype.$_js = _js;
+    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3 };
 }
 
 vue.install = install;

@@ -107,6 +107,10 @@ function forceGraphOption() {
     const option = {
         tooltip: {
             show: true,
+            showDelay: 100,
+            position: function(position) {
+                return [position[0], position[1] - 20];
+            },
             formatter: function (params, ticket, callback) {//callback
                 if (!params || !params.data) return 'error: params.data is empty!';
                 if (params.data.source || params.data.target) return params.data.source + ' -> ' + params.data.target;
@@ -134,7 +138,7 @@ function forceGraphOption() {
 
                         index = linkMap[id].index;
 
-                        let strTmp = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ') \' <b>' + linkMap[id].name_or_index + '</b> ---> ';
+                        let strTmp = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ') \' <strong style="font-weight:500">' + linkMap[id].name_or_index + '</strong> ---> ';
                         str = strTmp + str;
                         keyList.push(linkMap[id].name_or_index);
 
@@ -142,8 +146,8 @@ function forceGraphOption() {
                     }
 
                     keyList = Array.from(new Set(keyList));
-                    str = '<att>I. Reference List: </att>' + str + '<br /><br />';
-                    str = str + '<att>II. Leak Key: </att>' + keyList.join(', ');
+                    str = '<strong style="font-weight:500">I. Reference List: </strong>' + str + '<br /><br />';
+                    str = str + '<strong style="font-weight:500">II. Leak Key: </strong>' + keyList.join(', ');
                     return str;
                 };
                 result.showStr = function (id, index) {

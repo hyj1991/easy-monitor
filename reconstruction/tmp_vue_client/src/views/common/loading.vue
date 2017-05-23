@@ -46,10 +46,9 @@
 <script>
     export default {
         data() {
-            return {
-                defaultLoadingMsg: 'Loading...'
-            }
+            return { defaultLoadingMsg: 'Loading...' }
         },
+        
         props: ['loadingMsg', 'error']
     }
 </script>

@@ -27,9 +27,7 @@
 <script>
     export default {
         data() {
-            return {
-                config
-            }
+            return { config }
         },
 
         props: ['list', 'needHome'],
