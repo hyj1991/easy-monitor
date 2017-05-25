@@ -1,0 +1,34 @@
+{
+  "name": "easy-monitor",
+  "version": "2.0.0",
+  "description": "a node.js performance analysis tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "egg-bin cov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyj1991/easy-monitor.git"
+  },
+  "keywords": [
+    "nodejs",
+    "monitor",
+    "cpu",
+    "memory",
+    "performance"
+  ],
+  "author": "https://github.com/hyj1991",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hyj1991/easy-monitor/issues"
+  },
+  "homepage": "https://github.com/hyj1991/easy-monitor#readme",
+  "devDependencies": {
+    "egg-bin": "^3.4.0"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "glob": "^7.1.2",
+    "lodash": "^4.17.4"
+  }
+}
