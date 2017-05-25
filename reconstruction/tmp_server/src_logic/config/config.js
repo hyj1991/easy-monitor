@@ -7,7 +7,7 @@ module.exports = {
      * @param false 默认启动方式，dashboard 和 embrace 均启动
      * @description 是否采用集群部署的模式
      */
-    cluster: true,
+    cluster: false,
 
     /**
      * @type {string} 值为 "dashboard" 或者 "进程，embrace"
@@ -22,4 +22,7 @@ module.exports = {
 
     //压缩分隔符
     endSymbol: '!&@#$%\r\n',
+
+    //项目名称 - 服务器信息 分隔符
+    seg: "#-#"
 }
