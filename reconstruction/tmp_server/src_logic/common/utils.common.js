@@ -1,36 +1,18 @@
 'use strict';
+const zlib = require('zlib');
 const lodash = require('lodash');
 const child_process = require('child_process');
 const EventEmitter = require('events').EventEmitter;
 const event = new EventEmitter();
 
 module.exports = function (_common, config, logger) {
-
-    /**
-     * @param {string | object} options 
-     * @return {object}
-     * @description 对用户传入参数进行合并
-     */
-    function merge(options) {
-        //传入参数为字符串，则认为是项目名称
-        if (typeof options === 'string') {
-            config.title = options;
-        }
-
-        //传入参数为对象，则和原始参数进行合并操作
-        if (typeof options === 'object') {
-            lodash.merge(config, options);
-        }
-
-        return config;
-    }
-
     /**
      * @param {string} forkPath 
+     * @param {array} argv
      * @description 启动子进程
      */
-    function forkNode(forkPath) {
-        const dashboard = child_process.fork(forkPath);
+    function forkNode(forkPath, argv) {
+        const dashboard = child_process.fork(forkPath, argv);
         //侦听到 'exit' 事件则输出日志后退出
         dashboard.on('exit', signal => {
             if (signal === 0) {
@@ -42,8 +24,72 @@ module.exports = function (_common, config, logger) {
         });
 
         //侦听到配置的 fork_restart 事件，则重新生成子进程
-        event.on(config.fork_restart, forkNode.bind(forkPath));
+        event.on(config.fork_restart, forkNode.bind(null, forkPath, argv));
     }
 
-    return { event, merge, forkNode }
+    /**
+     * @param {string} str
+     * @return {object}
+     * @description 安全的 json 字符转换串操作
+     */
+    function jsonParse(str) {
+        let result = {};
+        try {
+            result = JSON.parse(str);
+        } catch (e) {
+            logger.error(`common.utils->jsonParse error: ${e}`);
+        }
+        return result;
+    }
+
+    /**
+     * @param {string} msg 
+     * @return {promise}
+     * @description 采用 node.js 自带的压缩模块对需要传输的数据进行压缩
+     */
+    function compressMsg(msg) {
+        return new Promise((resolve, reject) => {
+            zlib.deflate(msg, (err, buffer) => {
+                if (err) return reject(err);
+                return resolve(buffer);
+            });
+        });
+    }
+
+    /**
+     * @param {buffer | string} buffer @param {buffer | string} endSymbol
+     * @description 对 buffer 对象进行按照传入的结束符进行分割操作
+     */
+    function bufferSplit(buffer, endSymbol) {
+        buffer = Buffer.isBuffer(buffer) && buffer || Buffer.from(buffer);
+        endSymbol = Buffer.isBuffer(endSymbol) && endSymbol || Buffer.from(endSymbol);
+
+        //初始化偏移量和存储结果的数组
+        let offset = 0;
+        let array = [];
+        let symIndex = buffer.indexOf(endSymbol, offset);
+
+        //从偏移量起始开始查询，如果依旧能查询到结束符的位置，则继续分割
+        while (~symIndex) {
+            array.push(buffer.slice(offset, symIndex));
+            offset = symIndex + endSymbol.length;
+            symIndex = buffer.indexOf(endSymbol, offset);
+        }
+        array.push(buffer.slice(offset));
+
+        //返回结果数组
+        return array;
+    }
+
+    /**
+     * @param {buffer} msg
+     * @description 将 zlib 压缩过的 buffer 解压为字符串
+     */
+    function parseMessage(msg) {
+        msg = Buffer.isBuffer(msg) && msg || Buffer.from(msg);
+        msg = zlib.inflateSync(msg);
+        return String(msg);
+    }
+
+    return { event, forkNode, jsonParse, compressMsg, bufferSplit, parseMessage }
 }

@@ -34,6 +34,7 @@ function createLibrary(base, files) {
 
         //比其余 common 文件更先加载
         const preList = options.pre || [];
+        const param = options.param || {};
         //查找是否预加载了 logger 模块
         const loggerIndex = preList.indexOf('logger');
         const fileList = getFileList(base, files);
@@ -41,7 +42,11 @@ function createLibrary(base, files) {
             let res = {};
             try {
                 res = require(path.join(base, `${name}${ext}`));
+                //如果有预设的额外参数，则增加到参数数组中
+                if (param[name]) pre.push(param[name]);
                 res = res.apply(null, pre);
+                //如果有预设的额外参数，使用完成后清除掉
+                if (param[name]) pre.pop();
             } catch (e) { console.error(colors['red'](`[Easy-Monitor] <${name}${ext}> pre-load error: ${e}`)) }
 
             pre.push(res);

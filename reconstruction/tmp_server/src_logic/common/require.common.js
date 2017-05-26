@@ -1,7 +1,7 @@
 'use strict';
 const path = require('path');
 
-module.exports = function (_common, config, logger) {
+module.exports = function (_common, config, logger, utils) {
     /**
      * @param {string} root 
      * @return {function}

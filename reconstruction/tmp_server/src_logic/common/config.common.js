@@ -7,7 +7,30 @@ const configPath = path.join(__dirname, '../config');
 const lodash = require('lodash');
 const ext = '.config.js';
 
-module.exports = function abc(_common) {
+module.exports = function abc(_common, userConfig) {
+    /**
+     * @param {*} userConfig 
+     * @return {object}
+     * @description 将用户传入的参数进行格式化
+     */
+    function userConfigSerialize() {
+        const uc = {};
+        //如果是字符串，则设置为项目 title
+        if (typeof userConfig === 'string') {
+            uc.project_name = userConfig;
+        }
+        //如果是对象，则将对象内容合并至结果
+        if (typeof userConfig === 'object') {
+            //对 logger 配置进行便利化操作
+            if (userConfig.log_level) {
+                uc.logger = { "log_level": userConfig.log_level }
+            }
+            lodash.merge(uc, userConfig);
+        }
+
+        return uc;
+    }
+
     /**
      * @param {array} nameList  @param {function} done
      * @description 此配置文件依赖的配置项未全部生成，则设置侦听器等待生成完毕后合并 
@@ -33,7 +56,7 @@ module.exports = function abc(_common) {
         if (typeof fn === 'function') {
             fn = fn.apply(fn, [target]);
         }
-        lodash.merge(target, fn);
+        lodash.merge(target, fn, userConfigSerialize());
         event.emit(ev);
     }
 

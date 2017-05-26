@@ -20,9 +20,18 @@ module.exports = {
     //用来处理子进程重启
     fork_restart: 'fork_node_restart',
 
+    //进程信息分隔符
+    process_seg: '::',
+
     //压缩分隔符
-    endSymbol: '!&@#$%\r\n',
+    end_symbol: '!&@#$%\r\n',
 
     //项目名称 - 服务器信息 分隔符
-    seg: "#-#"
+    seg: "#-#",
+
+    //tcp 客户端心跳间隔
+    tcp_heartbeat: 5 * 1000,
+
+    //tcp 客户端断链重连次数到达限后，发布重新建立子进程的事件
+    reconnect_limit: 10
 }

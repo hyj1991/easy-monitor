@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (_common, config, logger) {
+module.exports = function (_common, config, logger, utils) {
     /**
      * @param {string} type 加载的 controller 类型
      * @param {string} cp 加载的 controller 根路径

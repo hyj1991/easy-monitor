@@ -14,7 +14,32 @@ const app = express();
 function createTcpServer(config, common, dbl) {
     const utils = common.utils;
     const socketUtils = common.socket;
-    const server = net.createServer(socketUtils.on.bind(null, utils, dbl));
+    const controller = {};
+    //创建服务器
+    const server = net.createServer(socket => {
+        dbl.debug(`receive new socket from <${socket.remoteAddress}:${socket.remotePort}>`);
+
+        //处理客户端连接发送的数据
+        const chunkInfo = { chunks: [], size: 0 };
+        const ctx = { common, dbl, chunkInfo, controller };
+        socket.on('data', socketUtils.onData.bind(ctx, socket));
+
+        //客户端连接的错误事件处理
+        socket.on('error', err => {
+            dbl.error(`tcpserver->error ${err}`);
+        });
+
+        //客户端连接的 socket end 事件处理
+        socket.on('end', () => {
+            // helper.deleteCacheSocket(socket.__pid__);
+            //dbl.error(`tcpserver->end This Socket closed, pid is ${socket.__pid__}`);
+        });
+    });
+
+    //加载 http 服务器相关路由
+    const controllerPath = path.join(__dirname, './controller');
+    const ctx = { config, common, dbl, controller };
+    common.controller.load.apply(ctx, ['tcp', controllerPath, server]);
 
     return server;
 }

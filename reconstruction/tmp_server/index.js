@@ -2,4 +2,10 @@
 const easyMonitor = require('./dispatch');
 
 //测试代码
-easyMonitor('Closure Leak');
+easyMonitor({
+    project_name: 'Game Boy Advanced',
+    cluster: false,
+    log_level: 3
+});
+
+// easyMonitor('Closure Leak');

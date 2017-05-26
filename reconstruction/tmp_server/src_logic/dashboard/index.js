@@ -12,7 +12,7 @@ module.exports.start = function (config, common) {
     //为 dashboard 新建一个不同前缀的 logger
     const Logger = common.logger.Logger;
     const logLevel = config.logger && config.logger.log_level || 2;
-    const dbl = new Logger(logLevel, '[Easy-Monitor: dashboard] ')
+    const dbl = new Logger(logLevel, '[Easy-Monitor: dashboard] ');
 
     //cluster 模式下取出服务句柄
     const dispatch = _require('dashboard/dispatch')(config, common, dbl);

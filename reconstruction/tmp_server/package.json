@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "body-parser": "^1.17.2",
+    "co": "^4.6.0",
     "colors": "^1.1.2",
     "compression": "^1.6.2",
     "ejs": "^2.5.6",
