@@ -1,15 +1,32 @@
 'use strict';
+const path = require('path');
 const net = require('net');
 
-module.exports = function (config, common, dbl) {
+/**
+ * @param {object} config @param {object} common @param {logger} dbl
+ * @description 获取 embrace 客户端的 controller
+ */
+function createController(config, common, dbl) {
+    const controller = {};
+    const controllerPath = path.join(__dirname, './controller');
+    const ctx = { config, common, dbl, controller };
+    common.controller.load.apply(ctx, ['tcp', controllerPath]);
+    return controller;
+}
+
+/**
+ * @param {object} config @param {object} common @param {logger} dbl
+ * @description 创建和 dashboard 通信的客户端
+ */
+function createTcpClient(config, common, dbl) {
     //获取公共方法，以及针对 tcp 链接的公共方法
+    const controller = this.controller;
     const utils = common.utils;
     const socketUtils = common.socket;
-    const controller = {};
 
     //和服务器建立链接，以及初始心跳包设置
     const client = new net.Socket();
-    let heartBeatMessage = socketUtils.composeMessage('req', 0, {
+    const heartBeatMessage = socketUtils.composeMessage('req', 0, {
         pid: `${config.project_name}${config.process_seg}${config.embrace.machineUniqueKey}${config.process_seg}${process.pid}`
     });
     let reconnectTimes = 0;
@@ -56,4 +73,9 @@ module.exports = function (config, common, dbl) {
         client.destroy();
         setTimeout(_connect, 200);
     });
+}
+
+module.exports = {
+    tcp: createTcpClient,
+    controller: createController,
 };

@@ -27,6 +27,15 @@ module.exports.start = function (config, common) {
         process.exit(0);
     });
 
+    //如果用户注入了私有服务器(仅在 cluster 模式下生效)
+    if (config.cluster && dispatch.private) {
+        const handle = dispatch.private;
+        const dServerPrivate = config.dashboard && config.dashboard.server_private;
+        const dPortPrivate = config.dashboard && config.dashboard.port_private;
+        const privateServer = handle.listen(dPortPrivate, dServerPrivate, dbl.info.bind(dbl, `private_server start at ${dPortPrivate}...`))
+        return;
+    }
+
     //启动 tcp 服务器
     const tcp = dispatch.tcp;
     const tcpServer = tcp.listen(dPortTcp, dServerTcp, dbl.info.bind(dbl, `tcp_server start at ${dPortTcp}...`));

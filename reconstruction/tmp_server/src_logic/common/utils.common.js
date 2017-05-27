@@ -91,5 +91,14 @@ module.exports = function (_common, config, logger) {
         return String(msg);
     }
 
-    return { event, forkNode, jsonParse, compressMsg, bufferSplit, parseMessage }
+    /**
+     * @param {any} obj
+     * @description 判断传入的参数类型是否为 promise
+     */
+    function isPromise(obj) {
+        obj = typeof obj === 'object' && obj || {};
+        return typeof obj.then === 'function';
+    }
+
+    return { event, forkNode, jsonParse, compressMsg, bufferSplit, parseMessage, isPromise }
 }

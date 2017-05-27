@@ -30,7 +30,7 @@ module.exports = {
     seg: "#-#",
 
     //tcp 客户端心跳间隔
-    tcp_heartbeat: 5 * 1000,
+    tcp_heartbeat: 60 * 1000,
 
     //tcp 客户端断链重连次数到达限后，发布重新建立子进程的事件
     reconnect_limit: 10

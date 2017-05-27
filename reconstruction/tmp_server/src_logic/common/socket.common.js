@@ -53,6 +53,7 @@ module.exports = function (_common, config, logger, utils) {
         const ctx = this;
         const chunkInfo = ctx.chunkInfo;
         const dbl = ctx.dbl;
+        const common = ctx.common;
         const controller = ctx.controller;
 
         //对接收到的 buffer 流数据进行处理
@@ -79,7 +80,16 @@ module.exports = function (_common, config, logger, utils) {
                 const ctrlKey = item.msgType;
                 if (controller[ctrlKey]) {
                     const fn = controller[ctrlKey];
-                    typeof fn === 'function' && fn(socket, item.data);
+                    const returnMsg = typeof fn === 'function' && fn(socket, item.data) || false;
+                    //如果 controller 返回的值是 promise，则调用 then 后再返回
+                    if (common.utils.isPromise(returnMsg)) {
+                        returnMsg.then(r => common.socket.sendMessage(socket, r));
+                        return;
+                    }
+                    //普通对象或者字符串直接调用返回数据方法将处理数据返回给请求方
+                    if (returnMsg) {
+                        common.socket.sendMessage(socket, returnMsg);
+                    }
                 }
             });
         }

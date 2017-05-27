@@ -8,6 +8,18 @@ module.exports.start = function (config, common) {
     const logLevel = config.logger && config.logger.log_level || 2;
     const dbl = new Logger(logLevel, '[Easy-Monitor: embrace] ');
 
+    //获取 embrace 的 dispatch 信息
+    const dispatch = _require('embrace/dispatch');
+    const controller = dispatch.controller(config, common, dbl);
+
+    //如果在 cluster 模式下，且 private 字段不为空，则启动私有客户端
+    if (config.cluster && config.private && config.private.client) {
+        const fn = config.private.client;
+        typeof fn === 'function' && fn.call({ config, common, dbl, controller });
+        return;
+    }
+
     //启动 tcp 客户端
-    _require('embrace/dispatch')(config, common, dbl);
+    const tcpClient = dispatch.tcp;
+    tcpClient.apply({ controller }, [config, common, dbl]);
 }

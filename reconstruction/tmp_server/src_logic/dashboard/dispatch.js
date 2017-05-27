@@ -14,6 +14,7 @@ const app = express();
 function createTcpServer(config, common, dbl) {
     const utils = common.utils;
     const socketUtils = common.socket;
+    const cacheUtils = common.cache;
     const controller = {};
     //创建服务器
     const server = net.createServer(socket => {
@@ -31,12 +32,12 @@ function createTcpServer(config, common, dbl) {
 
         //客户端连接的 socket end 事件处理
         socket.on('end', () => {
-            // helper.deleteCacheSocket(socket.__pid__);
-            //dbl.error(`tcpserver->end This Socket closed, pid is ${socket.__pid__}`);
+            cacheUtils.storage.delP(socket.__key__, config.cache.socket_list);
+            dbl.error(`tcpserver->end This Socket closed, info is ${socket.__key__}`);
         });
     });
 
-    //加载 http 服务器相关路由
+    //加载 tcp 服务器相关路由
     const controllerPath = path.join(__dirname, './controller');
     const ctx = { config, common, dbl, controller };
     common.controller.load.apply(ctx, ['tcp', controllerPath, server]);
@@ -63,14 +64,42 @@ function createHttpServer(config, common, dbl) {
     //加载 http 服务器相关路由
     const controllerPath = path.join(__dirname, './controller');
     const ctx = { config, common, dbl };
+    app.get('/hello', (req, res, next) => res.send('success'));
     common.controller.load.apply(ctx, ['http', controllerPath, app]);
 
     return app;
 }
 
+/**
+ * @param {object} config @param {object} common @param {logger} dbl
+ * @description 生成 private 服务器，并且返回获得的服务器句柄
+ * @description 注意：此服务器作用是替代默认的 tcp 通信方案，用于一些特殊的场合
+ */
+function createPrivateServer(config, common, dbl) {
+    //私有服务器仅在 cluster 模式下生效
+    if (!config.cluster || config.bootstrap !== 'dashboard') return false;
+    //如果用户没有传入 private 节点，则返回 false
+    if (!config.private) return false;
+
+    const privateServer = config.private.server;
+    //config.private.server 节点必须是一个函数
+    if (!typeof privateServer === 'function') return false;
+
+    //加载 private 服务器相关路由
+    const controller = {};
+    const controllerPath = path.join(__dirname, './controller');
+    const ctx = { config, common, dbl, controller };
+    common.controller.load.apply(ctx, ['tcp', controllerPath]);
+
+    //返回私有服务器句柄    
+    const handle = privateServer.call(ctx);
+    return handle;
+}
+
 module.exports = function (config, common, dbl) {
     return {
         tcp: createTcpServer(config, common, dbl),
-        http: createHttpServer(config, common, dbl)
+        http: createHttpServer(config, common, dbl),
+        private: createPrivateServer(config, common, dbl)
     };
 };
