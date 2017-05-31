@@ -34,7 +34,6 @@ module.exports = function (_common, config, logger, utils) {
         }
     }
 
-
     /**
      * @description 初始化 common.cache
      */
@@ -58,6 +57,9 @@ module.exports = function (_common, config, logger, utils) {
                 config.storage.setP = result.setP;
                 config.storage.getP = result.getP;
                 config.storage.delP = result.delP;
+                //mq 相关初始化一并处理掉
+                config.storage.sub = result.sub;
+                config.storage.pub = result.pub;
                 //设置锁相关操作
                 config.storage.lockUtil = lockUtil(config.storage);
 
@@ -103,7 +105,7 @@ module.exports = function (_common, config, logger, utils) {
                         else oldCache = {};
 
                         //对于 socket 信息类型，仅仅保存一个空对象备用
-                        oldCache[key] = type === config.cache.socket_list && { pid: process.pid } || value;
+                        oldCache[key] = type === config.cache.socket_list && { pid: process.pid, server: config.embrace.machine_unique_key } || value;
                         //存储后塞回缓存中
                         yield storage.setP(type, JSON.stringify(oldCache), 'EX', config.cache.ex_timeout);
                     } else {//获取不到锁，则在下一个 tick 继续尝试获取锁

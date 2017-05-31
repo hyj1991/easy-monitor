@@ -113,18 +113,31 @@ module.exports = function (_common, config, logger) {
          * @description 内部方法，进行具体初始化逻辑操作
          */
         function* _init(common) {
-            try {
-                const list = Object.keys(common);
-                for (let i = 0, l = list.length; i < l; i++) {
-                    const fn = common[list[i]].initP;
+            const list = Object.keys(common);
+            for (let i = 0, l = list.length; i < l; i++) {
+                try {
+                    const fn = common[list[i]] && common[list[i]].initP;
                     if (fn) yield fn();
-                }
-            } catch (e) { logger.error(`common.utils->commonInitP error: ${e}`) }
+                } catch (e) { logger.error(`common.utils->commonInitP <${list[i]}> error: ${e}`) }
+            }
         }
     }
 
+    /**
+     * @param {object} mq
+     * @description 启动 mq 消息队列
+     */
+    function startMq(mq) {
+        if (!mq) return;
+        const channel = mq.composeChannel(config.mq.process_key);
+        mq.subscribe(channel, function (error, message) {
+            console.log(error, channel, message);
+        });
+    }
+
     return {
-        event, forkNode, jsonParse, compressMsg,
-        bufferSplit, parseMessage, isPromise, commonInitP
+        event, forkNode, jsonParse,
+        compressMsg, bufferSplit, parseMessage,
+        isPromise, commonInitP, startMq
     }
 }
