@@ -19,6 +19,6 @@ exports = module.exports = {
          * @type {string}
          * @description 设置机器唯一标识符，默认是 Hostname，考虑到 docker 部署下 hostname 会重复，所以允许注入
          */
-        machineUniqueKey: os.hostname()
+        machine_unique_key: os.hostname()
     }
 }

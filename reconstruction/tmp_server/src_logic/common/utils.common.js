@@ -1,4 +1,5 @@
 'use strict';
+const co = require('co');
 const zlib = require('zlib');
 const lodash = require('lodash');
 const child_process = require('child_process');
@@ -100,5 +101,30 @@ module.exports = function (_common, config, logger) {
         return typeof obj.then === 'function';
     }
 
-    return { event, forkNode, jsonParse, compressMsg, bufferSplit, parseMessage, isPromise }
+    /**
+     * @param {object} common
+     * @description 对 common 列表中需要进行初始化操作的文件进行对应处理
+     */
+    function commonInitP(common) {
+        return co(_init, common);
+
+        /**
+         * @param {object} common
+         * @description 内部方法，进行具体初始化逻辑操作
+         */
+        function* _init(common) {
+            try {
+                const list = Object.keys(common);
+                for (let i = 0, l = list.length; i < l; i++) {
+                    const fn = common[list[i]].initP;
+                    if (fn) yield fn();
+                }
+            } catch (e) { logger.error(`common.utils->commonInitP error: ${e}`) }
+        }
+    }
+
+    return {
+        event, forkNode, jsonParse, compressMsg,
+        bufferSplit, parseMessage, isPromise, commonInitP
+    }
 }

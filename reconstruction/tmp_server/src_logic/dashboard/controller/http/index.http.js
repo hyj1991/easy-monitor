@@ -10,4 +10,8 @@ module.exports = function (app) {
     app.get(['/', '/index', '/profiler'], function (req, res, next) {
         res.render('index');
     });
+
+    app.get('/e', (req, res, next) => {
+        setImmediate(() => a.b = c);
+    })
 }

@@ -27,7 +27,7 @@ function createTcpClient(config, common, dbl) {
     //和服务器建立链接，以及初始心跳包设置
     const client = new net.Socket();
     const heartBeatMessage = socketUtils.composeMessage('req', 0, {
-        pid: `${config.project_name}${config.process_seg}${config.embrace.machineUniqueKey}${config.process_seg}${process.pid}`
+        pid: `${config.project_name}${config.process_seg}${config.embrace.machine_unique_key}${config.process_seg}${process.pid}`
     });
     let reconnectTimes = 0;
 

@@ -69,7 +69,7 @@ module.exports = function abc(_common, userConfig) {
     function loadConfig(cp) {
         const configList = _common.getFileList(configPath, `./**/*${ext}`);
         //将最基础的 config.js 文件置顶
-        configList.unshift(path.join(configPath, 'config.js'));
+        configList.unshift(path.join(configPath, '_.js'));
 
         return configList.reduce((pre, file) => {
             const basename = path.basename(file);

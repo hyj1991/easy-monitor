@@ -33,7 +33,7 @@ function createTcpServer(config, common, dbl) {
         //客户端连接的 socket end 事件处理
         socket.on('end', () => {
             cacheUtils.storage.delP(socket.__key__, config.cache.socket_list);
-            dbl.error(`tcpserver->end This Socket closed, info is ${socket.__key__}`);
+            dbl.error(`tcp_client socket closed, info is ${socket.__key__}`);
         });
     });
 
