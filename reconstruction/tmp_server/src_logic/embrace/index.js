@@ -6,7 +6,7 @@ module.exports.start = function (config, common) {
     //为 dashboard 新建一个不同前缀的 logger
     const Logger = common.logger.Logger;
     const logLevel = config.logger && config.logger.log_level || 2;
-    const dbl = new Logger(logLevel, '[Easy-Monitor: embrace] ');
+    const dbl = new Logger(logLevel, `[Easy-Monitor: embrace <${process.pid}>] `);
 
     //获取 embrace 的 dispatch 信息
     const dispatch = _require('embrace/dispatch');

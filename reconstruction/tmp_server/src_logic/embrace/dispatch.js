@@ -68,10 +68,10 @@ function createTcpClient(config, common, dbl) {
             reconnectTimes = 0;
         }
         dbl.debug(`tcpclient->close pid ${process.pid}, tcp connection closed`);
-        //when socket close, remove original listener to avoid memory leak
+        //这里不将 connect 事件监听器移除，则会隐式地产生内存泄漏的问题
         client.removeListener('connect', _callbackListener);
         client.destroy();
-        setTimeout(_connect, 200);
+        setTimeout(_connect, config.reconnect_time);
     });
 }
 
