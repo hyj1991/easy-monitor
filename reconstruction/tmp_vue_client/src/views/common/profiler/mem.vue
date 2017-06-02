@@ -252,7 +252,7 @@
                 constructor: false, type: false, force: false, modal_node_id: null,
                 singleProfiler: null, error: null, checkStatTimer: null,
                 axiosDone: { profilerDetail: false },
-                axiosSended: false, node_id: '',
+                axiosSended: true, node_id: '',
                 process_status: 1, //1.healthy 2.warning 3.leaking 
                 circle_color: { healthy: '#5cb85c', warning: '#ff9900', leaking: '#ff3300' },
                 columns_constructor: [

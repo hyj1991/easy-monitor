@@ -105,7 +105,7 @@ app.post('/axiosProfiler', function axiosProfiler(req, res, next) {
         }
     });
 
-    res.send(JSON.stringify({ success: true, msg: `${JSON.stringify(notInitKeyList)} task created!` }));
+    res.send(JSON.stringify({ success: true, data: `${JSON.stringify(notInitKeyList)} task created!` }));
 
     function _memOpreator(key) {
         const pid = key.split("_")[2];
@@ -176,7 +176,7 @@ app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
     const key = `${body.processName}_${body.serverName}_${body.pid}_${body.opt}`;
 
     if (!profilerData[key]) {
-        res.send(JSON.stringify({ success: false, msg: `${key} task do not exist!` }));
+        res.send(JSON.stringify({ success: false, data: `${key} task do not exist!` }));
         return;
     }
 
@@ -196,7 +196,7 @@ app.post('/axiosProfilerDetail', function axiosProfilerDetail(req, res, next) {
             data.set = true;
         });
     }
-    res.send(JSON.stringify({ success: true, msg: JSON.stringify(data) }));
+    res.send(JSON.stringify({ success: true, data: JSON.stringify(data) }));
 
     //获取一次成功数据后清空操作，此处逻辑可以定制
     if (profilerData[key].done || profilerData[key].error) {
