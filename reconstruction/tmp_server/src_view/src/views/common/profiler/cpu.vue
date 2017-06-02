@@ -98,7 +98,7 @@
         data() {
             return {                
                 singleProfiler: null, error: null, checkStatTimer: null,
-                axiosDone: { profilerDetail: false }, axiosSended: false,
+                axiosDone: { profilerDetail: false }, axiosSended: true,
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '执行时长', key: 'execTime', align: 'center' },

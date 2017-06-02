@@ -1,5 +1,6 @@
 'use strict';
 import axios from 'axios';
+import router from '../main.js';
 
 /**
  * @component: views/profiler.vue
@@ -9,7 +10,10 @@ import axios from 'axios';
 function startProfiling(data, tag) {
     data.tag = tag;
     axios.post(config.default.axiosPath.startProfiler, { data })
-        .then(response => { response.data })
+        .then(response => {
+            const data = response.data;
+            if (!data.success) router.push({ path: '/index' });
+        })
         .catch(err => console.error(err));
 }
 

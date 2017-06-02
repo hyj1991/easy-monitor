@@ -18,7 +18,7 @@
   "dependencies": {
     "axios": "^0.16.1",
     "echarts": "^3.5.4",
-    "iview": "^2.0.0-rc.8",
+    "iview": "2.0.0-rc.13",
     "lodash": "^4.17.4",
     "vue": "^2.2.6",
     "vue-router": "^2.2.1"

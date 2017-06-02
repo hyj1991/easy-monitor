@@ -89,8 +89,8 @@ function checkStat(data) {
             .then(response => {
                 vm.axiosSended = false;
                 const data = response && response.data || {};
-                if (data.success && data.msg) {
-                    const msg = JSON.parse(data.msg);
+                if (data.success && data.data) {
+                    const msg = JSON.parse(data.data);
                     let axiosProfilerDetailDone = Boolean(msg.done);
                     if (msg.error) {
                         axiosProfilerDetailDone = true;
@@ -99,9 +99,9 @@ function checkStat(data) {
                     vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
                     vm.singleProfiler = msg.results;
                 } else {
-                    //const errorMsg = 'Server Inner Error, Please refresh this page!';
-                    //vm.error = data.msg || errorMsg;
-                    //clearInterval(vm.checkStatTimer);
+                    // const errorMsg = 'Server Inner Error, Please refresh this page!';
+                    // vm.error = data.error || errorMsg;
+                    // clearInterval(vm.checkStatTimer);
                 }
             })
             .catch(err => {
