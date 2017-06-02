@@ -32,7 +32,11 @@ function createTcpServer(config, common, dbl) {
 
         //客户端连接的 socket end 事件处理
         socket.on('end', () => {
+            //清除缓存中的数据
             cacheUtils.storage.delP(socket.__key__, config.cache.socket_list);
+            //强制清除内存中的数据
+            cacheUtils.storage.delP(socket.__key__, config.cache.socket_list, true);
+            //输出错误日志
             dbl.error(`tcp_client socket closed, info is ${socket.__key__}`);
         });
     });

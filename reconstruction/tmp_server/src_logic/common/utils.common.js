@@ -35,10 +35,11 @@ module.exports = function (_common, config, logger) {
      */
     function jsonParse(str) {
         let result = {};
+        if (!str) return result;
         try {
             result = JSON.parse(str);
         } catch (e) {
-            logger.error(`common.utils->jsonParse error: ${e}`);
+            logger.error(`common.utils->jsonParse error: ${e}, raw str is: ${str}`);
         }
         return result;
     }
@@ -124,20 +125,27 @@ module.exports = function (_common, config, logger) {
     }
 
     /**
-     * @param {object} mq
+     * @param {object} mq @param {function} cb
      * @description 启动 mq 消息队列
      */
-    function startMq(mq) {
+    function startMq(mq, cb) {
         if (!mq) return;
         const channel = mq.composeChannel(config.mq.process_key);
-        mq.subscribe(channel, function (error, message) {
-            console.log(error, channel, message);
-        });
+        mq.subscribe(channel, cb);
+    }
+
+    /**
+     * @param {string} prefix @param {string} suffix
+     * @description cache 配置文件中部分需要在 cluster 模式下重新生成的配置
+     */
+    function joinCacheKey(prefix, suffix) {
+        if (!config.cache) return;
+        config.cache[prefix] = `${config.cache[prefix]}${suffix}`;
     }
 
     return {
         event, forkNode, jsonParse,
         compressMsg, bufferSplit, parseMessage,
-        isPromise, commonInitP, startMq
+        isPromise, commonInitP, startMq, joinCacheKey
     }
 }

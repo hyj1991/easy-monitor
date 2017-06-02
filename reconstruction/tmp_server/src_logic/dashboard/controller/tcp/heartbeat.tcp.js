@@ -19,14 +19,17 @@ module.exports = function (server) {
         data = common.utils.jsonParse(data);
         const processInfoList = data.pid && data.pid.split(config.process_seg);
 
-        const key = cacheUtils.composeKey({
-            project: processInfoList[0],
+        //组装 socket 缓存 key
+        const key = common.socket.composeKey({
+            name: processInfoList[0],
             server: processInfoList[1],
             pid: processInfoList[2]
         });
 
         //缓存 socket 信息, 将 key 写入 socket 的 __key__ 属性
         cacheUtils.storage && cacheUtils.storage.setP(key, socket, config.cache.socket_list, true);
+        //强制缓存一份数据至内存
+        cacheUtils.storage && cacheUtils.storage.setP(key, socket, config.cache.socket_list, true, true);
         socket.__key__ = key;
 
         //返回 heartbeat 的成功响应给客户端

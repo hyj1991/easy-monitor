@@ -34,6 +34,8 @@
     "ejs": "^2.5.6",
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
-    "serve-favicon": "^2.4.3"
+    "serve-favicon": "^2.4.3",
+    "v8-analytics": "^1.2.5",
+    "v8-profiler": "^5.7.0"
   }
 }

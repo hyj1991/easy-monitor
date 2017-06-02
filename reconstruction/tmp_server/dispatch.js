@@ -12,8 +12,6 @@ module.exports = co.wrap(function* (options) {
     const common = _common({ pre: ['config', 'logger', 'utils', 'cache'], param: { config: options } });
     //对 common 文件中需要进行初始化操作的文件进行对应的操作
     yield common.utils.commonInitP(common);
-    //如果有消息队列，开启本进程的消息订阅
-    common.utils.startMq(common.mq);
 
     //获取公共方法
     const _require = common.require;

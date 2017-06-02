@@ -25,6 +25,7 @@ module.exports = function (app) {
         let processInfo = {};
         try {
             processInfo = yield cacheUtils.storage.getP(config.cache.socket_list);
+            processInfo = typeof processInfo === 'object' && processInfo || common.utils.jsonParse(processInfo);
         } catch (err) {
             dbl.error(`controller.http.axios->index storage.getP(${config.cache.socket_list}) error: ${err}`);
             response.success = false;
@@ -33,7 +34,7 @@ module.exports = function (app) {
         //处理获取到的 socket 列表信息
         Object.keys(processInfo).forEach(item => {
             const keyObject = cacheUtils.decodeKey(item);
-            const keyTmp = `${keyObject.project}${config.seg}${keyObject.server}`
+            const keyTmp = `${keyObject.name}${config.seg}${keyObject.server}`
             const projectPidMap = response.data.projectPidMap;
             if (projectPidMap[keyTmp]) {
                 projectPidMap[keyTmp].list.push(keyObject.pid);

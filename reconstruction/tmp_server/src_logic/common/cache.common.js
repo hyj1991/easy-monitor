@@ -1,9 +1,20 @@
 'use strict';
 const co = require('co');
+const lodash = require('lodash');
 //组装 key 的分隔符
 const cache = {};
 
 module.exports = function (_common, config, logger, utils) {
+
+    /**
+     * @param {boolean} force
+     * @description 是否开启第三方缓存
+     */
+    function thirdCache(force) {
+        if (force) return false;
+        return Boolean(config.cluster && config.storage);
+    }
+
     /**
      * @param {object{function}} storage 
      * @description 资源锁简单实现，公共方法
@@ -14,10 +25,12 @@ module.exports = function (_common, config, logger, utils) {
              * @param {string} suffix
              * @description 获取资源锁，设置了 2s 的默认超时，以防止资源死锁
              */
-            lockP(suffix) {
-                return co(_lockG, suffix);
-                function* _lockG(suffix) {
-                    return yield storage.setP(`${config.cache.lock_prefix}${suffix}`, Date.now(), 'EX', config.cache.lock_timeout, 'NX');
+            lockP(suffix, params) {
+                return co(_lockG, suffix, params);
+                function* _lockG(suffix, params) {
+                    params = params || {};
+                    const value = lodash.merge({ ts: Date.now() }, params);
+                    return yield storage.setP(`${config.cache.lock_prefix}${suffix}`, JSON.stringify(value), 'EX', config.cache.lock_timeout, 'NX');
                 }
             },
 
@@ -46,7 +59,7 @@ module.exports = function (_common, config, logger, utils) {
          * @description 内部方法，初始化 storage 节点相关信息
         */
         function* _initStorageG(config) {
-            if (config.cluster && config.storage) {
+            if (thirdCache()) {
                 //cluster 集群部署，暂时仅支持第三方使用 redis 缓存
                 if (config.storage.type !== 'redis') throw new Error('暂时仅支持 Redis!');
 
@@ -68,8 +81,10 @@ module.exports = function (_common, config, logger, utils) {
                 const master = Boolean(yield result.setP(key, process.pid, 'EX', config.cache.nx_timeout, 'NX'));
 
                 //针对 master / not master 进行不同的统一前缀 key 处理
-                if (master) config.cache.socket_list = `${config.cache.socket_list}${process.pid}`;
-                else config.cache.socket_list = `${config.cache.socket_list}${yield result.getP(key)}`;
+                const suffix = master && process.pid || (yield result.getP(key));
+                utils.joinCacheKey('opt_list', suffix);
+                utils.joinCacheKey('socket_list', suffix);
+                utils.joinCacheKey('lock_prefix', suffix);
             }
         }
     }
@@ -78,21 +93,22 @@ module.exports = function (_common, config, logger, utils) {
      * @param {string} key @param {string | object} value
      * @param {string | boolean} type 存储的类型
      * @param {boolean} noconvert 是否不需要自动将对象转换为字符串
+     * @param {boolean} force 是否强制缓存至内存
      * @description 缓存 key - value 键值对
      */
-    function setP(key, value, type, noconvert) {
-        return co(_setG, key, value, type, noconvert);
+    function setP(key, value, type, noconvert, force) {
+        return co(_setG, key, value, type, noconvert, force);
 
         /**
          * @param 参数说明和父函数一致
          * @description 内部方法，处理 setP 的逻辑
          */
-        function* _setG(key, value, type, noconvert) {
+        function* _setG(key, value, type, noconvert, force) {
             if (!noconvert) {
                 value = typeof value === 'object' && JSON.stringify(value) || value;
             }
             // cluster 模式下采取第三方缓存机制
-            if (config.cluster) {
+            if (thirdCache(force)) {
                 const storage = config.storage;
                 const lockUtil = storage.lockUtil;
                 if (type) {
@@ -109,11 +125,11 @@ module.exports = function (_common, config, logger, utils) {
                         //存储后塞回缓存中
                         yield storage.setP(type, JSON.stringify(oldCache), 'EX', config.cache.ex_timeout);
                     } else {//获取不到锁，则在下一个 tick 继续尝试获取锁
-                        process.nextTick(co.wrap(_setG), key, value, type, noconvert);
+                        process.nextTick(co.wrap(_setG), key, value, type, noconvert, force);
                         return;
                     }
                     //操作完成释放资源锁
-                    lockUtil.unlockP(prefix);
+                    yield lockUtil.unlockP(prefix);
                 } else yield storage.setP(key, value, 'EX', config.cache.ex_timeout);
             } else {// 默认模式下简单缓存即可
                 if (type) {
@@ -129,21 +145,21 @@ module.exports = function (_common, config, logger, utils) {
     }
 
     /**
-     * @param {string} key
+     * @param {string} key @param {string} type @param {boolean} force
      * @description 从缓存中取出 key 对应的值
      */
-    function getP(key, type) {
-        return co(_getG, key, type);
+    function getP(key, type, force) {
+        return co(_getG, key, type, force);
 
         /**
          * @param 参数说明和父函数一致
          * @description 内部方法，处理 getP 的逻辑
          */
-        function* _getG(key, type) {
+        function* _getG(key, type, force) {
             let result = {};
 
             // cluster 模式下采取第三方缓存机制
-            if (config.cluster) {
+            if (thirdCache(force)) {
                 const storage = config.storage;
                 if (type) {
                     result = yield storage.getP(type);
@@ -151,10 +167,10 @@ module.exports = function (_common, config, logger, utils) {
                     if (result) result = result[key];
                 } else {
                     result = yield storage.getP(key);
-                    result = utils.jsonParse(result);
+                    // result = utils.jsonParse(result);
                 };
             } else {// 默认模式下简单缓存即可
-                if (type) result = cache[type][key];
+                if (type) result = cache[type] && cache[type][key];
                 else result = cache[key];
             }
 
@@ -163,19 +179,19 @@ module.exports = function (_common, config, logger, utils) {
     }
 
     /**
-     * @param {string} key
+     * @param {string} key @param {string} type @param {boolean} force
      * @description 从缓存中删除 key 对应的值
      */
-    function delP(key, type) {
-        return co(_delG, key, type);
+    function delP(key, type, force) {
+        return co(_delG, key, type, force);
 
         /**
          * @param 参数说明和父函数一致
          * @description 内部方法，处理 delP 的逻辑
          */
-        function* _delG(key, type) {
+        function* _delG(key, type, force) {
             // cluster 模式下采取第三方缓存机制
-            if (config.cluster) {
+            if (thirdCache(force)) {
                 const storage = config.storage;
                 const lockUtil = storage.lockUtil;
                 if (type) {
@@ -194,13 +210,12 @@ module.exports = function (_common, config, logger, utils) {
                         return;
                     }
                     //操作完成释放资源锁
-                    lockUtil.unlockP(prefix);
+                    yield lockUtil.unlockP(prefix);
                 } else yield storage.delP(key);
             } else {// 默认模式下简单缓存即可
                 //如果存在 type，则根据 type 删除对应的 key
                 if (type) delete cache[type][key]
                 else delete cache[key];
-                resolve('success');
             }
         }
     }
@@ -222,5 +237,5 @@ module.exports = function (_common, config, logger, utils) {
         return utils.jsonParse(key);
     }
 
-    return { storage: { setP, getP, delP }, composeKey, decodeKey, initP };
+    return { storage: { setP, getP, delP }, composeKey, decodeKey, initP, thirdCache };
 };

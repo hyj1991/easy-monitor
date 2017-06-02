@@ -4,11 +4,17 @@ exports = module.exports = {
         //缓存 socket 信息列表的前缀 key
         socket_list: 'SOCKET_LIST_',
 
-        //setnx - 确定主进程
-        master: 'IS_MASTER',
-
         //竞态锁前缀
         lock_prefix: 'LOCK_PREFIS_',
+
+        //状态上报资源锁
+        lock_stat_update: 'UPDATE_PROCESS_STAT',
+
+        //缓存操作列表信息的前缀 key
+        opt_list: 'OPTION_LIST_',
+
+        //setnx - 确定主进程
+        master: 'IS_MASTER_',
 
         /**
          * @type {number} 单位 s

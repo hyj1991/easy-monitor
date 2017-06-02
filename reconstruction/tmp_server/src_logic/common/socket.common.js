@@ -1,9 +1,10 @@
 'use strict';
 const co = require('co');
 
-module.exports = function (_common, config, logger, utils) {
+module.exports = function (_common, config, logger, utils, cache) {
     /**
      * @param {string} type @param {number} id @param {object | string} data
+     * @return {object}
      * @description 组装发送信息
      */
     function composeMessage(type, id, data) {
@@ -83,7 +84,7 @@ module.exports = function (_common, config, logger, utils) {
                     const returnMsg = typeof fn === 'function' && fn(socket, item.data) || false;
                     //如果 controller 返回的值是 promise，则调用 then 后再返回
                     if (common.utils.isPromise(returnMsg)) {
-                        returnMsg.then(r => common.socket.sendMessage(socket, r));
+                        returnMsg.then(r => r && common.socket.sendMessage(socket, r)).catch(e => dbl.error(`common.socket->onData error: ${e}`));
                         return;
                     }
                     //普通对象或者字符串直接调用返回数据方法将处理数据返回给请求方
@@ -95,5 +96,32 @@ module.exports = function (_common, config, logger, utils) {
         }
     }
 
-    return { composeMessage, sendMessage, onData }
+    /**
+     * @param {object} params 
+     * @description 用于组装 socket 的 key
+     */
+    function composeKey(params) {
+        const key = {
+            pid: params.pid,
+            name: params.name,
+            server: params.server,
+        }
+
+        return JSON.stringify(key);
+    }
+
+    /**
+     * @param {string | object} message @param {socket} socket 
+     * @description 针对是否 cluster 以及定制了私有协议，采用不同方式上报数据
+     */
+    function notifySide(message, socket) {
+        //cluster 模式下如果定制了私有协议，则采用私有通信方式
+        if (config.cluster && config.private) {
+            const fn = config.private.send;
+            typeof fn === 'function' && fn.apply(this, [message, socket]);
+            socket[config.private.send_key] = true;
+        } else { sendMessage(socket, message) }
+    }
+
+    return { composeMessage, sendMessage, onData, composeKey, notifySide }
 }
