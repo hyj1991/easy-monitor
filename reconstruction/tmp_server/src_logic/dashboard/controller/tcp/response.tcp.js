@@ -34,7 +34,7 @@ module.exports = function (server) {
                 switch (responseType) {
                     //针对通知客户端开始进行 profiling 操作
                     case config.message.response[3]:
-                        loadingMsg = config.profiler[data.raw.opt].end();
+                        loadingMsg = config.profiler[data.raw.opt].end(data.result);
                         break;
                     default:
                         break;
@@ -50,6 +50,7 @@ module.exports = function (server) {
                 //此时数据设置成功
                 if (oldData && oldData.results && oldData.results.loadingMsg) {
                     oldData.done = true;
+                    oldData.setSize = false;
                     oldData.results.sequence = data.sequence;
                     oldData.results.data = data.result;
                     oldData.results.loadingMsg = loadingMsg;

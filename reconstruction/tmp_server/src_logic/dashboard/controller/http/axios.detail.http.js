@@ -11,6 +11,7 @@ module.exports = function (app) {
 
     /**
      * @param {object} params
+     * @return {string}
      * @description 获取缓存信息
      */
     function* getNowStat(params) {
@@ -28,9 +29,23 @@ module.exports = function (app) {
                 }
             }
             return pre;
-        }, { id: 0, res: '{}' }).res;
+        }, { id: 0, res: '{}' });
 
-        return result;
+        const data = common.utils.jsonParse(result.res);
+        if (data.done === true && !data.setSize) {
+            data.done = false;
+            const dataTmp = data.results.data;
+            data.results.data = null;
+            setImmediate(() => {
+                data.results.data = dataTmp;
+                data.done = true;
+                //表示已经设置过一次了，无需再次设置
+                data.setSize = true;
+                cacheUtils.storage.setP(`${key}${result.id}`, data, config.cache.opt_list).catch(e => dbl.error(`http.axios.detail->getNowStat error: ${e}`));
+            });
+        }
+
+        return JSON.stringify(data);
     }
 
     /**

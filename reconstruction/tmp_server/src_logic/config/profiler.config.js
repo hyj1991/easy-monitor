@@ -1,4 +1,6 @@
 'use strict';
+const gzipSize = require('gzip-size');
+const prettyBytes = require('pretty-bytes');
 
 exports = module.exports = {
     profiler: {
@@ -61,9 +63,10 @@ exports = module.exports = {
                 return `${info}采集 CPU 数据分析完毕，正在传输...`;
             },
             //所有操作完毕，准备返回给客户端数据
-            end(info) {
-                info = info || '';
-                return `${info}所有操作完毕，浏览器下载分析结果`;
+            end(data) {
+                data = typeof data === 'object' && JSON.stringify(data) || data;
+                const gzip = gzipSize.sync(data);
+                return `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
             }
         }
     },
