@@ -110,9 +110,9 @@ module.exports = function (_common, config, logger, utils, cache) {
             const msg = message.msg;
 
             const socket = yield cacheUtils.storage.getP(key, config.cache.socket_list, true);
-            
-            const ctx = {config, common, dbl};
-            common.socket.notifySide.apply(ctx,[msg, socket]);
+
+            const ctx = { config, common, dbl };
+            common.socket.notifySide.apply(ctx, [msg, socket]);
         }
     }
 

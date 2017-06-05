@@ -10,6 +10,6 @@ exports = module.exports = {
          * @param 3 表示输出 debug 日志
          * @description 设置日志级别
          */
-        log_level: 3
+        log_level: 2
     },
 }

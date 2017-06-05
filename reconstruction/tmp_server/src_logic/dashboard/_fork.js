@@ -8,7 +8,7 @@ const _common = require(path.join(rootPath, 'common/_'));
 const userConfig = JSON.parse(process.argv[2]);
 
 //加载出最终的 config & common 项
-const common = _common({ pre: ['config', 'logger', 'utils'], param: { config: userConfig } });
+const common = _common({ pre: ['config', 'logger', 'utils', 'cache'], param: { config: userConfig } });
 const _require = common.require;
 const config = common.config;
 
