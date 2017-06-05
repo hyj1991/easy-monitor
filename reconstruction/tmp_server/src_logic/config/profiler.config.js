@@ -60,7 +60,40 @@ exports = module.exports = {
             //cpu analysis 结束
             end_analysis(info) {
                 info = info || '';
-                return `${info}采集 CPU 数据分析完毕，正在传输...`;
+                return `${info}CPU 数据分析完毕，正在传输...`;
+            },
+            //所有操作完毕，准备返回给客户端数据
+            end(data) {
+                data = typeof data === 'object' && JSON.stringify(data) || data;
+                const gzip = gzipSize.sync(data);
+                return `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
+            }
+        },
+
+        //定义 memory profiling 操作期间的文字提示
+        mem: {
+            //可选配置参数
+            optional: {},
+
+            //初始化阶段的提示
+            init(info) {
+                info = info || '';
+                return `通知${info}业务进程进行 Memory 数据采集...`;
+            },
+            //已经通知到业务进程
+            start_profiling(info) {
+                info = info || '';
+                return `${info}开始进行 Memory 数据采集...`;
+            },
+            //cpu profing 结束
+            end_profiling(info) {
+                info = info || '';
+                return `${info}采集 Memory 数据完毕，开始分析...`;
+            },
+            //cpu analysis 结束
+            end_analysis(info) {
+                info = info || '';
+                return `${info}Memory 数据分析完毕，正在传输...`;
             },
             //所有操作完毕，准备返回给客户端数据
             end(data) {
@@ -69,5 +102,5 @@ exports = module.exports = {
                 return `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
             }
         }
-    },
+    }
 }

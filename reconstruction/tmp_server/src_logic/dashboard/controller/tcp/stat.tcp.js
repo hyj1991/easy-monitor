@@ -34,7 +34,18 @@ module.exports = function (server) {
 
             //从缓存中取出原始数据
             let oldData = yield cacheUtils.storage.getP(key, config.cache.opt_list);
-            oldData = common.utils.jsonParse(oldData);
+            //数据尚未初始化完毕
+            if (!oldData) {
+                oldData = {
+                    done: false,
+                    results: common.profiler.template({
+                        pid: raw.pid,
+                        name: raw.name,
+                        unique: config.embrace.machine_unique_key
+                    }, config.profiler[raw.opt].init())
+                }
+            }
+            oldData = typeof oldData === 'object' && oldData || common.utils.jsonParse(oldData);
 
             //进行数据更新
             if (oldData.results && oldData.results.loadingMsg) {

@@ -30,7 +30,7 @@ module.exports = function (_common, config, logger, utils, cache) {
      * @description 发送 tcp 信息的统一处理函数，进行 zlib 压缩后再次发送
      */
     function sendMessage(client, message) {
-        co(_sendMessage, client, message).catch(err => logger.error(`common.socket->sendMessage error: ${err}`));
+        return co(_sendMessage, client, message).catch(err => logger.error(`common.socket->sendMessage error: ${err}`));
 
         /**
          * @param {socket} client @param {string | object} message
@@ -118,9 +118,10 @@ module.exports = function (_common, config, logger, utils, cache) {
         //cluster 模式下如果定制了私有协议，则采用私有通信方式
         if (config.cluster && config.private) {
             const fn = config.private.send;
-            typeof fn === 'function' && fn.apply(this, [message, socket]);
+            const p = typeof fn === 'function' && fn.apply(this, [message, socket]);
             socket[config.private.send_key] = true;
-        } else { sendMessage(socket, message) }
+            return p;
+        } else { return sendMessage(socket, message) }
     }
 
     return { composeMessage, sendMessage, onData, composeKey, notifySide }

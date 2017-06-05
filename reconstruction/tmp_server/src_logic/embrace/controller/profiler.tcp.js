@@ -37,23 +37,23 @@ module.exports = function (server) {
 
             //发送业务进程开始 profiling 操作
             const profilingStartMessage = common.socket.composeMessage('req', 4, { sequence: 1, raw, loadingMsg: config.profiler[data.opt].start_profiling() });
-            common.socket.notifySide.apply(ctx, [profilingStartMessage, socket]);
+            yield common.socket.notifySide.apply(ctx, [profilingStartMessage, socket]);
 
             //执行 pfofiling 操作
-            const profiler = yield common.profiler.cpuProfilerP();
+            const profiler = yield common.profiler.profilerP(data.opt, data.params);
 
             //发送业务进程 profiling 操作结束
             const profilingEndMessage = common.socket.composeMessage('req', 4, { sequence: 2, raw, loadingMsg: config.profiler[data.opt].end_profiling() });
-            common.socket.notifySide.apply(ctx, [profilingEndMessage, socket]);
+            yield common.socket.notifySide.apply(ctx, [profilingEndMessage, socket]);
 
             //执行分析操作
             const analysis = yield common.profiler.analyticsP(data.opt, profiler);
 
             //发送分析数据操作结束
             const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: 3, raw, loadingMsg: config.profiler[data.opt].end_analysis() });
-            common.socket.notifySide.apply(ctx, [analysisEndMessage, socket]);
+            yield common.socket.notifySide.apply(ctx, [analysisEndMessage, socket]);
 
-            //重置标记为，并返回成功响应给客户端
+            //重置标记位，并返回成功响应给客户端
             doingProfiling[data.opt] = false;
             return common.socket.composeMessage('res', 3, { sequence: 4, raw, result: analysis });
         }

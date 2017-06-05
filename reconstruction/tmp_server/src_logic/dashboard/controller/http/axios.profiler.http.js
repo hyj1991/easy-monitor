@@ -69,7 +69,7 @@ module.exports = function (app) {
         } else {
             //非 cluster 模式下，直接采用 tcp 下放数据
             const ctx = { common, config, dbl };
-            common.socket.notifySide.apply(ctx, [message, socket]);
+            yield common.socket.notifySide.apply(ctx, [message, socket]);
         }
 
         return true;

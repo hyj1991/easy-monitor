@@ -95,7 +95,7 @@ module.exports = function (_common, config, logger, utils, cache) {
 
         //执行逻辑
         if (error) return dbl.error(`common.mq->processCallback error: ${error}`);
-        co(_process, channel, message).catch(err => dbl.error(`common.mq->processCallback error: ${err.stack}`));
+        co(_process, channel, message).catch(err => dbl.error(`common.mq->processCallback error: ${err}`));
 
         /**
          * @param {string} channel @param {string} message
@@ -112,7 +112,7 @@ module.exports = function (_common, config, logger, utils, cache) {
             const socket = yield cacheUtils.storage.getP(key, config.cache.socket_list, true);
 
             const ctx = { config, common, dbl };
-            common.socket.notifySide.apply(ctx, [msg, socket]);
+            yield common.socket.notifySide.apply(ctx, [msg, socket]);
         }
     }
 
