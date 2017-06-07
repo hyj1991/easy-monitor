@@ -305,9 +305,9 @@ module.exports = function (_common, config, logger, utils) {
         if (type === 'cpu') {
             const optional = config.profiler.cpu.optional;
             result.timeout = params.timeout || optional.timeout;
-            result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }/*, config.filterFunction*/);
-            result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }/*, config.filterFunction*/);
-            result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }/*, config.filterFunction*/);
+            result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.filter_function);
+            result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.filter_function);
+            result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.filter_function);
         }
 
         //解析 mem-profiler 操作结果

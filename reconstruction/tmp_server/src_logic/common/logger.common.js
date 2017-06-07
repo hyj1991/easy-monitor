@@ -23,7 +23,6 @@ Object.freeze(levelMap);
  * @description 日志类构造方法，设置日志级别以及前缀
  */
 function Logger(level, prefix) {
-    level = level || 2;
     prefix = prefix || '';
 
     this.setLevel.call(this, level);
@@ -82,7 +81,7 @@ Logger.prototype.debug = function (msg) {
 };
 
 module.exports = function (_common, config) {
-    const logLevel = config.logger && config.logger.log_level || 2;
+    const logLevel = config.logger && config.logger.log_level;
     const defaultLogger = new Logger(logLevel, '[Easy-Monitor] ');
     defaultLogger.Logger = Logger;
     return defaultLogger;

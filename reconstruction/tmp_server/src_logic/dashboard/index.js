@@ -11,7 +11,7 @@ module.exports.start = function (config, common) {
 
     //为 dashboard 新建一个不同前缀的 logger
     const Logger = common.logger.Logger;
-    const logLevel = config.logger && config.logger.log_level || 2;
+    const logLevel = config.logger && config.logger.log_level;
     const dbl = new Logger(logLevel, `[Easy-Monitor: dashboard <${process.pid}>] `);
 
     //如果有消息队列，开启本进程的消息订阅

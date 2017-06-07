@@ -55,13 +55,13 @@ function createTcpServer(config, common, dbl) {
  */
 function createHttpServer(config, common, dbl) {
     //设置渲染相关参数
-    app.set('views', path.join(__dirname, './view'));
+    app.set('views', config.dashboard.views || path.join(__dirname, './view'));
     app.set('view engine', 'ejs');
 
     //设置使用到的中间件
     app.use(compression());
-    app.use(express.static(path.join(__dirname, './public')));
-    app.use(serverFavicon(path.join(__dirname, './public/favicon.ico')));
+    app.use(express.static(config.dashboard.public || path.join(__dirname, './public')));
+    app.use(serverFavicon(config.dashboard.favicon || path.join(__dirname, './public/favicon.ico')));
     app.use(bodyParser.json({ limit: '50mb' }));
     app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
 

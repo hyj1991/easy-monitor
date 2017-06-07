@@ -101,6 +101,21 @@ exports = module.exports = {
                 const gzip = gzipSize.sync(data);
                 return `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
             }
+        },
+
+        //过滤无关函数
+        filter_function: function (filePath, funcName) {
+            //过滤掉包含 node_modules 和 anonymous 的函数
+            let needIgnore = ['node_modules', 'anonymous'].some(fileName => {
+                return Boolean(~(filePath.indexOf(fileName))) || Boolean(~(funcName.indexOf(fileName)))
+            });
+
+            //结构路径中必须包含有 /
+            let mustHave = ['/'].every(fileName => {
+                return Boolean(~filePath.indexOf(fileName));
+            });
+
+            return !needIgnore && mustHave;
         }
     }
 }

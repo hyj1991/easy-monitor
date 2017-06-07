@@ -12,6 +12,7 @@
 .ivu-select-input-my-style.ivu-select-small .ivu-select-input {
     height: 20px;
 }
+
 </style>
 
 <template>
@@ -42,7 +43,7 @@
                         
                         <!-- 选择器: 服务列表 -->
                         <Row type="flex" justify="center" class="code-row-bg">
-                            <Col span=8>
+                            <Col span=10>
                                 <Select size="small" v-model="server" filterable class="ivu-select-input-my-style" @on-change="selectHandle">
                                     <Option v-for="item in serverList" :value="item.value" :key="item">{{ item.label }}</Option>
                                 </Select>

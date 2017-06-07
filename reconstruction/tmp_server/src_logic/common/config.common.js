@@ -7,7 +7,7 @@ const configPath = path.join(__dirname, '../config');
 const lodash = require('lodash');
 const ext = '.config.js';
 
-module.exports = function abc(_common, userConfig) {
+module.exports = function common(_common, userConfig) {
     /**
      * @param {*} userConfig 
      * @return {object}
@@ -22,7 +22,7 @@ module.exports = function abc(_common, userConfig) {
         //如果是对象，则将对象内容合并至结果
         if (typeof userConfig === 'object') {
             //对 logger 配置进行便利化操作
-            if (userConfig.log_level) {
+            if (userConfig.log_level || Number(userConfig.log_level) === 0) {
                 uc.logger = { "log_level": userConfig.log_level }
             }
             lodash.merge(uc, userConfig);

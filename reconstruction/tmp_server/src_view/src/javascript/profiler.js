@@ -12,7 +12,7 @@ function startProfiling(data, tag) {
     axios.post(config.default.axiosPath.startProfiler, { data })
         .then(response => {
             const data = response.data;
-            if (!data.success) router.push({ path: '/index' });
+            if (!data.success) router.push({ path: config.default.vueRouter.index });
         })
         .catch(err => console.error(err));
 }
