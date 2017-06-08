@@ -298,49 +298,51 @@ module.exports = function (_common, config, logger, utils) {
      * @description 对 profiling 得到的结果进行解析
      */
     function analyticsP(type, profiler, params) {
-        params = params || {};
-        const result = {};
+        return new Promise(resolve => {
+            params = params || {};
+            const result = {};
 
-        //解析 cpu-profiler 操作结果
-        if (type === 'cpu') {
-            const optional = config.profiler.cpu.optional;
-            result.timeout = params.timeout || optional.timeout;
-            result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.filter_function);
-            result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.filter_function);
-            result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.filter_function);
-        }
+            //解析 cpu-profiler 操作结果
+            if (type === 'cpu') {
+                const optional = config.profiler.cpu.optional;
+                result.timeout = params.timeout || optional.timeout;
+                result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.filter_function);
+                result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.filter_function);
+                result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.filter_function);
+            }
 
-        //解析 mem-profiler 操作结果
-        if (type === 'mem') {
-            const memAnalytics = analysisLib.memAnalytics(profiler);
-            const heapMap = memAnalytics.heapMap;
-            const leakPoint = memAnalytics.leakPoint;
-            const statistics = memAnalytics.statistics;
-            const rootIndex = memAnalytics.rootIndex;
-            const aggregates = memAnalytics.aggregates;
-            const heapUsed = leakPoint.reduce((pre, next) => {
-                pre[next.index] = heapMap[next.index];
-                return pre;
-            }, {});
-            //加入 root 节点信息
-            heapUsed[rootIndex] = heapMap[rootIndex];
+            //解析 mem-profiler 操作结果
+            if (type === 'mem') {
+                const memAnalytics = analysisLib.memAnalytics(profiler);
+                const heapMap = memAnalytics.heapMap;
+                const leakPoint = memAnalytics.leakPoint;
+                const statistics = memAnalytics.statistics;
+                const rootIndex = memAnalytics.rootIndex;
+                const aggregates = memAnalytics.aggregates;
+                const heapUsed = leakPoint.reduce((pre, next) => {
+                    pre[next.index] = heapMap[next.index];
+                    return pre;
+                }, {});
+                //加入 root 节点信息
+                heapUsed[rootIndex] = heapMap[rootIndex];
 
-            //获取最终分析结果
-            const mem_data = memCalculator(heapUsed, heapMap, leakPoint, rootIndex);
-            const forceGraph = mem_data.forceGraph;
-            const searchList = mem_data.searchList.map(item => item.index);
+                //获取最终分析结果
+                const mem_data = memCalculator(heapUsed, heapMap, leakPoint, rootIndex);
+                const forceGraph = mem_data.forceGraph;
+                const searchList = mem_data.searchList.map(item => item.index);
 
-            //将最终结果填充入结果对象中
-            result.heapUsed = heapUsed;
-            result.leakPoint = leakPoint;
-            result.statistics = statistics;
-            result.rootIndex = rootIndex;
-            result.aggregates = aggregates;
-            result.forceGraph = forceGraph;
-            result.searchList = searchList;
-        }
+                //将最终结果填充入结果对象中
+                result.heapUsed = heapUsed;
+                result.leakPoint = leakPoint;
+                result.statistics = statistics;
+                result.rootIndex = rootIndex;
+                result.aggregates = aggregates;
+                result.forceGraph = forceGraph;
+                result.searchList = searchList;
+            }
 
-        return result;
+            resolve(result);
+        });
     }
 
     return { template, composeKey, profilerP, analyticsP }

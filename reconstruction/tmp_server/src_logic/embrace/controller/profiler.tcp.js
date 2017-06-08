@@ -50,7 +50,7 @@ module.exports = function (server) {
             const analysis = yield common.profiler.analyticsP(data.opt, profiler);
 
             //发送分析数据操作结束
-            const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: 3, raw, loadingMsg: config.profiler[data.opt].end_analysis() });
+            const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: 3, raw, loadingMsg: config.profiler[data.opt].end_analysis(analysis) });
             yield common.socket.notifySide.apply(ctx, [analysisEndMessage, socket]);
 
             //重置标记位，并返回成功响应给客户端

@@ -2,6 +2,23 @@
 const gzipSize = require('gzip-size');
 const prettyBytes = require('pretty-bytes');
 
+/**
+ * @param {object | string} data @param {string} unknown 
+ * @return {string}
+ * @description 计算压缩为文件大小
+ */
+function _gzip(data, unknown) {
+    //如果没有数据，直接返回预设的 unknown 字段
+    unknown = unknown || '未知'
+    if (!data) return unknown;
+
+    //否则返回 gizp 后大小
+    data = typeof data === 'object' && JSON.stringify(data) || data;
+    const pretty = prettyBytes(gzipSize.sync(data)) || '';
+
+    return String(pretty.toUpperCase());
+}
+
 exports = module.exports = {
     profiler: {
         /**
@@ -91,15 +108,12 @@ exports = module.exports = {
                 return `${info}采集 Memory 数据完毕，开始分析...`;
             },
             //cpu analysis 结束
-            end_analysis(info) {
-                info = info || '';
-                return `${info}Memory 数据分析完毕，正在传输...`;
+            end_analysis(data) {
+                return `Memory 数据分析完毕，正在传输，大小为: ${_gzip(data)}...`;
             },
             //所有操作完毕，准备返回给客户端数据
             end(data) {
-                data = typeof data === 'object' && JSON.stringify(data) || data;
-                const gzip = gzipSize.sync(data);
-                return `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
+                return `分析数据准备完毕，大小为: ${_gzip(data)}，请耐心等待下载...`;
             }
         },
 
