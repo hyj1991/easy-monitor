@@ -3,6 +3,7 @@
 
 <template>
     <div class="index">
+        <p>当前节点大小为 <strong style="font-weight:500">{{ retainedSize }}</strong></p>
         <div ref="force" :style="self_style || default_style"></div>
         <div ref="detail"></div>
     </div>
@@ -23,11 +24,12 @@ export default {
 
     methods: {
         renderForcegraph() { this.$_js.force.methods.renderForcegraph.call(this); },
-        openOrFold(param) { this.$_js.force.methods.openOrFold.call(this); }   
+        openOrFold(param) { this.$_js.force.methods.openOrFold.call(this, param); }
     },
 
     computed: {
-        forceGraphOption() { return this.$_js.force.computed.forceGraphOption.call(this); }
+        forceGraphOption() { return this.$_js.force.computed.forceGraphOption.call(this); },
+        retainedSize() { return this.$_js.force.computed.retainedSize.call(this); }
     },
 
     watch: {

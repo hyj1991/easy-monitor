@@ -108,7 +108,7 @@ function forceGraphOption() {
         tooltip: {
             show: true,
             showDelay: 100,
-            position: function(position) {
+            position: function (position) {
                 return [position[0], position[1] - 20];
             },
             formatter: function (params, ticket, callback) {//callback
@@ -184,8 +184,22 @@ function forceGraphOption() {
     return option;
 }
 
+/**
+ * @component: views/common/profiler/force.vue
+ * @vue-data: computed
+ * @descript: 计算当前节点大小
+ */
+function retainedSize() {
+    const heapMap = this.heapMap || {};
+    const index = this.forceGraph && this.forceGraph.index || 0;
+
+    const retainedSize = heapMap[index] && heapMap[index].retainedSize || 0;
+
+    return this.formatSize(retainedSize);
+}
+
 //导出 force.vue 所需
 export default {
     methods: { renderForcegraph, openOrFold },
-    computed: { forceGraphOption }
+    computed: { forceGraphOption, retainedSize }
 }
