@@ -39,7 +39,14 @@ module.exports = function (_common, config, logger, utils, cache) {
         function* _sendMessage(client, message) {
             message = typeof message === 'object' && JSON.stringify(message) || message;
             const compressBuffer = yield utils.compressMsg(message);
-            const endSymBuf = Buffer.from(config.end_symbol);
+            let endSymBuf = null;
+            try {
+                //大于 Node v4 的版本采用更安全的 Buffer.from
+                endSymBuf = Buffer.from(config.end_symbol);
+            } catch (e) {
+                //针对 Node v4 做的 pollyfill
+                endSymBuf = new Buffer(config.end_symbol);
+            }
             const newBuf = Buffer.concat([compressBuffer, endSymBuf], compressBuffer.length + endSymBuf.length);
             client.write(newBuf);
         }
@@ -61,7 +68,14 @@ module.exports = function (_common, config, logger, utils, cache) {
         chunkInfo.chunks.push(chunk);
         chunkInfo.size += chunk.length;
         const tmp = Buffer.concat(chunkInfo.chunks, chunkInfo.size);
-        const endSymBuf = Buffer.from(config.end_symbol);
+        let endSymBuf = null;
+        try {
+            //大于 Node v4 的版本采用更安全的 Buffer.from
+            endSymBuf = Buffer.from(config.end_symbol);
+        } catch (e) {
+            //针对 Node v4 做的 pollyfill
+            endSymBuf = new Buffer(config.end_symbol);
+        }
         if (~tmp.indexOf(endSymBuf)) {
             //调用 bufferSplit 方法，对临时生成的 buffer 进行分割
             let tmpArr = utils.bufferSplit(tmp, endSymBuf);

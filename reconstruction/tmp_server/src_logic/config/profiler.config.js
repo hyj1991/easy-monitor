@@ -90,7 +90,16 @@ exports = module.exports = {
         //定义 memory profiling 操作期间的文字提示
         mem: {
             //可选配置参数
-            optional: {},
+            optional: {
+                //限制展开多少个节点
+                node_limit: 5,
+
+                //数据记录深度
+                distance_limit: 30,
+
+                //展示疑似泄漏点深度
+                leak_limit: 8
+            },
 
             //初始化阶段的提示
             init(info) {

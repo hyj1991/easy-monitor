@@ -117,6 +117,8 @@ function createForceGraph(heapUsed, heapMap, leakPoint) {
             node.symbolSize = node.size;
         });
 
+        forceGraph.index = leak.index;
+
         const leakDetailTmp = heapMap[leak.index];
         forceGraphAll[`${leakDetailTmp.name}::${leakDetailTmp.id}`] = forceGraph;
     }
