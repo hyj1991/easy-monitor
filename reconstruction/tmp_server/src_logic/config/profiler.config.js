@@ -72,12 +72,11 @@ exports = module.exports = {
             //cpu profing 结束
             end_profiling(info) {
                 info = info || '';
-                return `${info}CPU 数据采集完毕，即将开始分析...`;
+                return `${info}采集 CPU 数据完毕，即将开始分析...`;
             },
             //cpu analysis 结束
-            end_analysis(info) {
-                info = info || '';
-                return `${info}CPU 数据分析完毕，正在传输...`;
+            end_analysis(data) {
+                return `CPU 数据分析完毕，正在传输，大小为: ${_gzip(data)}...`;
             },
             //所有操作完毕，准备返回给客户端数据
             end(data) {
@@ -95,10 +94,16 @@ exports = module.exports = {
                 node_limit: 5,
 
                 //数据记录深度
-                distance_limit: 30,
+                distance_limit: 25,
+
+                //记录根节点深度
+                distance_root_limit: 6,
 
                 //展示疑似泄漏点深度
-                leak_limit: 8
+                leak_limit: 8,
+
+                //profiling 是否采用 stream
+                not_stream: false
             },
 
             //初始化阶段的提示
@@ -112,9 +117,12 @@ exports = module.exports = {
                 return `${info}开始进行 Memory 数据采集...`;
             },
             //cpu profing 结束
-            end_profiling(info) {
+            end_profiling(info, stream) {
                 info = info || '';
-                return `${info}采集 Memory 数据完毕，开始分析...`;
+                let str = '';
+                if (stream) str = `${info}Memory Stream 准备完毕，开始流式读取，此过程较慢，请耐心等待...`;
+                else str = `${info}采集 Memory 数据完毕，即将开始分析...`;
+                return str;
             },
             //cpu analysis 结束
             end_analysis(data) {

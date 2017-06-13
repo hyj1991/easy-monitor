@@ -10,11 +10,11 @@ module.exports = function (app) {
     const httpUtils = common.http;
 
     /**
-     * @param {object} params
+     * @param {object} params @param {number} sequence
      * @return {string}
      * @description 获取缓存信息
      */
-    function* getNowStat(params) {
+    function* getNowStat(params, sequence) {
         //组装缓存 key
         const key = common.profiler.composeKey(params);
         //从缓存中获取信息
@@ -22,21 +22,36 @@ module.exports = function (app) {
         cacheData = typeof cacheData === 'object' && cacheData || common.utils.jsonParse(cacheData);
         const result = Object.keys(cacheData).reduce((pre, next) => {
             if (~next.indexOf(key)) {
+                const nextData = cacheData[next];
                 const id = Number(next.replace(key, ''));
                 if (id > pre.id) {
                     pre.id = id;
-                    pre.res = cacheData[next];
+                    pre.res = nextData;
+                }
+                //合并已经完成的数据
+                const nextObject = common.utils.jsonParse(nextData);
+                if (nextObject && nextObject.results && Number(nextObject.results.sequence) > sequence) {
+                    if (Array.isArray(nextObject.results.loadingMsg)) {
+                        //避免重复设置已经履行过的状态
+                        // pre.loadingMsgList = pre.loadingMsgList.concat(nextObject.results.loadingMsg);
+                    } else {
+                        pre.loadingMsgList.push(nextObject.results.loadingMsg);
+                    }
                 }
             }
             return pre;
-        }, { id: 0, res: '{}' });
+        }, { id: 0, res: '{}', loadingMsgList: [] });
 
         const data = common.utils.jsonParse(result.res);
+        dbl.debug(`http.axios.detail.getNowStat sequence is: ${sequence}, loadingMsgList is: [${result.loadingMsgList}]`);
+        if (data.results && result.loadingMsgList.length !== 0) data.results.loadingMsg = result.loadingMsgList;
         if (data.done === true && !data.setSize) {
             data.done = false;
             const dataTmp = data.results.data;
+            const sequenceTmp = Number(data.results.sequence);
             data.results.data = null;
             setImmediate(() => {
+                data.results.sequence = sequenceTmp + 1;
                 data.results.data = dataTmp;
                 data.done = true;
                 //表示已经设置过一次了，无需再次设置
@@ -83,7 +98,8 @@ module.exports = function (app) {
 
             //根据组装 key 方式获取缓存数据
             const params = { pid: data.pid, opt: data.opt, name: data.processName, server: data.serverName };
-            const result = yield getNowStat(params);
+            const sequence = Number(data.sequence);
+            const result = yield getNowStat(params, sequence);
 
             res.send(httpUtils.composeMessage(0, result));
 

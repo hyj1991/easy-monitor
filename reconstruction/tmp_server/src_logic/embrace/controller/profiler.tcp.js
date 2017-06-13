@@ -35,27 +35,45 @@ module.exports = function (server) {
             const raw = lodash.merge({ opt: data.opt }, data.raw);
             const ctx = { config, common, dbl };
 
+            //自增序列
+            const sequence = { seq: 0 };
+
             //发送业务进程开始 profiling 操作
-            const profilingStartMessage = common.socket.composeMessage('req', 4, { sequence: 1, raw, loadingMsg: config.profiler[data.opt].start_profiling() });
+            const profilingStartMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].start_profiling() });
             yield common.socket.notifySide.apply(ctx, [profilingStartMessage, socket]);
 
             //执行 pfofiling 操作
-            const profiler = yield common.profiler.profilerP(data.opt, data.params);
+            const notStream = Boolean(config && config.profiler && config.profiler[data.opt] && config.profiler[data.opt].optional && config.profiler[data.opt].optional.not_stream);
+            const profiler = yield common.profiler.profilerP(data.opt, data.params, notStream);
 
             //发送业务进程 profiling 操作结束
-            const profilingEndMessage = common.socket.composeMessage('req', 4, { sequence: 2, raw, loadingMsg: config.profiler[data.opt].end_profiling() });
+            const profilingEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_profiling(null, !notStream) });
             yield common.socket.notifySide.apply(ctx, [profilingEndMessage, socket]);
 
             //执行分析操作
-            const analysis = yield common.profiler.analyticsP(data.opt, profiler);
+            const analysis = yield common.profiler.analyticsP(data.opt, profiler, {
+                start: Date.now(),
+                middle: Date.now(),
+                /**
+                 * @param {string} msg @param {number} time @param {boolean} end
+                 * @description 生成回调 callback 所需参数
+                 */
+                params: function (msg, time, end) {
+                    const duration = common.utils.formatTime(time - (!end && this.middle || this.start));
+                    const message = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: `${msg.prefix || '未知操作'}, 耗时 ${duration}${msg.suffix && `, ${msg.suffix}` || ''}...` });
+                    this.middle = time;
+                    return { message, socket };
+                },
+                callback: common.socket.notifySide.bind(ctx)
+            });
 
             //发送分析数据操作结束
-            const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: 3, raw, loadingMsg: config.profiler[data.opt].end_analysis(analysis) });
+            const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_analysis(analysis) });
             yield common.socket.notifySide.apply(ctx, [analysisEndMessage, socket]);
 
             //重置标记位，并返回成功响应给客户端
             doingProfiling[data.opt] = false;
-            return common.socket.composeMessage('res', 3, { sequence: 4, raw, result: analysis });
+            return common.socket.composeMessage('res', 3, { sequence: ++sequence.seq, raw, result: analysis });
         }
     }
 }

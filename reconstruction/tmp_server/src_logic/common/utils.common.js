@@ -143,9 +143,31 @@ module.exports = function (_common, config, logger) {
         config.cache[prefix] = `${config.cache[prefix]}${suffix}`;
     }
 
+    /**
+     * @param {number} ts
+     * @return {string}
+     * @description 对 ms 级别的时间进行格式化
+     */
+    function formatTime(ts) {
+        let str = '';
+        if (ts < 1e3) {
+            str = `${ts.toFixed(2)} ms`;
+        } else if (ts < 1e6) {
+            str = `${(ts / 1e3).toFixed(2)} s`;
+        } else if (ts < 1e9) {
+            str = `${(ts / 1e6).toFixed(2)} min`;
+        } else if (ts < 1e12) {
+            str = `${(ts / 1e9).toFixed(2)} h`;
+        } else {
+            str = `${ts.toFixed(2)} ms`;
+        }
+
+        return str;
+    }
+
     return {
         event, forkNode, jsonParse,
-        compressMsg, bufferSplit, parseMessage,
-        isPromise, commonInitP, startMq, joinCacheKey
+        compressMsg, bufferSplit, parseMessage, isPromise,
+        commonInitP, startMq, joinCacheKey, formatTime
     }
 }

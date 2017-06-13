@@ -26,10 +26,10 @@ module.exports = function (_common, config, logger, utils) {
 
     /**
      * @param {HeapSnapshotWorker.JSHeapSnapshot} jsHeapSnapShot 
-     * @param {number} limit
+     * @param {number} limit @param {number} rootIndex
      * @description 柯里化，根据 jsHeapSnapShot 以及 index 的值计算出节点详细属性
      */
-    function serializeNode(jsHeapSnapShot, limit) {
+    function serializeNode(jsHeapSnapShot, limit, rootIndex) {
         const _cache = {};
 
         /**
@@ -42,7 +42,7 @@ module.exports = function (_common, config, logger, utils) {
             //已经计算过的数据缓存起来
             if (cache) return cache;
             //否则调用 serialize 函数序列化数据，并且缓存起来
-            cache = analysisLib.serialize(jsHeapSnapShot, index, limit);
+            cache = analysisLib.serialize(jsHeapSnapShot, index, limit, rootIndex);
             _cache[index] = cache;
             return cache;
         }
@@ -50,21 +50,23 @@ module.exports = function (_common, config, logger, utils) {
 
     /**
      * @param {object} heapUsed @param {function} serialize @param {array} leakPoint
+     * @param {Number} rootIndex 根节点 id
      * @return {object}
      * @description 解析出引力图所需的数据结构
      */
-    function createForceGraph(heapUsed, serialize, leakPoint) {
+    function createForceGraph(heapUsed, serialize, leakPoint, rootIndex) {
         //开始进行逻辑处理
         let forceGraphAll = {};
         let leakPointLength = leakPoint.length;
         for (let i = 0; i < leakPointLength; i++) {
             let leak = leakPoint[i];
+            let isRoot = Boolean(Number(leak.index) === rootIndex);
             let forceGraph = { nodes: [], links: [] };
 
             let biggestList = {};
             let isRecorded = {};
             let distanceDisplay = 1;
-            let distanceLimit = config.profiler.mem.optional.distance_limit;
+            let distanceLimit = isRoot && config.profiler.mem.optional.distance_root_limit || config.profiler.mem.optional.distance_limit;
             let childrenLimit = config.profiler.mem.optional.node_limit;
             let leakDistanceLimit = config.profiler.mem.optional.leak_limit;
 
@@ -81,7 +83,8 @@ module.exports = function (_common, config, logger, utils) {
                     //去除一部分老的逻辑，加速处理速度以及减小结果体积
                     //tip: child's distance === parent.distance + 1
                     // if (children.length > 100) children = children.slice(0, 100);
-                    children = children.filter(item => Boolean(Number(serialize(item.index).distance) === (1 + Number(nodeDetail.distance))));
+                    //root节点不过滤
+                    children = isRoot && children || children.filter(item => Boolean(Number(serialize(item.index).distance) === (1 + Number(nodeDetail.distance))));
                     // children.sort((o, n) => Number(serialize(o.index).retainedSize) < Number(serialize(n.index).retainedSize) ? 1 : -1);
                     // children = children.filter((item, index) => index < childrenLimit);
 
@@ -162,7 +165,7 @@ module.exports = function (_common, config, logger, utils) {
 
             Object.keys(biggestList).forEach(index => {
                 let data = catchNode(forceGraph.nodes, 'index', index);
-                if (data) {
+                if (data && !isRoot) {
                     setExpandOff(forceGraph, data);
                 }
             });
@@ -245,8 +248,8 @@ module.exports = function (_common, config, logger, utils) {
      * @description 根据上述方法，计算出最终的 force-graph 引力图计算所需数据
      */
     function memCalculator(heapUsed, serialize, leakPoint, rootIndex) {
-        const forceGraph = createForceGraph(heapUsed, serialize, leakPoint);
-        const searchList = [{ index: rootIndex }].concat(leakPoint)
+        const searchList = [{ index: Number(rootIndex) }].concat(leakPoint);
+        const forceGraph = createForceGraph(heapUsed, serialize, searchList, rootIndex);
         return { forceGraph, searchList };
     }
 
@@ -286,20 +289,20 @@ module.exports = function (_common, config, logger, utils) {
 
     /**
      * @param {string} opt "cpu" 或者 "mem"
-     * @param {object} params 
+     * @param {object} params @param {boolean} notStream
      * @description 根据操作类型执行对应的 profiling 操作
      */
-    function profilerP(opt, params) {
+    function profilerP(opt, params, notStream) {
         params = params || {};
-        if (opt === 'cpu') return cpuProfilerP(params.title);
-        if (opt === 'mem') return memProfilerP();
+        if (opt === 'cpu') return cpuProfilerP(params.title, notStream);
+        if (opt === 'mem') return memProfilerP(notStream);
     }
 
     /**
-     * @param {string} title
+     * @param {string} title @param {boolean} notStream
      * @description 进行 cpu profiling 操作
      */
-    function cpuProfilerP(title) {
+    function cpuProfilerP(title, notStream) {
         return new Promise(resolve => {
             title = title || '';
             v8Profiler.startProfiling(title, true);
@@ -313,23 +316,27 @@ module.exports = function (_common, config, logger, utils) {
     }
 
     /**
+     * @param {boolean} notStream
      * @description 进行 memory profiling 操作
      */
-    function memProfilerP() {
+    function memProfilerP(notStream) {
         return new Promise((resolve, reject) => {
             const snapshot = v8Profiler.takeSnapshot();
 
-            //废弃方法，改用以下流式读取 heapsnapshot 方式对内存更加友好
-            /*snapshot.export(function (error, result) {
-                if (error) return reject(error);
-                result = typeof result === 'object' && result || utils.jsonParse(result);
-                resolve(result);
-                snapshot.delete();
-            });*/
-
-            //创建 transform 流
-            const transform = snapshot.export();
-            resolve(transform);
+            //默认采用 stream 流式读取
+            if (notStream) {
+                //废弃方法，改用以下流式读取 heapsnapshot 方式对内存更加友好
+                snapshot.export(function (error, result) {
+                    if (error) return reject(error);
+                    result = typeof result === 'object' && result || utils.jsonParse(result);
+                    resolve(result);
+                    snapshot.delete();
+                });
+            } else {
+                //创建 transform 流
+                const transform = snapshot.export();
+                resolve(transform);
+            }
         });
     }
 
@@ -358,11 +365,11 @@ module.exports = function (_common, config, logger, utils) {
 
             //解析 mem-profiler 操作结果
             if (type === 'mem') {
-                const memAnalytics = yield analysisLib.memAnalyticsP(profiler);
+                const memAnalytics = yield analysisLib.memAnalyticsP(profiler, params);
 
                 //取出分析结果
                 const leakPoint = memAnalytics.leakPoint;
-                const rootIndex = memAnalytics.rootIndex;
+                const rootIndex = Number(memAnalytics.rootIndex);
                 let jsHeapSnapShot = memAnalytics.jsHeapSnapShot;
 
                 //根据分析结果初步计算属性
@@ -370,7 +377,7 @@ module.exports = function (_common, config, logger, utils) {
                 const aggregates = jsHeapSnapShot._aggregates.allObjects;
 
                 //节点计算柯里化函数
-                const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit);
+                const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit, rootIndex);
 
                 //TODO
                 const heapUsed = leakPoint.reduce((pre, next) => {
