@@ -158,7 +158,10 @@ function forceGraphOption() {
                     }
                     return '(' + percentage + ') ' + (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
                 };
-                vm.$refs.detail.innerHTML = '<p>' + result.tracePath(id, index) + '</p>';
+                //root 节点放弃治疗
+                if (vm.forceGraph && vm.forceGraph.index !== 0) {
+                    vm.$refs.detail.innerHTML = '<p>' + result.tracePath(id, index) + '</p>';
+                }
                 return result.showStr(id, index);
             }
         },

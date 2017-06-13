@@ -98,7 +98,7 @@
         data() {
             return {                
                 singleProfiler: null, error: null, checkStatTimer: null,
-                axiosDone: { profilerDetail: false }, axiosSended: true,
+                axiosDone: { profilerDetail: false }, axiosSended: true, sequence: 0,
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '执行时长', key: 'execTime', align: 'center' },
@@ -120,7 +120,7 @@
         }, 
 
         created() {
-            const data = lodash.merge({}, this.rawParams, {pid: this.pid});
+            const data = lodash.merge({}, this.rawParams, {pid: this.pid, sequence: this.sequence});
             this.startProfiling(data, 'cpu.vue');
             this.checkStat(data);
         },

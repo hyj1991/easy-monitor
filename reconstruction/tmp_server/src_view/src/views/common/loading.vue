@@ -30,7 +30,7 @@
     <!-- if not error, show loading msg -->
     <Spin fix v-if="!error">
         <Icon type="load-c" size=18 class="spin-icon-load"></Icon>
-        <div><p>{{ loadingMsg || defaultLoadingMsg }}</p></div>
+        <div><p>{{ loadingMsgSingle || defaultLoadingMsg }}</p></div>
     </Spin>
 
     <!-- if error, show error msg -->
@@ -46,9 +46,13 @@
 <script>
     export default {
         data() {
-            return { defaultLoadingMsg: 'Loading...' }
+            return { defaultLoadingMsg: 'Loading...', loadingMsgSingle:'' }
         },
         
-        props: ['loadingMsg', 'error']
+        props: ['loadingMsg', 'error'],
+
+        watch:{
+            loadingMsg(){ this.$_js.loading.watch.loadingMsg.call(this); }
+        }
     }
 </script>

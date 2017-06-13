@@ -252,7 +252,7 @@
                 constructor: false, type: false, force: false, modal_node_id: null,
                 singleProfiler: null, error: null, checkStatTimer: null,
                 axiosDone: { profilerDetail: false },
-                axiosSended: true, node_id: '',
+                axiosSended: true, node_id: '', sequence: 0,
                 process_status: 1, //1.healthy 2.warning 3.leaking 
                 circle_color: { healthy: '#5cb85c', warning: '#ff9900', leaking: '#ff3300' },
                 columns_constructor: [
@@ -267,7 +267,7 @@
         },
 
         created() {
-            const data = lodash.merge({}, this.rawParams, {pid: this.pid});
+            const data = lodash.merge({}, this.rawParams, {pid: this.pid, sequence: this.sequence});
             this.startProfiling(data, 'mem.vue');
             this.checkStat(data);
         },

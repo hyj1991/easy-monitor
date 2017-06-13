@@ -61,6 +61,7 @@ function checkStat(data) {
         if (vm.axiosSended) return;
 
         vm.axiosSended = true;
+        data.sequence = vm.sequence;
         _send(data);
     }, 1000);
 
@@ -79,6 +80,7 @@ function checkStat(data) {
                     }
                     vm.axiosDone.profilerDetail = axiosProfilerDetailDone;
                     vm.singleProfiler = msg.results;
+                    vm.sequence = msg.results && msg.results.sequence || 0;
                 } else {
                     // const errorMsg = 'Server Inner Error, Please refresh this page!';
                     // vm.error = data.error || errorMsg;
