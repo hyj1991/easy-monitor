@@ -18,7 +18,7 @@ function middle1_template(pid, need) {
             "projectName": "Closure Leak",
             "processPid": pid,
             "done": false,
-            "loadingMsg": "Memory 数据采集完毕, 当前采用上报模式, 开始进行数据压缩上传...",
+            "loadingMsg": ["Memory 数据采集完毕, 当前采用上报模式, 开始进行数据压缩上传...", "我是1", "我是2", "我是3"],
             "data": {}
         };
     else return null;
