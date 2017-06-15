@@ -1,4 +1,8 @@
 'use strict';
+/**
+ * @open-source: 此轻量简便的 Logger 模块源自开源项目 Memeye，感谢作者的开源精神
+ * @open-source-address: 项目原地址：https://github.com/JerryC8080/Memeye
+ */
 const colors = require('colors/safe');
 
 colors.setTheme({

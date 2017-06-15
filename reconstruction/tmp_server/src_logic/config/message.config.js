@@ -11,7 +11,9 @@ exports = module.exports = {
             //profiling 开始请求
             "2": "START_PROFILING_REQUEST",
             //profiling 过程中状态上报请求
-            "4": "PROFILING_STATES_REQUEST"
+            "4": "PROFILING_STATES_REQUEST",
+            //os 信息获取请求
+            "6": "OVERVIEW_UPLOAD_REQUEST",
         },
 
         /**
@@ -23,7 +25,9 @@ exports = module.exports = {
             //profiling 开始响应
             "3": "START_PROFILING_RESPONSE",
             //profiling 过程中状态上报响应
-            "5": "PROFILING_STATES_RESPONSE"
+            "5": "PROFILING_STATES_RESPONSE",
+            //os 信息获取响应
+            "7": "OVERVIEW_UPLOAD_RESPONSE"
         },
 
         /** 

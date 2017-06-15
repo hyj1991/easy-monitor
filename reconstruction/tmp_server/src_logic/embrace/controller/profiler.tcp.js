@@ -1,6 +1,6 @@
 'use strict';
-const lodash = require('lodash');
 const co = require('co');
+const lodash = require('lodash');
 
 module.exports = function (server) {
     //取出公共对象

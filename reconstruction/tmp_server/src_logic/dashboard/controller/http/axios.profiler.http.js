@@ -103,7 +103,7 @@ module.exports = function (app) {
                 //通知业务进程执行对应的 cpu / mem profiling 操作
                 const progress = { name: data.processName, server: data.serverName, pid: pidList[i] };
                 const r = yield notifyProcess(progress, { opt: data.opt, raw: progress });
-                if (!r) return res.send(httpUtils.composeMessage(3));
+                if (!r) return res.send(httpUtils.composeMessage(4));
 
                 //对当前操作进程进行对应的缓存初始化
                 yield initCache({
