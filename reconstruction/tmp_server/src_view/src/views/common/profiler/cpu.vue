@@ -85,7 +85,6 @@
         </Col>  
     </Row>
     <br>
-
 </div>
 </template>
 

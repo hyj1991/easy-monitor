@@ -48,6 +48,8 @@
         data() {
             return { defaultLoadingMsg: 'Loading...', loadingMsgSingle:'' }
         },
+
+        created() { this.$_js.loading.watch.loadingMsg.call(this); },
         
         props: ['loadingMsg', 'error'],
 

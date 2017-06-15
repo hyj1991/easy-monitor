@@ -7,11 +7,13 @@ import mem from './mem';
 import force from './force';
 import echart3 from './echart3';
 import loading from './loading';
+import overview from './overview';
+import dashboard from './dashboard';
 
 const vue = {};
 
 function install(Vue, options) {
-    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3, loading };
+    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3, loading, overview, dashboard };
 }
 
 vue.install = install;

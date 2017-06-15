@@ -18,10 +18,20 @@ function radioHandle() {
         tag: 'process.vue'
     }
 
+    //填充 all 选项下的 pid
     if (data.pid === 'all') {
         data.pidList = this.pidList;
     } else {
         data.pidList = [data.pid];
+    }
+
+    //own 跳转至 overview 概览页面
+    if (vm.e_opt === 'own') {
+        router.push({
+            path: `overview`,
+            query: data
+        });
+        return;
     }
 
     //通知服务器开始进行 cpu/memory 数据采集

@@ -16,6 +16,13 @@ const routers = [
             title: ''
         },
         component: (resolve) => require(['./views/profiler.vue'], resolve)
+    },
+    {
+        path: config.default.vueRouter.overview,
+        meta: {
+            title: ''
+        },
+        component: (resolve) => require(['./views/overview.vue'], resolve)
     }
 ];
 export default routers;

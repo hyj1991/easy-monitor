@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @component: views/loading.vue
+ * @component: views/common/loading.vue
  * @vue-data: watch
  * @descript: 根据 axios 获取到的 loadingMsg 数据进行分段解析
  */

@@ -21,6 +21,7 @@
     "iview": "2.0.0-rc.13",
     "lodash": "^4.17.4",
     "vue": "^2.2.6",
+    "vue-chartjs": "^2.4.1",
     "vue-router": "^2.2.1"
   },
   "devDependencies": {

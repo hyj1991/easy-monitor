@@ -35,15 +35,19 @@ module.exports = merge(webpackBaseConfig, {
     devServer: {
         proxy: {
             '/axiosIndexPage': {
-                target: 'http://localhost:12334',
+                target: 'http://localhost:12333',
                 changeOrigin: true
             },
             '/axiosProfiler': {
-                target: 'http://localhost:12334',
+                target: 'http://localhost:12333',
                 changeOrigin: true
             },
             '/axiosProfilerDetail': {
-                target: 'http://localhost:12334',
+                target: 'http://localhost:12333',
+                changeOrigin: true
+            },
+            '/axiosOverview': {
+                target: 'http://localhost:12333',
                 changeOrigin: true
             }
         }

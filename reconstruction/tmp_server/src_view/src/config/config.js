@@ -6,13 +6,15 @@ let config = {
     axiosPath: {
         indexPage: '/axiosIndexPage',
         startProfiler: '/axiosProfiler',
-        getProfilerDetail: '/axiosProfilerDetail'
+        getProfilerDetail: '/axiosProfilerDetail',
+        getOverview: '/axiosOverview'
     },
 
     vueRouter: {
         root: '/',
         index: '/index',
-        profiler: '/profiler'
+        profiler: '/profiler',
+        overview: '/overview'
     }
 };
 

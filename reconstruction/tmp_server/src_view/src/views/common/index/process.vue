@@ -71,6 +71,10 @@
 
                         <!-- 解析操作类型列表 -->
                         <Radio-group v-model="e_opt">
+                            <Radio label="own">
+                                <Icon type="ios-list-outline"></Icon>
+                                <span>OS</span>
+                            </Radio>
                             <Radio label="cpu">
                                 <Icon type="ios-gear-outline"></Icon>
                                 <span>CPU</span>
@@ -96,7 +100,7 @@
 
     export default {
         data(){
-            return { e_pid: 'all', e_opt: 'cpu', loading: false, server: '', pidList: [] }
+            return { e_pid: 'all', e_opt: 'own', loading: false, server: '', pidList: [] }
         },
 
         props: ['singleProjectInfo'],
