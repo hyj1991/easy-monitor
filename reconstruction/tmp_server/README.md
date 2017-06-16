@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="300" heigth="300" src="/assets/logo_v2.png" alt="easy-monitor logo">
+  <img width="200" heigth="200" src="/assets/logo_v2.png" alt="easy-monitor logo">
 </div>
 
 [![npm version](https://badge.fury.io/js/easy-monitor.svg)](https://badge.fury.io/js/easy-monitor)
