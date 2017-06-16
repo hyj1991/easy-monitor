@@ -1,4 +1,4 @@
-# Easy-Monitor (2.0)
+# Easy-Monitor 2.0
 
 [![npm version](https://badge.fury.io/js/easy-monitor.svg)](https://badge.fury.io/js/easy-monitor)
 [![Package Quality](http://npm.packagequality.com/shield/easy-monitor.svg)](http://packagequality.com/#?package=easy-monitor)
