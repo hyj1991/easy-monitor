@@ -134,16 +134,20 @@ exports = module.exports = {
             }
         },
 
-        //过滤无关函数
+        /**
+         * @param {string} filePath 文件路径
+         * @param {string} funcName 函数名
+         * @description 过滤无关函数
+         */
         filter_function: function (filePath, funcName) {
             //过滤掉包含 node_modules 和 anonymous 的函数
-            let needIgnore = ['node_modules', 'anonymous'].some(fileName => {
+            const needIgnore = ['node_modules', 'anonymous'].some(fileName => {
                 return Boolean(~(filePath.indexOf(fileName))) || Boolean(~(funcName.indexOf(fileName)))
             });
 
             //结构路径中必须包含有 /
-            let mustHave = ['/'].every(fileName => {
-                return Boolean(~filePath.indexOf(fileName));
+            const mustHave = [/^\(\/.*/].every(regexp => {
+                return Boolean(regexp.test(filePath));
             });
 
             return !needIgnore && mustHave;
