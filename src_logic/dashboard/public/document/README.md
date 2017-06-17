@@ -38,3 +38,48 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的Node进程，性能优
 * 支持 **Cluster** 集群部署，支持定制 **私有协议**
 
 ## II. 快速开始
+
+### - 安装模块
+
+执行如下命令安装 Easy-Monitor：
+
+```
+npm install easy-monitor@2.0.7
+```
+
+目前 2.0 还未正式发布，所以需要指定版本号安装获取最新的 2.x 版本
+
+### - 项目中引入
+
+在你的项目入口文件中按照如下方式引入，当然请传入你的项目名称：
+
+```js
+const easyMonitor = require('easy-monitor');
+easyMonitor('你的项目名称');
+```
+
+好了，此时你所需要做的一切都已就绪，接下来以你喜欢的方式运行项目即可，不管是 ```nohup``` 还是 ```pm2```，亦或是直接 ```node``` 启动均可。
+
+### - 访问监控页面
+
+打开你的浏览器，访问 http://localhost:12333 ，即可看到进程界面。
+
+### - 完整嵌入样例
+
+为了帮助大家更好的理解使用，下面编写一个 Easy-Monitor 嵌入 Express 应用的完整例子
+
+```js
+'use strict';
+const easyMonitor = require('easy-monitor');
+easyMonitor('Mercury');
+const express = require('express');
+const app = express();
+
+app.get('/hello', function (req, res, next) {
+    res.send('hello');
+});
+
+app.listen(8082);
+```
+
+将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！

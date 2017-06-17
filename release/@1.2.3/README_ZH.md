@@ -55,11 +55,11 @@ npm install easy-monitor
 
 ### II.项目中引入
 
-在你的项目入口文件中按照如下方式引入，传入你的项目名称：
+    在你的项目入口文件中按照如下方式引入，传入你的项目名称：
 
-```js
-const easyMonitor = require('easy-monitor');
-easyMonitor('你的项目名称');
+    ```js
+    const easyMonitor = require('easy-monitor');
+    easyMonitor('你的项目名称');
 ```
 
 ### III.访问监控页面
