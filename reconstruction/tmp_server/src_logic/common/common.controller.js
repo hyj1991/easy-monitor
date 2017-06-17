@@ -9,7 +9,7 @@ module.exports = function (_common, config, logger, utils) {
      */
     function load(type, cp, handle) {
         const ctx = this;
-        const ctrList = _common.getFileList(cp, `./**/*.${type}.js`);
+        const ctrList = _common.getFileList(cp, `./**/*${type}.*.js`);
         ctrList.forEach(ctrFile => {
             try {
                 require(ctrFile).call(ctx, handle);

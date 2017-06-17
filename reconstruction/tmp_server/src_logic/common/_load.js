@@ -2,8 +2,8 @@
 const path = require('path');
 const glob = require('glob');
 const colors = require('colors/safe');
-const ext = '.common.js';
-const commonBase = `./**/*${ext}`;
+const ext = { prefix: 'common', suffix: 'js' };
+const commonBase = `./**/${ext.prefix}.*.${ext.suffix}`;
 
 /**
  * @param {string} base @param {string} files
@@ -41,13 +41,13 @@ function createLibrary(base, files) {
         const preLoad = preList.reduce((pre, name) => {
             let res = {};
             try {
-                res = require(path.join(base, `${name}${ext}`));
+                res = require(path.join(base, `${ext.prefix}.${name}.${ext.suffix}`));
                 //如果有预设的额外参数，则增加到参数数组中
                 if (param[name]) pre.push(param[name]);
                 res = res.apply(null, pre);
                 //如果有预设的额外参数，使用完成后清除掉
                 if (param[name]) pre.pop();
-            } catch (e) { console.error(colors['red'](`[Easy-Monitor] <${name}${ext}> pre-load error: ${e}`)) }
+            } catch (e) { console.error(colors['red'](`[Easy-Monitor] <${ext.prefix}.${name}.${ext.suffix}> pre-load error: ${e}`)) }
 
             pre.push(res);
             return pre;
@@ -58,7 +58,8 @@ function createLibrary(base, files) {
         //以预加载的 common 文件为参数，加载剩余文件
         return fileList.reduce((pre, file) => {
             const basename = path.basename(file);
-            const filename = basename.replace(ext, '');
+            const filename = (new RegExp(`${ext.prefix}.(.*).${ext.suffix}`).exec(basename))[1];
+
             //预加载过的文件保存后剔除
             if (~preList.indexOf(filename)) {
                 pre[filename] = preLoad[preList.indexOf(filename) + 1];

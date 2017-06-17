@@ -5,7 +5,7 @@ const EventEmitter = require('events').EventEmitter;
 const event = new EventEmitter();
 const configPath = path.join(__dirname, '../config');
 const lodash = require('lodash');
-const ext = '.config.js';
+const ext = { prefix: 'config', suffix: 'js' };
 
 module.exports = function common(_common, userConfig) {
     /**
@@ -39,7 +39,7 @@ module.exports = function common(_common, userConfig) {
         let length = nameList.length;
 
         nameList.forEach(name => {
-            event.on(`${name}${ext}`, () => {
+            event.on(`${ext.prefix}.${name}.${ext.suffix}`, () => {
                 if (!--length) {
                     done();
                 }
@@ -67,13 +67,11 @@ module.exports = function common(_common, userConfig) {
      * @todo 暂时为最简单的实现方式，后期视情况更改
      */
     function loadConfig(cp) {
-        const configList = _common.getFileList(configPath, `./**/*${ext}`);
-        //将最基础的 config.js 文件置顶
-        configList.unshift(path.join(configPath, '_.js'));
+        const configList = _common.getFileList(configPath, `./**/${ext.prefix}.*.${ext.suffix}`);
 
         return configList.reduce((pre, file) => {
+            //获取文件名
             const basename = path.basename(file);
-            const name = basename.replace(ext, '');
 
             try {
                 let fn = require(file);
