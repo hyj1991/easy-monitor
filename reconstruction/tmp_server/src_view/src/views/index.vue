@@ -27,7 +27,7 @@
         </process-index>
 
         <!-- 多项目部署悬浮导航栏 -->
-        <navigation :list="projectList">
+        <navigation :list="projectList" needDocument=true>
         </navigation>
 
         <!-- 页脚信息 -->

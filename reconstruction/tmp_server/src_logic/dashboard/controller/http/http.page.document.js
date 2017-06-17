@@ -7,7 +7,7 @@ module.exports = function (app) {
     const dbl = this.dbl;
 
     //客户端采用 Vue 编写的单页面应用，故而这些路由均需指向 index.ejs 文件
-    app.get([`${config.http.prefix}/`, `${config.http.prefix}/index`, `${config.http.prefix}/profiler`, `${config.http.prefix}/overview`], function (req, res, next) {
-        res.render('index');
+    app.get(`${config.http.prefix}/document`, function (req, res, next) {
+        res.render('document');
     });
 }

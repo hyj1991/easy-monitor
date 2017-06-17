@@ -9,8 +9,16 @@
     <Row type="flex" justify="center" class="code-row-bg" v-if="needHome">
         <Col span=24 style="text-align:left">
             <router-link :to="config.default.vueRouter.index">
-                <p>· Home</p>
+                <p>- Home</p>
             </router-link>
+        </Col>
+    </Row>
+
+    <Row type="flex" justify="center" class="code-row-bg" v-if="needDocument">
+        <Col span=24 style="text-align:left">
+            <a :href="config.default.vueRouter.document">
+                <p>- Document</p>
+            </a>
         </Col>
     </Row>
 
@@ -30,7 +38,7 @@
             return { config }
         },
 
-        props: ['list', 'needHome'],
+        props: ['list', 'needHome', 'needDocument'],
 
         computed: {
             navigationList() {

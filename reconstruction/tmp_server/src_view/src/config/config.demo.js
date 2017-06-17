@@ -13,7 +13,8 @@ let config = {
         root: '/easy-monitor/demo',
         index: '/easy-monitor/demo/index',
         profiler: '/easy-monitor/demo/profiler',
-        overview: '/easy-monitor/demo/overview'
+        overview: '/easy-monitor/demo/overview',
+        document: '/easy-monitor/demo/document'
     }
 };
 export default config;

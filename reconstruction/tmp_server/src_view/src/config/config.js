@@ -14,7 +14,8 @@ let config = {
         root: '/',
         index: '/index',
         profiler: '/profiler',
-        overview: '/overview'
+        overview: '/overview',
+        document: '/document'
     }
 };
 
