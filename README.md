@@ -43,11 +43,9 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的Node进程，性能优
 
 执行如下命令安装 Easy-Monitor：
 
+```js
+npm install easy-monitor
 ```
-npm install easy-monitor@2.0.7
-```
-
-目前 2.0 还未正式发布，所以需要指定版本号安装获取最新的 2.x 版本
 
 ### - 项目中引入
 
