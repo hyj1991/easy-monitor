@@ -17,7 +17,7 @@
     <Row type="flex" justify="center" class="code-row-bg" v-if="needDocument">
         <Col span=24 style="text-align:left">
             <a :href="config.default.vueRouter.document">
-                <p>- Document</p>
+                <p>- Docs</p>
             </a>
         </Col>
     </Row>
