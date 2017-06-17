@@ -4,6 +4,27 @@ import axios from 'axios';
 /**
  * @component: views/index.vue
  * @vue-data: methods
+ * @descript: 检查动态配置项
+ */
+function checkConfig() {
+    const vm = this;
+    axios.get(config.default.axiosPath.checkConfig)
+        .then(response => { 
+            if(response && response.data){
+                const result = response.data;
+                if(result.success){
+                    const msg = JSON.parse(result.data);
+                    //判断是否需要开启 doc
+                    vm.needDocument = msg.need_document;
+                }
+            }
+        })
+        .catch(error => vm.answer = { error: 'Error! Could not reach the API. ' + error });
+}
+
+/**
+ * @component: views/index.vue
+ * @vue-data: methods
  * @descript: 使用 axios 工具，从服务器获取到主页所需的数据
  */
 function getIndexPageData() {
@@ -93,6 +114,6 @@ function projectList() {
 
 //导出 index.vue 所需
 export default {
-    methods: { getIndexPageData },
+    methods: { getIndexPageData, checkConfig },
     computed: { projectPidMap, sortedProjectList, projectInfoList, projectList }
 }

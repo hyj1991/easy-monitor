@@ -27,7 +27,7 @@
         </process-index>
 
         <!-- 多项目部署悬浮导航栏 -->
-        <navigation :list="projectList" needDocument=true>
+        <navigation :list="projectList" :needDocument="needDocument">
         </navigation>
 
         <!-- 页脚信息 -->
@@ -44,16 +44,18 @@
 
     export default {
         data () {
-            return { indexPageData: {} }
+            return { indexPageData: {}, needDocument: false }
         },
 
         created(){
+            this.checkConfig();
             this.getIndexPageData();
         },
 
         components: { navigation, processIndex },
 
         methods: {
+            checkConfig() { this.$_js.index.methods.checkConfig.call(this); },
             getIndexPageData(){ this.$_js.index.methods.getIndexPageData.call(this); }
         },
 

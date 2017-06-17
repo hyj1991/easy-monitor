@@ -7,7 +7,8 @@ let config = {
         indexPage: '/axiosIndexPage',
         startProfiler: '/axiosProfiler',
         getProfilerDetail: '/axiosProfilerDetail',
-        getOverview: '/axiosOverview'
+        getOverview: '/axiosOverview',
+        checkConfig: '/axiosConfig'
     },
 
     vueRouter: {

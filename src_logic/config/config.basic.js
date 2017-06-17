@@ -20,6 +20,9 @@ module.exports = {
     //用来处理子进程重启
     fork_restart: 'fork_node_restart',
 
+    //是否需要开启 Document
+    need_document: false,
+
     //进程信息分隔符
     process_seg: '::',
 

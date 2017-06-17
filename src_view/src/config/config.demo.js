@@ -6,7 +6,8 @@ let config = {
         indexPage: '/easy-monitor/demo/axiosIndexPage',
         startProfiler: '/easy-monitor/demo/axiosProfiler',
         getProfilerDetail: '/easy-monitor/demo/axiosProfilerDetail',
-        getOverview: '/easy-monitor/demo/axiosOverview'
+        getOverview: '/easy-monitor/demo/axiosOverview',
+        checkConfig: '/easy-monitor/demo/axiosConfig'
     },
 
     vueRouter: {

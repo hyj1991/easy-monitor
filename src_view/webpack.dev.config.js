@@ -49,6 +49,10 @@ module.exports = merge(webpackBaseConfig, {
             '/axiosOverview': {
                 target: 'http://localhost:12333',
                 changeOrigin: true
+            },
+            '/axiosConfig': {
+                target: 'http://localhost:12333',
+                changeOrigin: true
             }
         }
     }
