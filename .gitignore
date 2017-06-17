@@ -3,4 +3,5 @@ node_modules
 .idea
 build
 npm-debug.log
+package-lock.json
 coverage
