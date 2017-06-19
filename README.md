@@ -62,7 +62,7 @@ easyMonitor('你的项目名称');
 
 打开你的浏览器，访问 http://localhost:12333 ，即可看到进程界面。
 
-### - 完整嵌入样例
+### - 完整样例 & Demo
 
 为了帮助大家更好的理解使用，下面编写一个 Easy-Monitor 嵌入 Express 应用的完整例子
 
@@ -80,4 +80,17 @@ app.get('/hello', function (req, res, next) {
 app.listen(8082);
 ```
 
+
 将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！
+
+这里有一个在线真实的 Demo 地址：Easy-Monitor Demo
+
+## III. 深度定制化 & 通用配置
+
+深度定制化开发和通用配置详见 [Easy-Monitor 详细文档](http://easy-monitor.cn/document)
+
+## License
+
+[MIT License](LICENSE)
+
+Copyright (c) 2017 hyj1991
