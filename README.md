@@ -83,7 +83,7 @@ app.listen(8082);
 
 将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！
 
-这里有一个在线真实的 Demo 地址：Easy-Monitor Demo
+这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://easy-monitor.cn)
 
 ## III. 深度定制化 & 通用配置
 
