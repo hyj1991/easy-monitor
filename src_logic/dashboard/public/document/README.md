@@ -636,7 +636,7 @@ easyMonitor({
 
 !> cluster 模式下 ```auth``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
-## IV. **通用配置**
+## **IV. 通用配置**
 
 Easy-Monitor 绝大多数允许开发者定制的参数都是为了 ```cluster``` 部署和 ```定制私有通信方案``` 而设计的，而这些涉及到的参数在 [定制化](#iii-定制化) 一节中已经介绍了。
 
@@ -696,7 +696,7 @@ easyMonitor({
 
 !> 离线文档开启后，在监控首页的右下角点击 ```Docs``` 即可进入。cluster 模式下 ```need_document``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
-## V. 特别感谢
+## **V. 特别感谢**
 
 Easy-Monitor 的诞生和重构过程中思路参考了一些开源项目，在最后特别感谢下：
 
