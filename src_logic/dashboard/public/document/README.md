@@ -700,6 +700,6 @@ easyMonitor({
 
 Easy-Monitor 的诞生和重构过程中思路参考了一些开源项目，在最后特别感谢下：
 
-* **Memeye:** 作者为 [JerryC8080](https://github.com/JerryC8080)，2.0 版本的 overview 页面实现和 logger 模块实现参考了 [Memeye]((https://github.com/JerryC8080/Memeye) 项目
+* **Memeye:** 作者为 [JerryC8080](https://github.com/JerryC8080)，2.0 版本的 overview 页面实现和 logger 模块实现参考了 [Memeye](https://github.com/JerryC8080/Memeye) 项目
 
 Easy-Monitor 在源代码中对应位置也做了标注，感谢作者们的开源精神。
