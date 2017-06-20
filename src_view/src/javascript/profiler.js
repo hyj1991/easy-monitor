@@ -9,10 +9,16 @@ import router from '../main.js';
  */
 function startProfiling(data, tag) {
     data.tag = tag;
-    axios.post(config.default.axiosPath.startProfiler, { data })
+    axios.post(`${config.default.axiosPath.startProfiler}?name=${data.processName}`, { data })
         .then(response => {
             const data = response.data;
-            if (!data.success) router.push({ path: config.default.vueRouter.index });
+            if (!data.success) {
+                if (Number(data.code) === 7) {
+                    vm.$Message.error('当前用户对此项目无操作权限，如有疑问请联系管理员!');
+                }
+
+                router.push({ path: config.default.vueRouter.index });
+            };
         })
         .catch(err => console.error(err));
 }

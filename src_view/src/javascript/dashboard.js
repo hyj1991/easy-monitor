@@ -50,7 +50,7 @@ function fetchOverview() {
 
     //发起请求
     function _send(data) {
-        axios.post(config.default.axiosPath.getOverview, { data }).then(response => {
+        axios.post(`${config.default.axiosPath.getOverview}?name=${data.name}`, { data }).then(response => {
             vm.axiosSended = false;
             const data = response.data;
             if (data.success) {
@@ -62,6 +62,13 @@ function fetchOverview() {
             } else {
                 if (Number(data.code) === 4) {
                     router.push({ path: config.default.vueRouter.index });
+                    clearInterval(vm.axiosTimer);
+                }
+
+                if (Number(data.code) === 7) {
+                    vm.$Message.error('当前用户对此项目无操作权限，如有疑问请联系管理员!');
+                    router.push({ path: config.default.vueRouter.index });
+                    clearInterval(vm.axiosTimer);
                 }
             }
         }).catch(err => {

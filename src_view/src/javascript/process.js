@@ -35,8 +35,17 @@ function radioHandle() {
     }
 
     //通知服务器开始进行 cpu/memory 数据采集
-    axios.post(config.default.axiosPath.startProfiler, { data })
-        .then(response => { })
+    axios.post(`${config.default.axiosPath.startProfiler}?name=${data.processName}`, { data })
+        .then(response => {
+            const data = response.data;
+            if (!data.success) {
+                if (Number(data.code) === 7) {
+                    vm.$Message.error('当前用户对此项目无操作权限，如有疑问请联系管理员!');
+                }
+
+                router.push({ path: config.default.vueRouter.index });
+            };
+        })
         .catch(err => console.error(err));
 
     //如果没有设置 loadingTime，则立即进行跳转

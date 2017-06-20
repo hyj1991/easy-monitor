@@ -1,5 +1,6 @@
 'use strict';
 import axios from 'axios';
+import router from '../main.js';
 
 /**
  * @component: views/common/profiler/mem.vue
@@ -86,7 +87,7 @@ function checkStat(data) {
 
     function _send(data) {
         axios
-            .post(config.default.axiosPath.getProfilerDetail, { data })
+            .post(`${config.default.axiosPath.getProfilerDetail}?name=${data.processName}`, { data })
             .then(response => {
                 vm.axiosSended = false;
                 const data = response && response.data || {};
@@ -103,7 +104,16 @@ function checkStat(data) {
                 } else {
                     // const errorMsg = 'Server Inner Error, Please refresh this page!';
                     // vm.error = data.error || errorMsg;
-                    // clearInterval(vm.checkStatTimer);
+                    if (Number(data.code) === 4) {
+                        router.push({ path: config.default.vueRouter.index });
+                        clearInterval(vm.checkStatTimer);
+                    }
+
+                    if (Number(data.code) === 7) {
+                        // vm.$Message.error('当前用户对此项目无操作权限，如有疑问请联系管理员!');
+                        router.push({ path: config.default.vueRouter.index });
+                        clearInterval(vm.checkStatTimer);
+                    }
                 }
             })
             .catch(err => {
