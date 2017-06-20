@@ -1,75 +1,81 @@
-# Easy-Monitor 2.0
+<div align="center">
+  <img width="300" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/logo.png" alt="easy-monitor logo">
+</div>
 
 [![npm version](https://badge.fury.io/js/easy-monitor.svg)](https://badge.fury.io/js/easy-monitor)
 [![Package Quality](http://npm.packagequality.com/shield/easy-monitor.svg)](http://packagequality.com/#?package=easy-monitor)
 [![npm](https://img.shields.io/npm/dt/easy-monitor.svg)](https://www.npmjs.com/package/easy-monitor)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
-## I. 简介
+# Easy-Monitor
+[中文版](README_ZH.md)
 
-轻量级的 Node.js 项目内核性能监控 + 分析工具，在默认模式下，只需要在项目入口文件 ```require``` 一次，无需改动任何业务代码即可开启内核级别的性能监控分析。
+## Introduction
 
-### - 功能特点
+A lightweight Node.js performance monitoring tool, you just need to ```require``` it at the entrance of your project, then ```Easy-Monitor``` will show you your Node.js process details.
 
-* 服务器状态概览信息展示
-* 实时 CPU 函数性能分析，帮助定位程序的性能瓶颈点
-* 实时 Memory 堆内内存结构分析，帮助定位到内存疑似泄漏点
+### I.Functions
 
-Easy-Monitor 旨在帮助大家更深入的理解自己的Node进程，性能优化时能更有针对性，最终提升大家的项目体验。
+* **Find 5 or more functions that take the longest execution time**
+* **Find functions that perform more than expected**
+* **Find the functions which V8 engine can not optimize**
 
-### - 兼容性
+The number of listings disaplayed above can be configured directly in URL.
+You can also set your own rule that you can fiter **functions** and **filePaths** so that the results is what you really want.
 
-目前经过测试，兼容以下 Node.js 版本：
+The purpose of ```Easy-Monitor``` is to help you more in-depth understanding of our Node process, performance optimization can be more targeted, and ultimately enhance our project experience.
 
-* Node v4.x
+
+### II.Feature
+
+* **LightWeight**：```Easy-Monitor``` is unconventional C/S physical separation model, all you need to to is ```require``` in your project, there is no additional server/agent deployment costs.
+
+* **RunTime**：```Easy-Monitor``` can provide you runtime performance and memory details, and it can be used for production.
+
+* **Stateless**：```Easy-Monitor``` always show you your node process status when you visit it.
+
+## Compatibility
 * Node v6.x
-* Node v8.x
+* Node v5.x
+* Node v4.x
 
-因为 Node.js 的 LTS 版本都是偶数版本，所以此处并未对于奇数版本进行测试（v5.x，v7.x），如果有测试过的可以以 [issue](https://github.com/hyj1991/easy-monitor/issues) 的形式将兼容性结果反馈。
+Temporary don't support Node v7.x.
 
-注：Node v8.x 截止目前为止 (2017.6.6) 下使用 v8-profiler 有 ```Segmentation fault (core dumped)``` 的核心错误，并且官方 issue 修复较慢 ( [issue 112](https://github.com/node-inspector/v8-profiler/issues/112) ), 故经排查源代码后发布了 [v8-profiler-node8](https://www.npmjs.com/package/v8-profiler-node8) 临时解决了这个 bug，等官方修复后，会将 Easy-Monitor 的依赖切回 [v8-profiler](https://www.npmjs.com/package/v8-profiler) 。
+## Quick Start
 
-### - 2.0 新特性
+```Easy-Monitor``` is simple, only three steps you can start your own performance monitor.
 
-* 全新设计的 **UI**
-* 新增概览 **Overview** 展示页
-* 全面兼容 **v4.x ~ v8.x**
-* 支持 **Stream** 流式解析更大的 HeapSnapshot
-* 支持 **Cluster** 集群部署，支持定制 **私有协议**
+### I.Install
 
-## II. 快速开始
+Simply run as：
 
-### - 安装模块
-
-执行如下命令安装 Easy-Monitor：
-
-```js
+```bash
 npm install easy-monitor
 ```
 
-### - 项目中引入
+### II.Require
 
-在你的项目入口文件中按照如下方式引入，当然请传入你的项目名称：
+Require in your project, argument is your project name, such as:
 
 ```js
 const easyMonitor = require('easy-monitor');
-easyMonitor('你的项目名称');
+easyMonitor('your project name');
 ```
 
-好了，此时你所需要做的一切都已就绪，接下来以你喜欢的方式运行项目即可，不管是 ```nohup``` 还是 ```pm2```，亦或是直接 ```node``` 启动均可。
+### III.Visit
 
-### - 访问监控页面
+Open browser, input as below, then you will see detail:
 
-打开你的浏览器，访问 http://localhost:12333 ，即可看到进程界面。
+```bash
+http://127.0.0.1:12333
+```
 
-### - 完整样例 & Demo
-
-为了帮助大家更好的理解使用，下面编写一个 Easy-Monitor 嵌入 Express 应用的完整例子
+### IV.A thorough example with Express
 
 ```js
 'use strict';
 const easyMonitor = require('easy-monitor');
-easyMonitor('Mercury');
+easyMonitor('your project name');
 const express = require('express');
 const app = express();
 
@@ -80,16 +86,146 @@ app.get('/hello', function (req, res, next) {
 app.listen(8082);
 ```
 
+Save the above as a JS file, then open your browser and visit ```http://127.0.0.1:12333```, just so simple!
 
-将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！
+## Customization
 
-这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://easy-monitor.cn)
+### I.Customization Parameters
 
-## III. 深度定制化 & 通用配置
+```Easy-Monitor``` also remain some important
+attributes so that we can customize conveniently, it's dependence on the object you set  when executing ```require('easy-monitor')(object)```, this object  can have below attributes as:
 
-深度定制化开发和通用配置详见 [Easy-Monitor 详细文档](http://easy-monitor.cn/document)
+* **logLevel**：Number, default is 2, it used to set log level：
+	* 0：don't output any log
+	* 1：output error log
+	* 2：output info log
+	* 3：output debug log
 
-## License
+* **appName**：String, default is getting from process.title, it used to set your project name.
+
+* **httpServerPort**：Numver, default is 12333, it used to set monitor http server port.
+
+* **filterFunction**：function, default filtering out the profiling results of the 'node_modules' and 'anonymous', and all file paths that don't have the string '/', because of these may be system functions.
+Developer can write function to filter your own results, below is the params and returned value:
+	* filePath: String, file path that functions at
+	* funcName: String, function name
+	* returned value: if true remain, if false filtering out
+
+* **monitorAuth**：function, default don't authentication, it used for authentication, developer can write function for own authentication, below is the params and returned value:
+	* user：String, it's username
+	* pass：String, it's password
+	* returned value：a Promise instance, resolve(true) mean authentication pass, resolve(false) or reject mean authentication failed.
+
+### II.Customization Example
+
+Below is a thorough example that ```Easy-Monitor``` with Express：
+
+```js
+'use strict';
+const easyConfig = {
+    logLevel: 3, 
+    appName: 'My Project 1', 
+    httpServerPort: 8888, 
+    filterFunction: function (filePath, funcName) {
+        if (funcName === 'anonymous' || ~filePath.indexOf('node_modules')) {
+            return false;
+        }
+        return Boolean(/^\(\/.*/.test(filePath));
+    }, 
+    monitorAuth: function (user, pass) {
+        return new Promise(resolve => resolve(Boolean(user === 'admin' && pass === 'lifeishard')));
+    }
+};
+const easyMonitor = require('easy-monitor');
+easyMonitor(easyConfig);
+
+const express = require('express');
+const app = express();
+
+app.get('/hello', function helloIndex(req, res, next) {
+    let date = Date.now();
+    while (Date.now() - date < 300) {
+    }
+    res.send('hello');
+});
+
+app.listen(8082);
+```
+
+In this example, log level setted to be 3, monitor http server port changed to be 8888, we also set our own filtering rule and simply authentication rule.
+
+More, ```/hello``` setted being blocking after 300ms, you can open ```http://127.0.0.1:8888``` to visit ```Easy-Monitor``` home page, to click the project name or pid, then it will do cpu profiling, meanwhile you can visit ```http://127.0.0.1:8082/hello``` ceaselessly.
+
+After all, you'll get result by trying it.
+
+## Monitor Page Preview
+
+### I.HomePage
+
+#### 1.Profiling The Whole Project
+
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Project.jpeg" alt="Index_Project">
+
+As the picture, you can click the project name, this will profiling the **whole project's process**, include:
+* single process mode: only main process
+* cluster mode: all cluster process
+
+#### 2.Profiling The Unique Process
+
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Pid.jpeg" alt="Index_Pid">
+
+As the picture, there will be multiple child process in cluster mode, you can click unique pid, this will profiling the **unique process** only. 
+
+#### 3.Multi Project Deployment
+
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Index_Multi.jpeg" alt="Index_Multi">
+
+As the picture, ```Easy-Monitor``` **support multi project deployment**, the usage is exactly the same as the single project, you can refer to Quick Start.
+
+When you deploy multi projects, monitor homepage will display these different project and their child process pid.
+
+### II.DetaiPage
+
+#### 1.List of the Time-Executing out of Expected Functions
+
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Long.jpeg" alt="Detail_Long">
+
+As the picture, we can add ```querystring``` params to customize the expected time and the number of items to display, such as:
+
+* ```?timeout=your expected execution time(ms)```
+
+* ```?long_limit=the number of items you want to display```
+
+* ```?timeout=your expected execution time(ms)&long_limit=the number of items you want to display```
+
+#### 2.List of the Most Time-Consuming Functions
+
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Top.jpeg" alt="Detail_Top">
+
+
+As the picture, we can add ```querystring``` params to customize the number of items to display, such as:
+
+* ```?top_limit=the number of items you want to display```
+
+#### 3.List of the De-Optimizing Functions By V8 Engine
+
+<img width="550" heigth="300" src="https://github.com/hyj1991/assets/blob/master/easy-monitor/Detail_Bail.jpeg" alt="Detail_Bail">
+
+As the picture, we can add ```querystring``` params to customize the number of items to display, such as:
+
+* ```?bail_limit=the number of items you want to display```
+
+## Unit Test
+
+Run unit test as：
+
+```
+npm run test
+```
+
+It will create a coverage report.
+
+# License
 
 [MIT License](LICENSE)
 
