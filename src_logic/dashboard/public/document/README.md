@@ -83,7 +83,7 @@ app.listen(8082);
 
 将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！
 
-这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://easy-monitor.cn)
+这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://easy-monitor.cn)，可以点击进入自行尝试一番。
 
 ## **III. 定制化**
 
@@ -610,10 +610,12 @@ easyMonitor({
 });
 ```
 
-!> 离线文档开启后，在监控首页的右下角点击 ```Docs``` 即可进入。
+!> 离线文档开启后，在监控首页的右下角点击 ```Docs``` 即可进入。cluster 模式下 ```need_document``` 仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
 ## V. 特别感谢
 
 Easy-Monitor 的诞生和重构过程中思路参考了一些开源项目，在最后特别感谢下：
 
 * **Memeye:** 作者为 [JerryC8080](https://github.com/JerryC8080)，2.0 版本的 overview 页面实现和 logger 模块实现参考了 [Memeye]((https://github.com/JerryC8080/Memeye) 项目
+
+Easy-Monitor 在源代码中对应位置也做了标注，感谢作者们的开源精神。
