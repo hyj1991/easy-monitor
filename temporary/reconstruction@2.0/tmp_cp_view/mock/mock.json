@@ -1,0 +1,38 @@
+{
+    "indexPage": {
+        "seg" : "#-#",
+
+        "projectPidMap": {
+            "Mercury#-#huangyijun.local": {
+                "list": [
+                    "51301",
+                    "51302",
+                    "51303"
+                ],
+                "loading": 0
+            },
+            "Venus#-#huangyijun.local": {
+                "list": [
+                    "65871",
+                    "65872",
+                    "65873"
+                ],
+                "loading": 2000
+            },
+            "Jupitor#-#huangyijun.local": {
+                "list": [
+                    "3233",
+                    "3234",
+                    "3235"
+                ],
+                "loading": 0
+            },
+            "Mercury#-#guojunlong.local": {
+                "list": [
+                    "2301"
+                ],
+                "loading": 0
+            }
+        }
+    }
+}
