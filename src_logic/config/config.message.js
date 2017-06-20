@@ -14,6 +14,8 @@ exports = module.exports = {
             "4": "PROFILING_STATES_REQUEST",
             //os 信息获取请求
             "6": "OVERVIEW_UPLOAD_REQUEST",
+            //鉴权请求
+            "8": "AUTHENTICTION_REQUEST"
         },
 
         /**
@@ -27,7 +29,9 @@ exports = module.exports = {
             //profiling 过程中状态上报响应
             "5": "PROFILING_STATES_RESPONSE",
             //os 信息获取响应
-            "7": "OVERVIEW_UPLOAD_RESPONSE"
+            "7": "OVERVIEW_UPLOAD_RESPONSE",
+            //鉴权响应
+            "9": "AUTHENTICTION_RESPONSE"
         },
 
         /** 

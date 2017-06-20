@@ -552,6 +552,90 @@ easyMonitor({
 //其余自己项目代码
 ```
 
+### - 权限模块
+
+Easy-Monitor 对项目进行的是实时分析，很多情况下我们不希望无关人员开启相关功能，所以项目也提供了鉴权模块，实现如下两种鉴权方式：
+
+* **仅对登录 dashboard 鉴权**，即登录成功后可以对列表所有项目进行内核分析操作。登录不成功则无法进入 dashboard 页面。
+* **登录 dashboard 鉴权，并且对登录成功的用户和列表项目间也进行鉴权**，即非开发者设定的 admin 用户则只能对允许操作的项目进行内核分析操作。
+
+下面是对两种鉴权方式使用的分别介绍:
+
+#### 1. 登录鉴权
+
+通过在传入 Easy-Monitor 的启动参数中增加 ```auth``` 节点，来开启鉴权功能，样例如下所示：
+
+```js
+'use strict';
+const easyMonitor = require('easy-monitor');
+easyMonitor({
+    project_name: 'Game Boy',
+    auth: {
+		need: true,
+		/**
+		 @param {string} user 用户名
+		 @param {string} pass 用户键入密码
+		 @return {promise}
+		 **/
+		authentication(user, pass) {
+			return new Promise(resolve => {
+				if ((user === 'hyj1991' && pass === '123456')) resolve(true)
+				else resolve(false);
+			});
+		}
+	}
+});
+```
+传入对象增加的 ```auth``` 节点的参数说明:
+
+|参数|类型|值|说明|
+|:-:|:-:|:-:|:-:|
+| need | Boolean | ```true``` 或者 ```false``` | 必选参数，是否开启鉴权模块，这里必须为 ```true``` |
+| authentication | Function | return:*Promise* | 必选参数，登录鉴权方法，返回包含鉴权结果的 ```promise``` |
+
+!> cluster 模式下 ```auth``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
+
+#### 2. 登录鉴权 + 项目鉴权
+
+相比上面的仅做登录鉴权，这里多了一个登录用户和项目之间的映射关系鉴权，这样可以保证大家的项目嵌入的 embrace 进程都接入同一个 dashboard 集群的情况下，依旧可以避免项目无关的人员进行内核分析操作。样例如下所示:
+
+```js
+'use strict';
+const easyMonitor = require('easy-monitor');
+easyMonitor({
+    project_name: 'PlayStation',
+    auth: {
+		need: true,
+		admin: ["wjy1992"],
+		project_auth: {
+			"Game Boy": "hyj1991"
+		},
+		/**
+		 @param {string} user 用户名
+		 @param {string} pass 用户键入密码
+		 @return {promise}
+		 **/
+		authentication(user, pass) {
+			return new Promise(resolve => {
+				if ((user === 'hyj1991' && pass === '123456') || (user === 'wjy1992' && pass === '123456')) resolve(true)
+				else resolve(false);
+			});
+		}
+	}
+});
+```
+
+传入对象增加的 ```auth``` 节点的参数说明:
+
+|参数|类型|值|说明|
+|:-:|:-:|:-:|:-:|
+| need | Boolean | ```true``` 或者 ```false``` | 必选参数，是否开启鉴权模块，这里必须为 ```true``` |
+| admin | Array | 不固定 | 必选参数，数组里面为字符串，代表每一个 admin 用户的用户名称，admin 用户具有 ```所有项目``` 的操作权限 |
+| project_auth | Object | 不固定 | 必选参数，对象中的 key 是 ```字符串```，代表项目名称；value 是 ```数组```，数组中每一项为该项目允许操作的用户名称 |
+| authentication | Function | return:*Promise* | 必选参数，登录鉴权方法，返回包含鉴权结果的 ```promise``` |
+
+!> cluster 模式下 ```auth``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
+
 ## IV. **通用配置**
 
 Easy-Monitor 绝大多数允许开发者定制的参数都是为了 ```cluster``` 部署和 ```定制私有通信方案``` 而设计的，而这些涉及到的参数在 [定制化](#iii-定制化) 一节中已经介绍了。
@@ -570,7 +654,7 @@ easyMonitor({
 });
 ```
 
-!> 项目名称默认为 ```process.title```，cluster 模式下 ```project_name``` 仅需要在 embrace 进程启动参数中带上即可，标识业务进程名称。cluster 模式下此参数对 dashboard 进程无效。
+!> 项目名称默认为 ```process.title```，cluster 模式下 ```project_name``` 节点仅需要在 embrace 进程启动参数中带上即可，标识业务进程名称。cluster 模式下此参数对 dashboard 进程无效。
 
 
 ### - 日志级别
@@ -610,7 +694,7 @@ easyMonitor({
 });
 ```
 
-!> 离线文档开启后，在监控首页的右下角点击 ```Docs``` 即可进入。cluster 模式下 ```need_document``` 仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
+!> 离线文档开启后，在监控首页的右下角点击 ```Docs``` 即可进入。cluster 模式下 ```need_document``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
 ## V. 特别感谢
 

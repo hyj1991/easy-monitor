@@ -122,5 +122,5 @@ module.exports = function (app) {
     }
 
     //以下是此 controller 文件注册的路由
-    app.post(`${config.http.prefix}/axiosProfiler`, co.wrap(axiosProfiler));
+    app.post(`${config.http.prefix}/${config.http.router.axios_profiler}`, co.wrap(axiosProfiler));
 }

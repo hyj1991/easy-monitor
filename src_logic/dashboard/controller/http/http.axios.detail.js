@@ -42,9 +42,22 @@ module.exports = function (app) {
             return pre;
         }, { id: 0, res: '{}', loadingMsgList: [] });
 
-        const data = common.utils.jsonParse(result.res);
+        let data = common.utils.jsonParse(result.res);
         dbl.debug(`http.axios.detail.getNowStat sequence is: ${sequence}, loadingMsgList is: [${result.loadingMsgList}]`);
+        //设计一些友好的容错
         if (data.results && result.loadingMsgList.length !== 0) data.results.loadingMsg = result.loadingMsgList;
+        if (JSON.stringify(data) === '{}') {
+            data = {
+                done: false,
+                results: common.profiler.template({
+                    pid: params.pid,
+                    name: params.name,
+                    unique: config.embrace.machine_unique_key
+                }, config.profiler[params.opt].init())
+            }
+        }
+
+        //先返回大小，再返回数据
         if (data.done === true && !data.setSize) {
             data.done = false;
             const dataTmp = data.results.data;
@@ -112,5 +125,5 @@ module.exports = function (app) {
     }
 
     //以下是此 controller 文件注册的路由
-    app.post(`${config.http.prefix}/axiosProfilerDetail`, co.wrap(axiosProfilerDetail));
+    app.post(`${config.http.prefix}/${config.http.router.axios_detail}`, co.wrap(axiosProfilerDetail));
 }

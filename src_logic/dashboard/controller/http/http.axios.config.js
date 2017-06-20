@@ -20,5 +20,5 @@ module.exports = function (app) {
     }
 
     //以下是此 controller 文件注册的路由
-    app.get(`${config.http.prefix}/axiosConfig`, co.wrap(axiosConfig));
+    app.get(`${config.http.prefix}/${config.http.router.axios_config}`, co.wrap(axiosConfig));
 }

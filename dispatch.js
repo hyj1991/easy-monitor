@@ -2,7 +2,7 @@
 const co = require('co');
 const path = require('path');
 const rootPath = path.join(__dirname, './src_logic');
-const _common = require(path.join(rootPath, 'common/_load'));
+const _common = require(path.join(rootPath, 'common/common'));
 
 module.exports = co.wrap(function* (options) {
     //合并用户参数

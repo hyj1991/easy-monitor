@@ -1,6 +1,6 @@
 {
   "name": "easy-monitor",
-  "version": "2.0.11",
+  "version": "2.1.0",
   "description": "a node.js performance analysis tool",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "egg-bin": "^3.4.0"
   },
   "dependencies": {
+    "basic-auth": "^1.1.0",
     "body-parser": "^1.17.2",
     "co": "^4.6.0",
     "colors": "^1.1.2",

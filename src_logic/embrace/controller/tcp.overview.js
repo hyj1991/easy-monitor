@@ -31,7 +31,7 @@ module.exports = function (server) {
             //已经在执行了，返回
             if (osInfo) return;
             osInfo = true;
-            //获取数据            
+            //获取数据
             data = common.utils.jsonParse(data);
             const raw = lodash.merge({ opt: data.opt }, data.raw);
 

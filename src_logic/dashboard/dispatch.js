@@ -65,10 +65,11 @@ function createHttpServer(config, common, dbl) {
     app.use(bodyParser.json({ limit: '50mb' }));
     app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
 
-    //加载 http 服务器相关路由
+    //加载 http 服务器相关自定义中间件和路由
+    const middlewarePath = path.join(__dirname, './middleware');
     const controllerPath = path.join(__dirname, './controller');
     const ctx = { config, common, dbl };
-    app.get('/hello', (req, res, next) => res.send('success'));
+    common.middleware.load.apply(ctx, [middlewarePath, app]);
     common.controller.load.apply(ctx, ['http', controllerPath, app]);
 
     return app;

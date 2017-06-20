@@ -68,6 +68,8 @@ module.exports = function common(_common, userConfig) {
      */
     function loadConfig(cp) {
         const configList = _common.getFileList(configPath, `./**/${ext.prefix}.*.${ext.suffix}`);
+        //加入 config.js，此文件中主要包含一些基本配置，处理 config 节点第一级
+        configList.push(path.join(configPath, 'config.js'));
 
         return configList.reduce((pre, file) => {
             //获取文件名

@@ -59,6 +59,10 @@ module.exports = function (server) {
                         //更新服务器进程信息
                         yield cacheUtils.storage.setP(`${keyOverview}`, data.result, config.cache.opt_list);
                         break;
+                    case config.message.response[9]:
+                        //以唯一的 messageId 的形式找到请求者
+                        common.utils.event.emit(data.messageId, data.isAuthed);
+                        break;
                     default:
                         break;
                 }
@@ -70,6 +74,8 @@ module.exports = function (server) {
     const profilerTypeResponse = config.message && config.message.response && config.message.response[3];
     //取出客户端上报 os 信息操作响应，设置对应的处理函数
     const overviewTypeResponse = config.message && config.message.response && config.message.response[7];
+    //取出客户端上报鉴权操作响应，设置对应的处理函数
+    const authTypeResponse = config.message && config.message.response && config.message.response[9];
 
     /**
      * @description /针对需要处理的响应的回调函数
@@ -78,4 +84,6 @@ module.exports = function (server) {
     controller[profilerTypeResponse] = factory(profilerTypeResponse);
     //处理客户端上报 os 信息回调
     controller[overviewTypeResponse] = factory(overviewTypeResponse);
+    //处理客户端上报鉴权信息回调
+    controller[authTypeResponse] = factory(authTypeResponse);
 }
