@@ -22,12 +22,13 @@
         <!-- 组件标题 & 开始按钮-->
         <Row type="flex" justify="center" class="code-row-bg">
             <Col span=15 style="text-align:center">
-                <h2 :id="processName">{{ processName }}
-                    <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click="radioHandle" :loading="loading" 
-                            style="position:absolute;top:20px;margin-left:23px;color:#657180;font-weight:200;">
+                <Button :disabled="disabled" type="text" shape="circle" size="small" @click="conifgHandle">
+                        <h2 :id="processName">{{ processName }}</h2>
+                </Button>
+                <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click="radioHandle" :loading="loading" 
+                            style="position:absolute;top:22px;margin-left:20px;color:#657180;font-weight:200;">
                         Start
-                    </Button>
-                </h2>
+                </Button>
             </Col>
         </Row>
         
@@ -37,10 +38,13 @@
                 <Card>
                     <div style="text-align:center">
                         <!-- 选择所在服务器 -->
-                        <header class="header">
-                            <span>所在服务器</span>
-                        </header>
-                        
+                        <Row type="flex" justify="center" class="code-row-bg">
+                            <Col span=18>
+                                <header class="header">
+                                    <span>所在服务器</span>
+                                </header>
+                            </Col>
+                        </Row>
                         <!-- 选择器: 服务列表 -->
                         <Row type="flex" justify="center" class="code-row-bg">
                             <Col span=10>
@@ -51,10 +55,13 @@
                         </Row>
 
                         <!-- 选择进程 -->
-                        <header class="header">
-                            <span>选择进程</span>
-                        </header>
-                        
+                        <Row type="flex" justify="center" class="code-row-bg">
+                            <Col span=18>
+                                <header class="header">
+                                    <span>选择进程</span>
+                                </header>
+                            </Col>
+                        </Row>
                         <!-- 进程 pid 列表 -->
                         <Radio-group v-model="e_pid" v-for="item in processList">
                             <Radio :label="item.label">
@@ -65,10 +72,13 @@
                         <br>
                         
                         <!-- 选择解析类型 -->
-                        <header class="header">
-                            <span>解析类型</span>
-                        </header>
-
+                        <Row type="flex" justify="center" class="code-row-bg">
+                            <Col span=18>
+                                <header class="header">
+                                    <span>解析类型</span>
+                                </header>
+                            </Col>
+                        </Row>
                         <!-- 解析操作类型列表 -->
                         <Radio-group v-model="e_opt">
                             <Radio label="own">
@@ -87,6 +97,19 @@
                         <br>
                     </div>
                 </Card>
+
+                <!-- 以下是 Modal 对话框部分 -->
+                <Modal
+                    v-model="configModal"
+                    :loading="configLoading"
+                    @on-ok="configOk"
+                    @on-cancel="configCancel"
+                    :title="configTitle">
+                    <dynamic-config
+                        ref="dynamic"
+                        :name="processName">
+                    </dynamic-config>
+                </Modal>
             </Col>
         </Row>
     </Col>
@@ -97,17 +120,26 @@
 
 <script>
     import axios from 'axios';
+    import dynamicConfig from './dynamic.vue';
 
     export default {
         data(){
-            return { e_pid: 'all', e_opt: 'own', loading: false, server: '', pidList: [] }
+            return {
+                e_pid: 'all', e_opt: 'own', loading: false, server: '',
+                pidList: [], configModal: false , configLoading: true
+            }
         },
 
         props: ['singleProjectInfo'],
 
+        components: { dynamicConfig },
+
         methods: { 
+            conifgHandle() { this.$_js.process.methods.conifgHandle.call(this); },
             radioHandle() { this.$_js.process.methods.radioHandle.call(this); },
-            selectHandle(data) { this.$_js.process.methods.selectHandle.call(this, data); }
+            selectHandle(data) { this.$_js.process.methods.selectHandle.call(this, data); },
+            configOk() { this.$_js.process.methods.configOk.call(this); },
+            configCancel() { this.$_js.process.methods.configCancel.call(this); }
         },
 
         computed: {
@@ -116,7 +148,8 @@
             processName() { return this.$_js.process.computed.processName.call(this); },
             processList() { return this.$_js.process.computed.processList.call(this); },
             disabled() { return this.$_js.process.computed.disabled.call(this); },
-            loadingTime() { return this.$_js.process.computed.loadingTime.call(this); }
+            loadingTime() { return this.$_js.process.computed.loadingTime.call(this); },
+            configTitle() { return this.$_js.process.computed.configTitle.call(this) }
         }
     }
 </script>

@@ -1,6 +1,18 @@
 'use strict';
 import axios from 'axios';
+import lodash from 'lodash';
 import router from '../main.js';
+
+/**
+ * @component: views/common/process.vue
+ * @vue-data: methods
+ * @descript: 动态调整项目配置
+ */
+function conifgHandle() {
+    this.configModal = true;
+    // this.$refs.dynamic.initDynamic();
+    this.$refs.dynamic.axiosFetch('get');
+}
 
 /**
  * @component: views/common/process.vue
@@ -69,9 +81,39 @@ function radioHandle() {
     }, this.loadingTime);
 }
 
-
+/**
+ * @component: views/common/process.vue
+ * @vue-data: methods
+ * @descript: radio 选择数据切换
+ */
 function selectHandle(data) {
     this.pidList = this.singleProjectInfo[data] || [];
+}
+
+/**
+ * @component: views/common/process.vue
+ * @vue-data: methods
+ * @descript: 动态配置切换后确认
+ */
+function configOk() {
+    const vm = this;
+
+    this.$refs.dynamic.axiosFetch('submit', function (err) {
+        if (err) vm.$Message.error(`动态更改 ${vm.processName} 配置文件失败，错误为: ${err}`);
+        else vm.$Message.success(`动态更改 ${vm.processName} 配置文件成功!`);
+        vm.configModal = false;
+        //清除脏数据
+        vm.$refs.dynamic.initDynamic();
+    });
+}
+
+/**
+ * @component: views/common/process.vue
+ * @vue-data: methods
+ * @descript: 取消后清除脏数据
+ */
+function configCancel() {
+    this.$refs.dynamic.initDynamic();
 }
 
 /**
@@ -149,8 +191,17 @@ function loadingTime() {
     return false;
 }
 
+/**
+ * @component: views/common/process.vue
+ * @vue-data: computed
+ * @descript: 动态配置调整的 title
+ */
+function configTitle() {
+    return `动态调整配置`;
+}
+
 //导出 process.vue 所需
 export default {
-    methods: { radioHandle, selectHandle },
-    computed: { serverName, serverList, processName, processList, disabled, loadingTime }
+    methods: { conifgHandle, radioHandle, selectHandle, configOk, configCancel },
+    computed: { serverName, serverList, processName, processList, disabled, loadingTime, configTitle }
 }

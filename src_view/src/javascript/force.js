@@ -138,7 +138,7 @@ function forceGraphOption() {
 
                         index = linkMap[id].index;
 
-                        let strTmp = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ') \' <strong style="font-weight:500">' + linkMap[id].name_or_index + '</strong> ---> ';
+                        let strTmp = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ') \' <strong style="font-weight:600">' + linkMap[id].name_or_index + '</strong> ---> ';
                         str = strTmp + str;
                         keyList.push(linkMap[id].name_or_index);
 
@@ -146,8 +146,8 @@ function forceGraphOption() {
                     }
 
                     keyList = Array.from(new Set(keyList));
-                    str = '<strong style="font-weight:500">I. Reference List: </strong>' + str + '<br /><br />';
-                    str = str + '<strong style="font-weight:500">II. Leak Key: </strong>' + keyList.join(', ');
+                    str = '<strong style="font-weight:600">I. Reference List: </strong>' + str + '<br /><br />';
+                    str = str + '<strong style="font-weight:600">II. Leak Key: </strong>' + keyList.join(', ');
                     return str;
                 };
                 result.showStr = function (id, index) {

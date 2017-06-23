@@ -53,6 +53,10 @@ module.exports = merge(webpackBaseConfig, {
             '/axiosConfig': {
                 target: 'http://localhost:12333',
                 changeOrigin: true
+            },
+            '/axiosFetchConfig': {
+                target: 'http://localhost:12333',
+                changeOrigin: true
             }
         }
     }

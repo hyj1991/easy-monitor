@@ -9,11 +9,12 @@ import echart3 from './echart3';
 import loading from './loading';
 import overview from './overview';
 import dashboard from './dashboard';
+import dynamic from './dynamic';
 
 const vue = {};
 
 function install(Vue, options) {
-    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3, loading, overview, dashboard };
+    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3, loading, overview, dashboard, dynamic };
 }
 
 vue.install = install;
