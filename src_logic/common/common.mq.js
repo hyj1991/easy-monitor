@@ -108,9 +108,9 @@ module.exports = function (_common, config, logger, utils, cache) {
             message = common.utils.jsonParse(message);
             const key = message.key;
             const msg = message.msg;
-
+            //根据 key 获取 socket
             const socket = yield cacheUtils.storage.getP(key, config.cache.socket_list, true);
-
+            //通知服务器
             const ctx = { config, common, dbl };
             yield common.socket.notifySide.apply(ctx, [msg, socket]);
         }

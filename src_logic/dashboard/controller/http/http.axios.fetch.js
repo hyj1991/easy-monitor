@@ -38,24 +38,36 @@ module.exports = function (app) {
             const socketList = [];
             //get 随机选择该项目下的某一个进程
             if (data.type === 'get') {
-                socketList.push(processObject[projectProcessList[Date.now() % projectProcessList.length]]);
+                const key = projectProcessList[Date.now() % projectProcessList.length];
+                socketList.push({ socket: processObject[key], key });
             }
             //modify 通知所有进程
             if (data.type === 'modify') {
                 //先对 dashboard 进程进行配置更改
                 common.fetch.modifyConfig(data, dbl);
                 //通知该项目下的所有进程
-                projectProcessList.forEach(key => socketList.push(processObject[key]));
+                projectProcessList.forEach(key => socketList.push({ socket: processObject[key], key }));
             }
 
             const notifyListP = [];
             const eventListP = [];
             for (let i = 0, l = socketList.length; i < l; i++) {
+                const key = socketList[i].key;
+                const socket = socketList[i].socket;
+
                 //组装发送给客户端的信息，生成唯一的记录 ID
                 const messageId = `${(new Date() - 0)}_${Math.random().toString(16).substr(2, 8)}`;
                 const message = socketUtils.composeMessage('req', 10, { messageId, raw: data });
-                //此处注意要兼容 cluser 和默认模式，故不能直接采用 socketUtils.sendMessage
-                notifyListP.push(socketUtils.notifySide(message, socketList[i]));
+
+                //针对开启缓存和没有开启缓存模式进行分别处理
+                if (cacheUtils.thirdCache()) {
+                    const channel = common.mq.composeChannel(config.mq.process_key, socket);
+                    common.mq.publish(channel, { key, msg: message });
+                } else {
+                    //此处注意要兼容 cluser 和默认模式，故不能直接采用 socketUtils.sendMessage
+                    const ctx = { common, config, dbl };
+                    notifyListP.push(socketUtils.notifySide.apply(ctx, [message, socket]));
+                }
                 //侦听响应
                 eventListP.push(new Promise(resolve => {
                     common.utils.event.on(messageId, response => {
@@ -69,7 +81,7 @@ module.exports = function (app) {
             //并发通知
             yield notifyListP;
             //并发事件监听获取数据
-            let result = {};
+            let result = null;
             const response = yield eventListP;
             if (data.type === 'get') {
                 result = response[0];
@@ -78,6 +90,8 @@ module.exports = function (app) {
                 result = response;
             }
 
+            //没有响应，返回错误
+            if (!result) return res.send(httpUtils.composeMessage(3));
             //返回响应给客户端
             res.send(httpUtils.composeMessage(0, result));
         } catch (e) {

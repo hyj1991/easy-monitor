@@ -146,6 +146,10 @@ module.exports = function (_common, config, logger, utils) {
      * @description 对于某些在 cluster 模式需要读取 dashboard 配置项进行更新
      */
     function dashboardConfigMerge(clientConfig, data) {
+        //简单校验
+        if (!clientConfig || !data) return;
+        if (typeof clientConfig !== 'object' || typeof data !== 'object') return;
+
         //cluster 模式下
         if (config.cluster) {
             //auth 鉴权部分需要替换为 dashboard 配置
