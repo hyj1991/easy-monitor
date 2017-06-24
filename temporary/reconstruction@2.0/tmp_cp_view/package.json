@@ -1,0 +1,21 @@
+{
+  "name": "tmp_cp_view",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "compression": "^1.6.2",
+    "express": "^4.15.3",
+    "gzip-size": "^3.0.0",
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "pretty-bytes": "^4.0.2",
+    "v8-analytics": "^1.2.5"
+  }
+}
