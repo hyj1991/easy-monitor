@@ -69,7 +69,14 @@ module.exports = function (app) {
             //并发通知
             yield notifyListP;
             //并发事件监听获取数据
-            const result = data.type === 'get' && (yield eventListP)[0] || (yield eventListP);
+            let result = {};
+            const response = yield eventListP;
+            if (data.type === 'get') {
+                result = response[0];
+                common.fetch.dashboardConfigMerge(result, data);
+            } else {
+                result = response;
+            }
 
             //返回响应给客户端
             res.send(httpUtils.composeMessage(0, result));

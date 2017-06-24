@@ -33,6 +33,9 @@ exports = module.exports = {
         "4": "业务进程不存在!",
         "5": "未获取到 OS 信息数据!",
         "6": "鉴权失败!",
-        "7": "用户对此项目无操作权限!"
+        "7": function (msg) {
+            msg = typeof msg === 'object' && msg || { user: msg };
+            return `用户 ${msg.user || '未知'} 对此项目无操作权限!`
+        }
     }
 }

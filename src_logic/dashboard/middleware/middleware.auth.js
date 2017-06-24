@@ -72,7 +72,7 @@ module.exports = function (app) {
                     //非 admin 用户需要查看对该项目是否有操作权限
                     const projectAuthList = config.auth.project_auth && config.auth.project_auth[appName] || [];
                     if (!~projectAuthList.indexOf(credentials.name)) {
-                        return res.send(httpUtils.composeMessage(7));
+                        return res.send(httpUtils.composeMessage(7, credentials.name));
                     }
                 }
             }

@@ -3,6 +3,25 @@
 module.exports = function (_common, config, logger, utils) {
 
     /**
+     * @param {object} data
+     * @description 内部方法，获取 auth 配置
+     */
+    function _getAuthConfig(data) {
+        const auth = config.auth;
+        const name = data.name || '';
+        return {
+            need: auth.need,
+            admin: auth.admin,
+            project_auth: auth.project_auth && auth.project_auth[name] || [],
+            disable: {
+                need: auth.need_disable,
+                admin: auth.admin_disable,
+                project: auth.project_auth_disable
+            }
+        }
+    }
+
+    /**
      * @param {object} result @param {object} data
      * @description 动态获取实时配置
      */
@@ -72,16 +91,7 @@ module.exports = function (_common, config, logger, utils) {
         //获取 auth 参数
         const auth = config.auth || {};
         const name = data.name || '';
-        result.auth = {
-            need: auth.need,
-            admin: auth.admin,
-            project_auth: auth.project_auth && auth.project_auth[name] || [],
-            disable: {
-                need: auth.need_disable,
-                admin: auth.admin_disable,
-                project: auth.project_auth_disable
-            }
-        }
+        result.auth = _getAuthConfig(data);
     }
 
     /**
@@ -130,6 +140,23 @@ module.exports = function (_common, config, logger, utils) {
         }
     }
 
+    /**
+     * @param {object} clientConfig
+     * @return {object}
+     * @description 对于某些在 cluster 模式需要读取 dashboard 配置项进行更新
+     */
+    function dashboardConfigMerge(clientConfig, data) {
+        //cluster 模式下
+        if (config.cluster) {
+            //auth 鉴权部分需要替换为 dashboard 配置
+            if (clientConfig.auth) {
+                clientConfig.auth = _getAuthConfig(data);
+            }
+        }
+
+        return clientConfig;
+    }
+
     //导出 common 方法
-    return { getConfig, modifyConfig }
+    return { getConfig, modifyConfig, dashboardConfigMerge }
 }

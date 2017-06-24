@@ -14,7 +14,7 @@ module.exports = function (_common, config, logger, utils) {
         //如果有 error 字段，则将 success 字段置为 false
         if (Number(code) !== 0) {
             const error = config.http[Number(code)] || '未知错误';
-            message.error = error;
+            message.error = typeof error === 'function' && error(msg) || error;
             message.success = false;
         }
         //填充 msg 字段
