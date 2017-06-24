@@ -28,12 +28,12 @@ function _formatTime(ts) {
     let str = '';
     if (ts < 1e3) {
         str = `${ts.toFixed(2)} ms`;
-    } else if (ts < 1e6) {
+    } else if (ts < 1e3 * 60) {
         str = `${(ts / 1e3).toFixed(2)} s`;
-    } else if (ts < 1e9) {
-        str = `${(ts / 1e6).toFixed(2)} min`;
-    } else if (ts < 1e12) {
-        str = `${(ts / 1e9).toFixed(2)} h`;
+    } else if (ts < 1e3 * 60 * 60) {
+        str = `${(ts / (1e3 * 60)).toFixed(2)} min`;
+    } else if (ts < 1e3 * 60 * 60 * 60) {
+        str = `${(ts / (1e3 * 60 * 60)).toFixed(2)} h`;
     } else {
         str = `${ts.toFixed(2)} ms`;
     }
@@ -58,6 +58,9 @@ exports = module.exports = function (config) {
                 //cpu profiling 时间长短
                 profiling_time: 5 * 1000,
 
+                //是否允许更改
+                profiling_time_disable: false,
+
                 //可选配置参数
                 optional: {
                     /**
@@ -65,21 +68,35 @@ exports = module.exports = function (config) {
                      * @description 过滤出执行时长 > 500ms 的函数，单位 ms
                      */
                     timeout: 500,
+
+                    /** 是否允许修改 */
+                    timeout_disable: false,
                     /**
                      * @type {number}
                      * @description 过滤出执行时长 > 设置的 ms 的函数个数，默认展示 5 个
                      */
-                    long: 5,
+                    long_limit: 5,
+
+                    /** 是否允许修改 */
+                    long_disable: false,
+
                     /**
                      * @type {number}
                      * @description 过滤出执行时长最长的 5 个函数
                      */
-                    top: 5,
+                    top_limit: 5,
+
+                    /** 是否允许修改 */
+                    top_disable: false,
+
                     /**
                      * @type {number}
                      * @description 过滤出 V8 引擎逆优化最频繁的 5 个函数
                      */
-                    bail: 5
+                    bail_limit: 5,
+
+                    /** 是否允许修改 */
+                    bail_disable: false
                 },
 
                 //初始化阶段的提示
@@ -113,20 +130,44 @@ exports = module.exports = function (config) {
             mem: {
                 //可选配置参数
                 optional: {
+                    //是否输出根节点
+                    need_root: true,
+
+                    /** 是否允许修改 */
+                    need_root_disable: false,
+
+                    //输出多少个疑似泄漏点
+                    leakpoint_limit: 5,
+
+                    /** 是否允许修改 */
+                    leakpoint_limit_disable: false,
+
+                    //profiling 是否采用 stream
+                    not_stream: false,
+
+                    /** 是否允许修改 */
+                    not_stream_disable: true,
+
                     //限制展开多少个节点
                     node_limit: 5,
 
-                    //数据记录深度
-                    distance_limit: 25,
+                    /** 是否允许修改 */
+                    node_limit_disable: false,
 
                     //记录根节点深度
                     distance_root_limit: 6,
 
-                    //展示疑似泄漏点深度
-                    leak_limit: 8,
+                    /** 是否允许修改 */
+                    distance_root_limit_disable: false,
 
-                    //profiling 是否采用 stream
-                    not_stream: false
+                    //数据记录深度
+                    distance_limit: 25,
+
+                    /** 是否允许修改 */
+                    distance_limit_disable: false,
+
+                    //展示疑似泄漏点深度
+                    leak_limit: 8
                 },
 
                 //初始化阶段的提示
@@ -157,6 +198,12 @@ exports = module.exports = function (config) {
                 }
             },
 
+            /** 是否需要进行过滤 */
+            need_filter: false,
+
+            /** 是否允许修改 */
+            need_filter_disable: false,
+
             /**
              * @param {string} filePath 文件路径
              * @param {string} funcName 函数名
@@ -168,7 +215,7 @@ exports = module.exports = function (config) {
                     return Boolean(~(filePath.indexOf(fileName))) || Boolean(~(funcName.indexOf(fileName)))
                 });
 
-                //结构路径中必须包含有 /
+                //结构路径必须以 "(/" 开始
                 const mustHave = [/^\(\/.*/].every(regexp => {
                     return Boolean(regexp.test(filePath));
                 });

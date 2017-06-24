@@ -634,7 +634,7 @@ easyMonitor({
 | project_auth | Object | 不固定 | 必选参数，对象中的 key 是 ```字符串```，代表项目名称；value 是 ```数组```，数组中每一项为该项目允许操作的用户名称 |
 | authentication | Function | return:*Promise* | 必选参数，登录鉴权方法，返回包含鉴权结果的 ```promise``` |
 
-!> cluster 模式下 ```auth``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
+!> 此模式下必须配置 ```auth.admin```，如果没有 admin 参数，则认为是第一种简单鉴权模式。cluster 模式下 ```auth``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
 ## **IV. 通用配置**
 

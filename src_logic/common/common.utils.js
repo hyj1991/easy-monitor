@@ -152,12 +152,12 @@ module.exports = function (_common, config, logger) {
         let str = '';
         if (ts < 1e3) {
             str = `${ts.toFixed(2)} ms`;
-        } else if (ts < 1e6) {
+        } else if (ts < 1e3 * 60) {
             str = `${(ts / 1e3).toFixed(2)} s`;
-        } else if (ts < 1e9) {
-            str = `${(ts / 1e6).toFixed(2)} min`;
-        } else if (ts < 1e12) {
-            str = `${(ts / 1e9).toFixed(2)} h`;
+        } else if (ts < 1e3 * 60 * 60) {
+            str = `${(ts / (1e3 * 60)).toFixed(2)} min`;
+        } else if (ts < 1e3 * 60 * 60 * 60) {
+            str = `${(ts / (1e3 * 60 * 60)).toFixed(2)} h`;
         } else {
             str = `${ts.toFixed(2)} ms`;
         }

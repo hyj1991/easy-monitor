@@ -9,6 +9,9 @@ module.exports = {
      */
     cluster: false,
 
+    //永远不允许动态更改运行模式
+    cluster_disable: true,
+
     /**
      * @type {string} 值为 "dashboard" 或者 "进程，embrace"
      * @param dashboard 仅启动 dashboard 进程

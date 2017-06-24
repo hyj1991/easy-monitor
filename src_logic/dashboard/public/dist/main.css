@@ -9,6 +9,15 @@
 .ivu-select-input-my-style.ivu-select-small .ivu-select-input {
   height: 20px;
 }
+.header span[data-v-2c6a7b1b]{margin-left:20px}strong[data-v-2c6a7b1b]{font-weight:400}
+.my-tag-text-style .ivu-tag-text {
+  position: relative;
+  top: -1px;
+}
+p[data-v-3c49d015]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-3c49d015]{-webkit-animation:ani-spin 1s linear infinite;animation:ani-spin 1s linear infinite}@-webkit-keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}@keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}.spin-col[data-v-3c49d015]{height:100px;position:relative;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:-webkit-flex}
+.spin-col .ivu-alert-error {
+  border: 0px;
+}
 .index h1[data-v-3dee23b4]{font-size:5em}.index h2[data-v-6cadd30e]{font-size:3em}
 .overflow-ivu-poptip-ivu-poptip-rel.ivu-tooltip,
 .overflow-ivu-poptip-ivu-poptip-rel .ivu-tooltip-rel {
@@ -16,10 +25,6 @@
 }
 .overflow-ivu-poptip-ivu-poptip-rel .ivu-tooltip-inner {
   max-width: none;
-}
-p[data-v-3c49d015]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-3c49d015]{-webkit-animation:ani-spin 1s linear infinite;animation:ani-spin 1s linear infinite}@-webkit-keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}@keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}.spin-col[data-v-3c49d015]{height:100px;position:relative;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:-webkit-flex}
-.spin-col .ivu-alert-error {
-  border: 0px;
 }
 .index p[data-v-711d47b4]{font-size:1.1em}.i-circle-custom h1[data-v-711d47b4]{color:#3f414d;font-size:28px;font-weight:400}.i-circle-custom p[data-v-711d47b4]{color:#657180;font-size:14px;margin:10px 0 15px}.i-circle-custom span[data-v-711d47b4]{display:block;padding-top:15px;color:#657180;font-size:14px}.i-circle-custom span[data-v-711d47b4]:before{content:"";display:block;width:50px;height:1px;margin:0 auto;background:#e0e3e6;position:relative;top:-10px}.i-circle-custom span i[data-v-711d47b4]{font-style:normal;color:#3f414d}
 .reset-alert.ivu-alert-error,

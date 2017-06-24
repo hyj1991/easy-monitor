@@ -6,6 +6,9 @@ exports = module.exports = {
         //http 路由前缀
         prefix: '',
 
+        //http 超时时间
+        timeout: 3 * 1000,
+
         router: {
             //以下是 axios 请求路径
             axios_config: 'axiosConfig',
@@ -13,6 +16,7 @@ exports = module.exports = {
             axios_index: 'axiosIndexPage',
             axios_overview: 'axiosOverview',
             axios_profiler: 'axiosProfiler',
+            axios_fetch: 'axiosFetchConfig',
 
             //以下是 page 页面请求路径
             page_document: 'document',

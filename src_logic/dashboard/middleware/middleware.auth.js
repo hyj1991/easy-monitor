@@ -77,7 +77,8 @@ module.exports = function (app) {
                 }
             }
 
-            //通过鉴权
+            //设置用户，通过鉴权
+            req.__user__ = credentials.name;
             next();
         } catch (e) {
             dbl.error(`middleware.auth-> authentication error: ${e}`);

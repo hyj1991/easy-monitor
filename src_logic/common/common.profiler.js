@@ -16,18 +16,6 @@ module.exports = function (_common, config, logger, utils) {
     }
 
     /**
-     * @param {array} arraySource @param {string} type @param {string} value @param {function} cb
-     * @description 内部方法，对获取到的节点进行回调函数注入处理
-     */
-    function findNode(arraySource, type, value, cb) {
-        arraySource.forEach(item => {
-            if (item[type] === value) {
-                cb(item);
-            }
-        })
-    }
-
-    /**
      * @param {HeapSnapshotWorker.JSHeapSnapshot} jsHeapSnapShot 
      * @param {number} limit @param {number} rootIndex
      * @description 柯里化，根据 jsHeapSnapShot 以及 index 的值计算出节点详细属性
@@ -65,6 +53,7 @@ module.exports = function (_common, config, logger, utils) {
             let leak = leakPoint[i];
             let isRoot = Boolean(Number(leak.index) === rootIndex);
             let forceGraph = { nodes: [], links: [] };
+            let forceMaps = {};
 
             let biggestList = {};
             let isRecorded = {};
@@ -104,7 +93,7 @@ module.exports = function (_common, config, logger, utils) {
                     if (isMain) { size = 40; category = 0; ignore = false }
 
                     //存储父节点信息
-                    forceGraph.nodes.push({
+                    const father = {
                         index: nodeDetail.index,
                         name: nodeDetail.id,
                         attributes: { isMain },
@@ -112,31 +101,38 @@ module.exports = function (_common, config, logger, utils) {
                         size,
                         category,
                         ignore,
-                        flag
-                    });
+                        flag,
+                        children: []
+                    }
+                    forceGraph.nodes.push(father);
+                    forceMaps[nodeDetail.id] = father;
 
                     //处理父节点对应的子节点
                     children.forEach((child, index) => {
                         let cIndex = child.index;
                         let childDetail = serialize(cIndex);
 
+                        //此节点未记录过
                         if (!isRecorded[childDetail.id]) {
                             tmpIndexArr.push(cIndex);
+                            father.children.push(childDetail.id);
                         }
 
                         //TODO, filter reason
-                        if (Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)) {
+                        if (!isRoot && Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)) {
                             biggestList[cIndex] = { id: childDetail.id, source: nodeDetail.index, sourceId: nodeDetail.id, distance: childDetail.distance, retainedSize: childDetail.retainedSize };
                         }
 
+                        //最后一层数据加入
                         if (distanceDisplay === distanceLimit) {
                             if (isRecorded[childDetail.id]) return;
                             isRecorded[childDetail.id] = true;
 
                             let size = 30, category = 1, ignore = true, flag = true;
-                            if (distanceDisplay === 2) { ignore = false }
+                            //遗留代码，错误屏蔽
+                            // if (distanceDisplay === 2) { ignore = false }
 
-                            forceGraph.nodes.push({
+                            let father = {
                                 index: childDetail.index,
                                 name: childDetail.id,
                                 attributes: {},
@@ -144,8 +140,12 @@ module.exports = function (_common, config, logger, utils) {
                                 size,
                                 category,
                                 ignore,
-                                flag
-                            });
+                                flag,
+                                children: []
+                            };
+
+                            forceGraph.nodes.push(father);
+                            forceMaps[childDetail.id] = father;
                         }
 
                         forceGraph.links.push({
@@ -162,24 +162,29 @@ module.exports = function (_common, config, logger, utils) {
                 leakIndexList = tmpIndexArr;
             }
 
+            //将使用到的节点置入
             forceGraph.nodes.forEach(item => {
                 heapUsed[item.index] = serialize(item.index);
             });
 
+            //从最大引用节点开始展示一部分链条
             Object.keys(biggestList).forEach(index => {
                 let data = catchNode(forceGraph.nodes, 'index', index);
-                if (data && !isRoot) {
-                    setExpandOff(forceGraph, data);
+                if (data) {
+                    setExpandOff(forceGraph, forceMaps, data);
                 }
             });
 
+            //根据参数更新大小
             forceGraph.nodes.forEach(function (node) {
                 node.label = node.name;
                 node.symbolSize = node.size;
             });
 
+            //增加 index 标识
             forceGraph.index = leak.index;
 
+            //force graph 数据置入不同的 value 中
             const leakDetailTmp = serialize(leak.index);
             forceGraphAll[`${leakDetailTmp.name}::${leakDetailTmp.id}`] = forceGraph;
         }
@@ -188,61 +193,31 @@ module.exports = function (_common, config, logger, utils) {
     }
 
     /**
-     * @param {object} forceGraph @param {object} data
+     * @param {object} forceGraph @param {object} forceMaps @param {object} data
      * @description echarts2 设置点击  展开 / 关闭 操作
      */
-    function setExpandOff(forceGraph, data) {
+    function setExpandOff(forceGraph, forceMaps, data) {
         let nodesOption = forceGraph.nodes;
         let linksOption = forceGraph.links;
         let linksNodes = [];
-
+        //这里只可能是点击展开
         if (data.flag) {
-            for (let m in linksOption) {
-                if (linksOption[m].source == data.id) {
-                    linksNodes.push(linksOption[m].target);
-                }
-            }
+            const father = forceMaps[data.id];
+            //找出子节点的过程
+            linksNodes = father.children;
+            //将子节点设置为开启，只设置一层
             if (linksNodes != null && linksNodes != undefined) {
-                for (let p in linksNodes) {
-                    findNode(nodesOption, 'id', linksNodes[p], node => {
-                        node.ignore = false;
-                        node.flag = true;
-                    });
-                }
-            }
-            findNode(nodesOption, 'id', data.id, node => {
-                node.ignore = false;
-                node.flag = false;
-                node.category = 0;
-            });
-        } else {
-            for (let m in linksOption) {
-                if (linksOption[m].source == data.id) {
-                    linksNodes.push(linksOption[m].target);
-                }
-                if (linksNodes != null && linksNodes != undefined) {
-                    for (let n in linksNodes) {
-                        if (linksOption[m].source == linksNodes[n] && linksOption[m].target != data.id) {
-                            linksNodes.push(linksOption[m].target);
-                        }
-                    }
-                }
+                //子节点设置开启
+                linksNodes.forEach(link => {
+                    const node = forceMaps[link];
+                    node.ignore = false;
+                    node.flag = true;
+                });
             }
 
-            if (linksNodes != null && linksNodes != undefined) {
-                for (let p in linksNodes) {
-                    findNode(nodesOption, 'id', linksNodes[p], node => {
-                        node.ignore = true;
-                        node.flag = true;
-                    });
-                }
-            }
-
-            findNode(nodesOption, 'id', data.id, node => {
-                node.ignore = true;
-                node.flag = true;
-                node.category = 1;
-            });
+            //更改父节点状态
+            father.flag = false;
+            father.category = 0;
         }
     }
 
@@ -251,7 +226,8 @@ module.exports = function (_common, config, logger, utils) {
      * @description 根据上述方法，计算出最终的 force-graph 引力图计算所需数据
      */
     function memCalculator(heapUsed, serialize, leakPoint, rootIndex) {
-        const searchList = [{ index: Number(rootIndex) }].concat(leakPoint);
+        const needRoot = Boolean(config.profiler.mem.optional.need_root);
+        const searchList = needRoot && [{ index: Number(rootIndex) }].concat(leakPoint) || leakPoint;
         const forceGraph = createForceGraph(heapUsed, serialize, searchList, rootIndex);
         return { forceGraph, searchList };
     }
@@ -361,13 +337,14 @@ module.exports = function (_common, config, logger, utils) {
             if (type === 'cpu') {
                 const optional = config.profiler.cpu.optional;
                 result.timeout = params.timeout || optional.timeout;
-                result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.filter_function);
-                result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.filter_function);
-                result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.filter_function);
+                result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.need_filter && config.profiler.filter_function);
+                result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.need_filter && config.profiler.filter_function);
+                result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.need_filter && config.profiler.filter_function);
             }
 
             //解析 mem-profiler 操作结果
             if (type === 'mem') {
+                params.limit = config.profiler.mem.optional.leakpoint_limit;
                 const memAnalytics = yield analysisLib.memAnalyticsP(profiler, params);
 
                 //取出分析结果

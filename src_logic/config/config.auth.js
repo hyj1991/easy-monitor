@@ -6,11 +6,20 @@ exports = module.exports = function (config) {
             //是否需要开启鉴权，默认是 false
             need: false,
 
+            //是否允许修改
+            need_disable: true,
+
             //设置具有所有权限的 admin 用户, 如果设置应当为 Array
             admin: false,
 
+            //是否允许修改
+            admin_disable: false,
+
             //根据项目进行分别的鉴权，仅在 admin: [xxx, xxx] 下生效
             project_auth: {},
+
+            //是否允许修改
+            project_auth_disable: false,
 
             //非 cluster 模式下的鉴权超时
             timeout: 3 * 1000,
@@ -23,6 +32,8 @@ exports = module.exports = function (config) {
                 `${config.http.prefix}/${config.http.router.axios_detail}`,
                 //获取 os 概览信息
                 `${config.http.prefix}/${config.http.router.axios_overview}`,
+                //动态配置 config
+                `${config.http.prefix}/${config.http.router.axios_fetch}`,
             ],
 
             /**

@@ -10,7 +10,7 @@ module.exports = function (app) {
     const httpUtils = common.http;
 
     /**
-     * @description 用于处理获取当前指定进程的概览信息
+     * @description 用于处理获取当前指定进程的启动配置
      */
     function* axiosConfig(req, res, next) {
         try {

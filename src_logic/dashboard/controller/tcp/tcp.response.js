@@ -63,6 +63,9 @@ module.exports = function (server) {
                         //以唯一的 messageId 的形式找到请求者
                         common.utils.event.emit(data.messageId, data.isAuthed);
                         break;
+                    case config.message.response[11]:
+                        common.utils.event.emit(data.messageId, data.result);
+                        break;
                     default:
                         break;
                 }
@@ -76,6 +79,8 @@ module.exports = function (server) {
     const overviewTypeResponse = config.message && config.message.response && config.message.response[7];
     //取出客户端上报鉴权操作响应，设置对应的处理函数
     const authTypeResponse = config.message && config.message.response && config.message.response[9];
+    //取出客户端上报动态调整配置操作响应，设置对应的处理函数
+    const fetchTypeResponse = config.message && config.message.response && config.message.response[11];
 
     /**
      * @description /针对需要处理的响应的回调函数
@@ -86,4 +91,6 @@ module.exports = function (server) {
     controller[overviewTypeResponse] = factory(overviewTypeResponse);
     //处理客户端上报鉴权信息回调
     controller[authTypeResponse] = factory(authTypeResponse);
+    //处理客户端上报动态调整配置信息回调
+    controller[fetchTypeResponse] = factory(fetchTypeResponse);
 }

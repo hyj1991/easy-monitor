@@ -15,7 +15,9 @@ exports = module.exports = {
             //os 信息获取请求
             "6": "OVERVIEW_UPLOAD_REQUEST",
             //鉴权请求
-            "8": "AUTHENTICTION_REQUEST"
+            "8": "AUTHENTICTION_REQUEST",
+            //操作项目配置请求
+            "10": "FETCH_CONFIG_REQUEST"
         },
 
         /**
@@ -31,7 +33,9 @@ exports = module.exports = {
             //os 信息获取响应
             "7": "OVERVIEW_UPLOAD_RESPONSE",
             //鉴权响应
-            "9": "AUTHENTICTION_RESPONSE"
+            "9": "AUTHENTICTION_RESPONSE",
+            //操作项目配置响应
+            "11": "FETCH_CONFIG_RESPONSE"
         },
 
         /** 
