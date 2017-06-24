@@ -199,7 +199,7 @@ exports = module.exports = function (config) {
             },
 
             /** 是否需要进行过滤 */
-            need_filter: false,
+            need_filter: true,
 
             /** 是否允许修改 */
             need_filter_disable: false,
