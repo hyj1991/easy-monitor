@@ -115,7 +115,7 @@ strong {
             </p>
             <!-- root 节点起始引力图深度 -->
             <p style="font-size:1.1em;margin-bottom:10px">Root 节点起始引力图深度:
-                <Input-number :max="100" :min="3" v-model="memRootDistance" :disabled="memRootDistanceDisable || !memRoot" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
+                <Input-number :max="100" :min="1" v-model="memRootDistance" :disabled="memRootDistanceDisable || !memRoot" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  Distance
             </p>
             <!-- 疑似泄漏节点起始引力图深度 -->

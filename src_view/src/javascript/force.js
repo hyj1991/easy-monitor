@@ -1,5 +1,65 @@
 'use strict';
 
+//建立全局缓存
+const cache = {
+    maps: {},
+    sourceNodes: [],
+    sourceLinks: []
+}
+
+/**
+ * @component: views/common/profiler/force.vue
+ * @vue-data: inner function
+ * @descript: 针对 root 节点做特殊的处理
+ */
+function isRoot(vm) {
+    return Boolean(vm.forceGraph && vm.forceGraph.index === 0)
+}
+
+/**
+ * @component: views/common/profiler/force.vue
+ * @vue-data: inner function
+ * @descript: 过滤出只需要展示的节点
+ */
+function filterNodesLinks(option, tmpIdList) {
+    tmpIdList = tmpIdList || [];
+    const maps = cache.maps;
+    const nodesOption = cache.sourceNodes;
+    const linksOption = cache.sourceLinks;
+    //先选取引力关系
+    const needLinks = linksOption.filter(link => !maps[link.source].ignore || !maps[link.target].ignore);
+
+    const tmp = {};
+    const needNodes = [];
+
+    //对于手动传入的变更节点，一定加入
+    tmpIdList.forEach(id => {
+        if (!tmp[id]) {
+            tmp[id] = true;
+            needNodes.push(maps[id]);
+        }
+    });
+    //根据引力关系计算展示节点
+    needLinks.forEach(link => {
+        const nodeSource = maps[link.source];
+        const nodeTarget = maps[link.target];
+
+        if (!tmp[nodeSource.id]) {
+            tmp[nodeSource.id] = true;
+            needNodes.push(nodeSource);
+        }
+
+        if (!tmp[nodeTarget.id]) {
+            tmp[nodeTarget.id] = true;
+            needNodes.push(nodeTarget);
+        }
+    });
+
+    //仅给引力图传递了需要展示的数据
+    option.series[0].nodes = needNodes;
+    option.series[0].links = needLinks;
+}
+
 /**
  * @component: views/common/profiler/force.vue
  * @vue-data: methods
@@ -18,6 +78,7 @@ function renderForcegraph() {
  * @descript: js实现点击引力图节点 开启 / 关闭 功能
  */
 function openOrFold(param) {
+
     function findNode(arraySource, type, value, cb) {
         arraySource.forEach(item => {
             if (item[type] === value) {
@@ -28,60 +89,74 @@ function openOrFold(param) {
 
     function setExpandOff(myChart, param) {
         var option = myChart.getOption();
-        var nodesOption = option.series[0].nodes;
-        var linksOption = option.series[0].links;
+        //空间换时间
+        var mapsOption = cache.maps;
+        var nodesOption = cache.sourceNodes;
+        var linksOption = cache.sourceLinks;
         var data = param.data;
         var linksNodes = [];
+        //定义父节点
+        const father = mapsOption[data.id];
 
         if (data != null && data != undefined && !data.source && !data.target) {
             if (data.flag) {
-                for (var m in linksOption) {
-                    if (linksOption[m].source == data.id) {
-                        linksNodes.push(linksOption[m].target);
-                    }
-                }
+                //找出子节点的过程
+                linksNodes = father.children;
+                //将子节点设置为开启，只设置一层
                 if (linksNodes != null && linksNodes != undefined) {
-                    for (var p in linksNodes) {
-                        findNode(nodesOption, 'id', linksNodes[p], node => {
-                            node.ignore = false;
-                            node.flag = true;
-                        });
-                    }
+                    //子节点设置开启
+                    linksNodes.forEach(link => {
+                        const node = mapsOption[link];
+                        node.ignore = false;
+                        node.flag = true;
+                    });
                 }
-                findNode(nodesOption, 'id', data.id, node => {
-                    node.flag = false;
-                    node.category = 0;
-                });
+                //更改父节点状态
+                father.flag = false;
+                father.category = 0;
 
+                //只展示需要的
+                filterNodesLinks(option);
                 return option;
             } else {
-                for (var m in linksOption) {
-                    if (linksOption[m].source == data.id) {
-                        linksNodes.push(linksOption[m].target);
-                    }
-                    if (linksNodes != null && linksNodes != undefined) {
-                        for (var n in linksNodes) {
-                            if (linksOption[m].source == linksNodes[n] && linksOption[m].target != data.id) {
-                                linksNodes.push(linksOption[m].target);
-                            }
-                        }
-                    }
+                const tmp = [];
+                //找出子节点
+                father.children.forEach(c => linksNodes.push(c));
+                let array = [];
+                linksNodes.forEach(l => array.push(l));
+                let need = true;
+                while (array.length !== 0 && need) {
+                    const tmp = [];
+                    let tmpNeed = false;
+                    array.forEach(l => {
+                        const node = mapsOption[l];
+                        //如果本轮子节点均需要忽略，则跳出循环，只要本轮子节点有一个不需要忽略，继续下一轮
+                        if (!node.ignore) tmpNeed = true;
+                        //设置需要关闭的子节点
+                        node.children.forEach(c => tmp.push(c));
+                    });
+                    need = tmpNeed;
+                    array = tmp;
+                    tmp.forEach(l => linksNodes.push(l));
                 }
 
+                //将所有子节点设置为关闭
                 if (linksNodes != null && linksNodes != undefined) {
-                    for (var p in linksNodes) {
-                        findNode(nodesOption, 'id', linksNodes[p], node => {
-                            node.ignore = true;
-                            node.flag = true;
-                        });
-                    }
+                    linksNodes.forEach(link => {
+                        const node = mapsOption[link];
+                        node.ignore = true;
+                        node.flag = true;
+
+                        tmp.push(node.id);
+                    });
                 }
 
-                findNode(nodesOption, 'id', data.id, node => {
-                    node.flag = true;
-                    node.category = 1;
-                });
+                //更改父节点状态
+                father.flag = true;
+                father.category = 1
 
+                //只展示需要的
+                filterNodesLinks(option, tmp);
                 return option;
             }
         }
@@ -125,7 +200,7 @@ function forceGraphOption() {
                         pre[next.target] = { source: next.source, index: next.sourceIndex, name_or_index: next.name_or_index };
                     }
                     return pre;
-                }, {});
+                }, {}) || {};
 
                 let result = {};
                 result.tracePath = function (id, index) {
@@ -156,10 +231,14 @@ function forceGraphOption() {
                     if (linkMap[id]) {
                         percentage = ((detailTmp.retainedSize / heapMap[linkMap[id].index].retainedSize) * 100).toFixed(2) + '%';
                     }
-                    return '(' + percentage + ') ' + (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
+
+                    let str = '';
+                    str = '(' + percentage + ') ' + (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
+
+                    return str;
                 };
                 //root 节点放弃治疗
-                if (vm.forceGraph && vm.forceGraph.index !== 0) {
+                if (!isRoot(vm)) {
                     vm.$refs.detail.innerHTML = '<p>' + result.tracePath(id, index) + '</p>';
                 }
                 return result.showStr(id, index);
@@ -179,11 +258,18 @@ function forceGraphOption() {
                 }
             },
             categories: [{ name: 'main' }, { name: 'else' }, { name: 'leak' }],
-            nodes: forceGraph.nodes,
-            links: forceGraph.links
+            nodes: [],
+            links: []
         }]
     };
 
+    //保存源数据
+    forceGraph.nodes.forEach(n => cache.maps[n.id] = n);
+    cache.sourceNodes = forceGraph.nodes;
+    cache.sourceLinks = forceGraph.links;
+
+    //只展示需要的
+    filterNodesLinks(option);
     return option;
 }
 
