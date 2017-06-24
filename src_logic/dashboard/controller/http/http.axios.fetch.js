@@ -48,7 +48,8 @@ module.exports = function (app) {
                     //开启第三方缓存情况下可能存在多个 dashboard，必须通知到所有一起进行更改
                     const message = socketUtils.composeMessage('oth', 1, { data });
                     //获取当前项目所有的 dashboard 进程
-                    const serverList = common.utils.jsonParse(yield cacheUtils.storage.getP(config.cache.dashboard_list));
+                    let serverList = common.utils.jsonParse(yield cacheUtils.storage.getP(config.cache.dashboard_list));
+                    serverList = serverList.filter(item => Boolean(item.name === name));
                     //通知更新配置
                     for (let i = 0, l = serverList.length; i < l; i++) {
                         const channel = common.mq.composeChannel(config.mq.process_key, serverList[i]);
