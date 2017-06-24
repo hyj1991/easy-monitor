@@ -137,7 +137,7 @@ strong {
             </p>
             <!-- admin 用户 -->
             <p style="font-size:1.1em;margin-bottom:15px">Admin 用户:
-                <Tag class="my-tag-text-style" style="margin-left:10px;vertical-align:-7px" v-for="(item, index) in adminList" :key="item" :name="item" :closable="isAdmin && index !== 0" @on-close="closeAdminList">{{ item }}</Tag>
+                <Tag class="my-tag-text-style" style="margin-left:10px;vertical-align:-7px" v-for="(item, index) in adminList" :key="item" :name="item" :closable="isAdmin && index !== 0 && authNeed" @on-close="closeAdminList">{{ item }}</Tag>
                 <Poptip placement="right" v-model="adminVisiable" @on-popper-hide="adminHidden">
                     <Button :disabled="!authNeed || !isAdmin" style="margin-left:10px;vertical-align:1px" icon="ios-plus-empty" type="dashed" size="small">新增</Button>
                     <div class="api" slot="content">
@@ -148,7 +148,7 @@ strong {
             </p>
             <!-- normal 用户 -->
             <p style="font-size:1.1em;margin-bottom:15px">{{ name }} 项目普通用户:
-                <Tag class="my-tag-text-style" style="margin-left:10px;vertical-align:-7px" v-for="item in normalList" :key="item" :name="item" closable @on-close="closeNormalList">{{ item }}</Tag>
+                <Tag class="my-tag-text-style" style="margin-left:10px;vertical-align:-7px" v-for="item in normalList" :key="item" :name="item" :closable="authNeed" @on-close="closeNormalList">{{ item }}</Tag>
                 <Poptip placement="right" v-model="normalVisiable" @on-popper-hide="normalHidden">
                     <Button :disabled="!authNeed || !adminList.length" style="margin-left:10px;vertical-align:1px" icon="ios-plus-empty" type="dashed" size="small">新增</Button>
                     <div class="api" slot="content">
