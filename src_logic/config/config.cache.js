@@ -4,6 +4,9 @@ exports = module.exports = {
         //缓存 socket 信息列表的前缀 key
         socket_list: 'SOCKET_LIST_',
 
+        //缓存 dashboard 进程前缀
+        dashboard_list: 'DASHBOARD_LIST_',
+
         //竞态锁前缀
         lock_prefix: 'LOCK_PREFIS_',
 

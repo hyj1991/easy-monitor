@@ -39,7 +39,7 @@ module.exports = function common(_common, userConfig) {
         let length = nameList.length;
 
         nameList.forEach(name => {
-            event.on(`${ext.prefix}.${name}.${ext.suffix}`, () => {
+            event.once(`${ext.prefix}.${name}.${ext.suffix}`, () => {
                 if (!--length) {
                     done();
                 }

@@ -135,6 +135,60 @@ module.exports = function (_common, config, logger) {
     }
 
     /**
+     * @return {promise}
+     * @description 将本 dashboard 部分缓存起来
+     */
+    function cacheProcessInfoP() {
+        //取出公共部分
+        const vm = this;
+        const common = this.common;
+        const config = this.config;
+        const dbl = this.dbl;
+        const cacheUtils = common.cache;
+
+        return co(_cache);
+
+        /**
+         * @description 内部方法，实现具体的逻辑
+         */
+        function* _cache() {
+            const thirdCache = cacheUtils.thirdCache();
+            //这里存在资源同步操作的问题，需要手动添加锁
+            if (thirdCache) {
+                //获取锁公共方法
+                const lockUtil = config.storage.lockUtil;
+                //第三方缓存模式下需要加锁操作
+                const prefix = `SET_PROCESS_INFO_${config.cache.dashboard_list}`;
+                const lock = yield lockUtil.lockP(prefix);
+                if (lock) {
+                    //获取到锁则进行业务逻辑处理
+                    yield _set();
+                    //操作完成释放资源锁
+                    yield lockUtil.unlockP(prefix);
+                } else {
+                    //否则下一个 tick 继续尝试
+                    process.nextTick(cacheProcessInfoP.bind(vm))
+                }
+            } else {
+                //非第三方缓存模式下直接填充
+                yield _set();
+            }
+        }
+
+        /**
+         * @description 内部方法，设置进程信息
+         */
+        function* _set() {
+            let data = yield cacheUtils.storage.getP(config.cache.dashboard_list);
+            if (!data) data = '[]';
+            data = jsonParse(data);
+            if (!Array.isArray(data)) data = [];
+            data.push({ name: config.project_name, pid: process.pid, server: config.embrace.machine_unique_key });
+            yield cacheUtils.storage.setP(config.cache.dashboard_list, data);
+        }
+    }
+
+    /**
      * @param {string} prefix @param {string} suffix
      * @description cache 配置文件中部分需要在 cluster 模式下重新生成的配置
      */
@@ -168,6 +222,6 @@ module.exports = function (_common, config, logger) {
     return {
         event, forkNode, jsonParse,
         compressMsg, bufferSplit, parseMessage, isPromise,
-        commonInitP, startMq, joinCacheKey, formatTime
+        commonInitP, startMq, joinCacheKey, formatTime, cacheProcessInfoP
     }
 }

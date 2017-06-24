@@ -38,6 +38,13 @@ exports = module.exports = {
             "11": "FETCH_CONFIG_RESPONSE"
         },
 
+        /**
+         * @description 定义所有非传向客户端的类型，单独计数
+         */
+        other: {
+            "1": "NOTIFY_UPDATE_CONFIG"
+        },
+
         /** 
          * @description 不存在的消息类型 
         */

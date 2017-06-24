@@ -84,6 +84,7 @@ module.exports = function (_common, config, logger, utils) {
                 const suffix = master && process.pid || (yield result.getP(key));
                 utils.joinCacheKey('opt_list', suffix);
                 utils.joinCacheKey('socket_list', suffix);
+                utils.joinCacheKey('dashboard_list', suffix);
                 utils.joinCacheKey('lock_prefix', suffix);
             }
         }
@@ -124,12 +125,12 @@ module.exports = function (_common, config, logger, utils) {
                         oldCache[key] = type === config.cache.socket_list && { pid: process.pid, server: config.embrace.machine_unique_key } || value;
                         //存储后塞回缓存中
                         yield storage.setP(type, JSON.stringify(oldCache), 'EX', config.cache.ex_timeout);
+                        //操作完成释放资源锁
+                        yield lockUtil.unlockP(prefix);
                     } else {//获取不到锁，则在下一个 tick 继续尝试获取锁
                         process.nextTick(co.wrap(_setG), key, value, type, noconvert, force);
                         return;
                     }
-                    //操作完成释放资源锁
-                    yield lockUtil.unlockP(prefix);
                 } else yield storage.setP(key, value, 'EX', config.cache.ex_timeout);
             } else {// 默认模式下简单缓存即可
                 if (type) {
@@ -205,12 +206,12 @@ module.exports = function (_common, config, logger, utils) {
                             delete oldCache[key];
                             yield storage.setP(type, JSON.stringify(oldCache), 'EX', config.cache.ex_timeout);
                         }
+                        //操作完成释放资源锁
+                        yield lockUtil.unlockP(prefix);
                     } else {//获取不到锁则在下一个 tick 尝试再次获取
                         process.nextTick(co.wrap(_delG), key, type);
                         return;
                     }
-                    //操作完成释放资源锁
-                    yield lockUtil.unlockP(prefix);
                 } else yield storage.delP(key);
             } else {// 默认模式下简单缓存即可
                 //如果存在 type，则根据 type 删除对应的 key

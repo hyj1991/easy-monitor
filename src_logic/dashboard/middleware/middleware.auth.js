@@ -48,7 +48,15 @@ module.exports = function (app) {
                 //等待响应
                 isAuthed = yield new Promise(resolve => {
                     //客户端响应
-                    common.utils.event.on(messageId, resolve);
+                    if (cacheUtils.thirdCache()) {
+                        //正常永远也不会走到这个分支，预留一下以防万一
+                        common.mq.subscribeOnce(messageId, (error, channle, isAuthed) => {
+                            resolve(isAuthed);
+                        });
+                    } else {
+                        //这是正常情况下应该会走到的分支
+                        common.utils.event.once(messageId, resolve);
+                    }
                     //超时判定，防止永远卡在这里
                     setTimeout(resolve, config.auth.timeout);
                 });

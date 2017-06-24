@@ -18,6 +18,10 @@ module.exports = function (_common, config, logger, utils, cache) {
             message.type = 'response';
             message.msgType = config.message && config.message.response[id] || config.message.not_exist;
         }
+        if (type === 'oth') {
+            message.type = 'other';
+            message.msgType = config.message && config.message.other[id] || config.message.not_exist;
+        }
         //设置数据区
         data = typeof data === 'object' && JSON.stringify(data) || data;
         message.data = data;

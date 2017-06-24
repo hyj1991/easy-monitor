@@ -44,7 +44,20 @@ module.exports = function (app) {
             //modify 通知所有进程
             if (data.type === 'modify') {
                 //先对 dashboard 进程进行配置更改
-                common.fetch.modifyConfig(data, dbl);
+                if (cacheUtils.thirdCache()) {
+                    //开启第三方缓存情况下可能存在多个 dashboard，必须通知到所有一起进行更改
+                    const message = socketUtils.composeMessage('oth', 1, { data });
+                    //获取当前项目所有的 dashboard 进程
+                    const serverList = common.utils.jsonParse(yield cacheUtils.storage.getP(config.cache.dashboard_list));
+                    //通知更新配置
+                    for (let i = 0, l = serverList.length; i < l; i++) {
+                        const channel = common.mq.composeChannel(config.mq.process_key, serverList[i]);
+                        common.mq.publish(channel, { type: config.message.other[1], msg: message });
+                    }
+                } else {
+                    //非第三方缓存情况下一定只有一个 dashbard，故只需要简单修改自身配置即可
+                    common.fetch.modifyConfig(data, dbl);
+                }
                 //通知该项目下的所有进程
                 projectProcessList.forEach(key => socketList.push({ socket: processObject[key], key }));
             }
@@ -61,6 +74,7 @@ module.exports = function (app) {
 
                 //针对开启缓存和没有开启缓存模式进行分别处理
                 if (cacheUtils.thirdCache()) {
+                    //找出对应的心跳 server，并将消息发送到这里去
                     const channel = common.mq.composeChannel(config.mq.process_key, socket);
                     common.mq.publish(channel, { key, msg: message });
                 } else {
@@ -70,9 +84,15 @@ module.exports = function (app) {
                 }
                 //侦听响应
                 eventListP.push(new Promise(resolve => {
-                    common.utils.event.on(messageId, response => {
-                        resolve(response);
-                    });
+                    if (cacheUtils.thirdCache()) {
+                        //开启第三方缓存时走消息队列
+                        common.mq.subscribeOnce(messageId, (err, channel, response) => {
+                            resolve(common.utils.jsonParse(response));
+                        });
+                    } else {
+                        //非第三方缓存开启时走 event 事件库
+                        common.utils.event.once(messageId, resolve);
+                    }
                     //设置超时时间，防止卡死在这里
                     setTimeout(resolve, config.http.timeout);
                 }));

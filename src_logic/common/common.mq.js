@@ -56,6 +56,21 @@ module.exports = function (_common, config, logger, utils, cache) {
     }
 
     /**
+     * @param {array | string} topic
+     * @param {function} cb
+     * @description 仅订阅一次 topic, 用预设的回调函数进行处理，用完销毁防止内存泄漏
+     */
+    function subscribeOnce(topic, cb) {
+        subscribe(topic, function () {
+            //执行原回调
+            cb.apply(this, Array.from(arguments));
+            //用完进行销毁操作
+            cbs[topic] = null;
+            delete cbs[topic];
+        });
+    }
+
+    /**
      * @param {array | string} topic @param {object | string} message 
      */
     function publish(topic, message) {
@@ -106,19 +121,34 @@ module.exports = function (_common, config, logger, utils, cache) {
             dbl.debug(`common.mq->processCallback receive data: ${message}`);
             //字符串转换成 json 后取出缓存的 key 和 msg 信息
             message = common.utils.jsonParse(message);
-            const key = message.key;
-            const msg = message.msg;
-            //根据 key 获取 socket
-            const socket = yield cacheUtils.storage.getP(key, config.cache.socket_list, true);
-            //通知服务器
-            const ctx = { config, common, dbl };
-            yield common.socket.notifySide.apply(ctx, [msg, socket]);
+            const type = message.type
+
+            //无类型的默认处理
+            if (!type) {
+                const key = message.key;
+                const msg = message.msg;
+
+                //根据 key 获取 socket
+                const socket = yield cacheUtils.storage.getP(key, config.cache.socket_list, true);
+                //通知服务器
+                const ctx = { config, common, dbl };
+                yield common.socket.notifySide.apply(ctx, [msg, socket]);
+                return;
+            }
+
+            //以下是有操作类型处理
+            if (type === config.message.other[1]) {
+                //处理 dashboard 进程本身的更新操作
+                const data = message.msg && message.msg.data && common.utils.jsonParse(message.msg.data);
+                common.fetch.modifyConfig(data.data, dbl);
+                return;
+            }
         }
     }
 
     //设置 mq 队列的回调处理函数列表
-    const cbs = {};
-    cbs[config.mq.process_key] = processCallback;
+    const builthinCallbacks = {};
+    builthinCallbacks[config.mq.process_key] = processCallback;
 
-    return { initP, subscribe, publish, composeChannel, cbs }
+    return { initP, subscribe, subscribeOnce, publish, composeChannel, cbs: builthinCallbacks }
 }

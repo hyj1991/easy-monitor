@@ -11,6 +11,20 @@ module.exports = function (server) {
     const cacheUtils = common.cache;
 
     /**
+     * @param {string} topic @param {*} data
+     * @description 根据是否开启第三方缓存选择 mq 或者 event
+     */
+    function uniqueProcess(topic, data) {
+        if (cacheUtils.thirdCache()) {
+            //mq 消息队列
+            common.mq.publish(topic, data);
+        } else {
+            // event 事件库发送
+            common.utils.event.emit(topic, data);
+        }
+    }
+
+    /**
      * @param {string} responseType 
      * @description 工厂方法，根据返回值生成对应的回调函数
      */
@@ -61,10 +75,11 @@ module.exports = function (server) {
                         break;
                     case config.message.response[9]:
                         //以唯一的 messageId 的形式找到请求者
-                        common.utils.event.emit(data.messageId, data.isAuthed);
+                        uniqueProcess(data.messageId, data.isAuthed)
                         break;
                     case config.message.response[11]:
-                        common.utils.event.emit(data.messageId, data.result);
+                        //以唯一的 messageId 的形式找到请求者
+                        uniqueProcess(data.messageId, data.result);
                         break;
                     default:
                         break;
