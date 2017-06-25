@@ -32,8 +32,8 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的Node进程，性能优
 ### - 2.0 新特性
 
 * 全新设计的 UI
-* 新增概览 Overview 展示页
 * 全面兼容 v4.x ~ v8.x
+* 新增概览 Overview 展示页
 * 支持动态更新配置，无需重启一键生效
 * 支持 Stream 流式解析更大的 HeapSnapshot
 * 支持 Cluster 集群部署，支持定制私有通信

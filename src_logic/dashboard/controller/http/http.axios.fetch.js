@@ -17,7 +17,7 @@ module.exports = function (app) {
         try {
             dbl.debug(`http.axios.fetch-> axiosFetch receive data: ${JSON.stringify(req.body)}`);
             const data = req.body && req.body.data || {};
-            const name = req.query.name;
+            const name = req.query.name || data.name;
             if (!name) {
                 return res.send(httpUtils.composeMessage(1));
             }
@@ -49,7 +49,6 @@ module.exports = function (app) {
                     const message = socketUtils.composeMessage('oth', 1, { data });
                     //获取当前项目所有的 dashboard 进程
                     let serverList = common.utils.jsonParse(yield cacheUtils.storage.getP(config.cache.dashboard_list));
-                    serverList = serverList.filter(item => Boolean(item.name === name));
                     //通知更新配置
                     for (let i = 0, l = serverList.length; i < l; i++) {
                         const channel = common.mq.composeChannel(config.mq.process_key, serverList[i]);

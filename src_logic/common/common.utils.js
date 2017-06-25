@@ -183,7 +183,7 @@ module.exports = function (_common, config, logger) {
             if (!data) data = '[]';
             data = jsonParse(data);
             if (!Array.isArray(data)) data = [];
-            data.push({ name: config.project_name, pid: process.pid, server: config.embrace.machine_unique_key });
+            data.push({ pid: process.pid, server: config.embrace.machine_unique_key });
             yield cacheUtils.storage.setP(config.cache.dashboard_list, data);
         }
     }
