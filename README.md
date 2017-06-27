@@ -90,6 +90,19 @@ app.listen(8082);
 
 深度定制化开发、通用配置项以及如何动态更新配置项详见 [Easy-Monitor 详细文档](http://easy-monitor.cn/document)
 
+## IV. 更新日志
+
+**v2.1.0:**
+
+* 增加了动态更新配置的功能
+* [Easy-Monitor 详细文档](http://easy-monitor.cn/document) 中对应增加了动态更新配置的功能说明
+
+**v2.1.1:**
+
+* 优化了文档说明
+* 修正一处在开启第三方缓存模式下动态修改鉴权信息的 bug
+* CPU Profiling 结果解析算法优化，提升速度
+
 ## IV. License
 
 [MIT License](LICENSE)
