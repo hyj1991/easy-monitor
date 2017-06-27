@@ -323,6 +323,8 @@ module.exports = function (_common, config, logger, utils) {
      * @description 对 profiling 得到的结果进行解析
      */
     function analyticsP(type, profiler, params) {
+        const common = this.common;
+
         return co(_analysysG, type, profiler, params);
 
         /**
@@ -337,9 +339,19 @@ module.exports = function (_common, config, logger, utils) {
             if (type === 'cpu') {
                 const optional = config.profiler.cpu.optional;
                 result.timeout = params.timeout || optional.timeout;
-                result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.need_filter && config.profiler.filter_function);
-                result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.need_filter && config.profiler.filter_function);
-                result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.need_filter && config.profiler.filter_function);
+                //老的逻辑，去除
+                // result.longFunctions = analysisLib(profiler, params.timeout || optional.timeout, false, true, { limit: params.long_limit || optional.long_limit }, config.profiler.need_filter && config.profiler.filter_function);
+                // result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.need_filter && config.profiler.filter_function);
+                // result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.need_filter && config.profiler.filter_function);
+
+                //优化后的新逻辑
+                const timeout = params.timeout || optional.timeout;
+                const limit = { long: params.long_limit || optional.long_limit, top: params.top_limit || optional.top_limit, bail: params.bail_limit || optional.bail_limit };
+                const filter = config.profiler.need_filter && config.profiler.filter_function;
+                const resultProfiler = yield common.performance.fetchCPUProfileP(profiler, timeout, limit, filter);
+                result.longFunctions = resultProfiler.longFunctions;
+                result.topExecutingFunctions = resultProfiler.topExecutingFunctions;
+                result.bailoutFunctions = resultProfiler.bailoutFunctions;
             }
 
             //解析 mem-profiler 操作结果

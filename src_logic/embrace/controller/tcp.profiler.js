@@ -51,7 +51,7 @@ module.exports = function (server) {
             yield common.socket.notifySide.apply(ctx, [profilingEndMessage, socket]);
 
             //执行分析操作
-            const analysis = yield common.profiler.analyticsP(data.opt, profiler, {
+            const analysis = yield common.profiler.analyticsP.apply(ctx, [data.opt, profiler, {
                 start: Date.now(),
                 middle: Date.now(),
                 /**
@@ -65,7 +65,7 @@ module.exports = function (server) {
                     return { message, socket };
                 },
                 callback: common.socket.notifySide.bind(ctx)
-            });
+            }]);
 
             //发送分析数据操作结束
             const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_analysis(analysis) });
