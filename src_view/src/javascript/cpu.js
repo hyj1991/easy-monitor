@@ -170,6 +170,7 @@ function data_long() {
     return this.singleProfilerData.longFunctions.map(item => ({
         functionName: item.funcName,
         execTime: this.formatTime(item.execTime),
+        parent: item.parent,
         execPercentage: item.percentage,
         filePath: item.url
     }));
@@ -184,6 +185,7 @@ function data_top() {
     return this.singleProfilerData.topExecutingFunctions.map(item => ({
         functionName: item.funcName,
         execTime: this.formatTime(item.execTime),
+        parent: item.parent,
         execPercentage: item.percentage,
         filePath: item.url
     }));

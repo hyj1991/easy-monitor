@@ -101,12 +101,14 @@
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '平均执行时长', key: 'execTime', align: 'center' },
+                    { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
                 ],
                 columns_top: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '平均执行时长', key: 'execTime', align: 'center' },
+                    { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
                 ],

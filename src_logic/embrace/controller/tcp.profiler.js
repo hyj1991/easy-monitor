@@ -44,7 +44,21 @@ module.exports = function (server) {
 
             //执行 pfofiling 操作
             const notStream = Boolean(config && config.profiler && config.profiler[data.opt] && config.profiler[data.opt].optional && config.profiler[data.opt].optional.not_stream);
-            const profiler = yield common.profiler.profilerP(data.opt, data.params, notStream);
+            const profiler = yield common.profiler.profilerP(data.opt, {
+                start: Date.now(),
+                /**
+                 * @description 主要给 CPU Profiling 中间态使用
+                 */
+                callback() {
+                    const duration = (Date.now() - this.start);
+                    //理论上永远不会这样，保险起见加一个保护
+                    const profilingTime = config.profiler.cpu.profiling_time;
+                    if (profilingTime < duration) return;
+                    const profilingMiddleMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].start_profiling(profilingTime - duration) });
+                    //发送数据
+                    return common.socket.notifySide.apply(ctx, [profilingMiddleMessage, socket]);
+                }
+            }, notStream);
 
             //发送业务进程 profiling 操作结束
             const profilingEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_profiling(null, !notStream) });

@@ -61,6 +61,9 @@ exports = module.exports = function (config) {
                 //是否允许更改
                 profiling_time_disable: false,
 
+                //定时检查时长，半分钟检查一次
+                profiling_check_time: 30 * 1000,
+
                 //可选配置参数
                 optional: {
                     /**
@@ -105,9 +108,8 @@ exports = module.exports = function (config) {
                     return `通知${info}业务进程进行 CPU 数据采集...`;
                 },
                 //已经通知到业务进程
-                start_profiling(info) {
-                    info = info || '';
-                    return `${info}开始进行 CPU 数据采集，约耗费 ${_formatTime(config.profiler.cpu.profiling_time)}...`;
+                start_profiling(remain) {
+                    return `开始进行 CPU 数据采集，约耗费 ${_formatTime(config.profiler.cpu.profiling_time)}${!isNaN(remain) && `，剩余时间 ${_formatTime(remain)}` || ``}...`;
                 },
                 //cpu profing 结束
                 end_profiling(info) {

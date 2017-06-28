@@ -273,21 +273,27 @@ module.exports = function (_common, config, logger, utils) {
      */
     function profilerP(opt, params, notStream) {
         params = params || {};
-        if (opt === 'cpu') return cpuProfilerP(params.title, notStream);
+        if (opt === 'cpu') return cpuProfilerP(params, notStream);
         if (opt === 'mem') return memProfilerP(notStream);
     }
 
     /**
-     * @param {string} title @param {boolean} notStream
+     * @param {object} params @param {boolean} notStream
      * @description 进行 cpu profiling 操作
      */
-    function cpuProfilerP(title, notStream) {
+    function cpuProfilerP(params, notStream) {
+        const title = params && params.title || '';
+        const cb = params && params.callback;
+        //定时检查
+        const interval = setInterval(cb.bind(params), config.profiler.cpu.profiling_check_time);
+
         return new Promise(resolve => {
-            title = title || '';
             v8Profiler.startProfiling(title, true);
 
             setTimeout(() => {
                 const profiler = v8Profiler.stopProfiling(title);
+                //成功后清除掉 interval 定时器
+                clearInterval(interval);
                 profiler.delete();
                 resolve(profiler);
             }, config.profiler.cpu.profiling_time);
@@ -348,7 +354,7 @@ module.exports = function (_common, config, logger, utils) {
                 const timeout = params.timeout || optional.timeout;
                 const limit = { long: params.long_limit || optional.long_limit, top: params.top_limit || optional.top_limit, bail: params.bail_limit || optional.bail_limit };
                 const filter = config.profiler.need_filter && config.profiler.filter_function;
-                const resultProfiler = yield common.performance.fetchCPUProfileP(profiler, timeout, limit, filter);
+                const resultProfiler = yield common.performance.fetchCPUProfileP.apply({ params }, [profiler, timeout, limit, filter]);
                 result.longFunctions = resultProfiler.longFunctions;
                 result.topExecutingFunctions = resultProfiler.topExecutingFunctions;
                 result.bailoutFunctions = resultProfiler.bailoutFunctions;

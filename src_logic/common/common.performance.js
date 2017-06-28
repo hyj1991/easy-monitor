@@ -344,7 +344,7 @@ module.exports = function (_common, config, logger, utils) {
         forEachFrame(_onOpenFrame, _onCloseFrame, profile);
 
         //删除临时数据，并且将所需的数据回传
-        profile.root = profile.resultRoot.functionName;
+        profile.root = profile.resultRoot;
         profile.total = profile.profileEndTime - profile.profileStartTime;
         Object.keys(profile).forEach(key => key !== 'root' && key !== 'total' && delete profile[key]);
         profile.entries = entries;
@@ -361,7 +361,7 @@ module.exports = function (_common, config, logger, utils) {
         const bailoutCache = {};
 
         //初始化 total time 缓存
-        totalTimeCache.set(`${profile.root}::@-1`, [profile.total]);
+        totalTimeCache.set(`${profile.root.functionName}::@${profile.root.id}`, [profile.total]);
 
         //组装结果
         const result = {
@@ -381,7 +381,7 @@ module.exports = function (_common, config, logger, utils) {
             const url = node.url && `(${node.url} ${node.lineNumber})` || `(${node.lineNumber})`;
 
             //缓存每一个父节点的耗费时长
-            const durationKey = `${funcName}::@${entry.depth}`;
+            const durationKey = `${funcName}::@${node.id}`;
             const durationList = totalTimeCache.get(durationKey);
             if (!durationList) totalTimeCache.set(durationKey, [duration]);
             else {
@@ -393,7 +393,7 @@ module.exports = function (_common, config, logger, utils) {
             if (!filter(url, funcName)) return;
 
             //过滤出运算时长数据
-            const key = `${funcName}::${url}`;
+            const key = `${funcName}::${node.id}`;
             if (executeCache[key]) {
                 executeCache[key].hitTimes += 1;
                 executeCache[key].execTime += duration;
@@ -417,14 +417,19 @@ module.exports = function (_common, config, logger, utils) {
         const timeList = Object.keys(executeCache).map(key => {
             const executeMessage = executeCache[key];
             const node = executeMessage.node;
-            const parentDurationList = totalTimeCache.get(`${node.parent && node.parent.functionName}::@${node.parent && node.parent.depth}`) || 0;;
+            const parent = node.parent && node.parent.functionName || 'unknown';
+            const id = node.parent && Number(node.parent.id);
+            executeMessage.parent = parent;
+            executeMessage.id = id;
+            const parentDurationList = totalTimeCache.get(`${parent}::@${id}`) || 0;
             executeMessage.execTime = executeMessage.execTime / executeMessage.hitTimes;
-            const parentDuration = Array.isArray(parentDurationList) && parentDurationList.reduce((acc, p) => acc + Number(p), 0);
-            executeMessage.percentage = (parentDuration && ((executeMessage.execTime / parentDuration) * 100).toFixed(2)) || '父节点未知';
+            //父函数可能多次调用子函数
+            const parentDuration = Array.isArray(parentDurationList) && parentDurationList.length && parentDurationList.reduce((acc, p) => acc + Number(p), 0) / executeMessage.hitTimes || 0;
+            executeMessage.percentage = `${(parentDuration && ((executeMessage.execTime / parentDuration) * 100).toFixed(2))}` || '-';
             //删除 node 节点
             delete executeMessage.node;
             return executeMessage;
-        }).sort((o, n) => Number(o.execTime) < Number(n.execTime) ? 1 : -1);
+        }).sort((o, n) => Number(o.execTime) < Number(n.execTime) || Number(o.execTime) === Number(n.execTime) && Number(o.id) > Number(n.id) ? 1 : -1);
         //组装 long function，依照时间降序排列
         result.longFunctions = timeList.filter(item => item.execTime > Number(timeout)).filter((item, index) => index < Number(limit.long));
         //组装 top function，依照时间降序排列
@@ -441,8 +446,19 @@ module.exports = function (_common, config, logger, utils) {
      * @description 获取 CPU Profile 解析结果
      */
     function fetchCPUProfileP(profile, timeout, limit, filter) {
+        //取出辅助参数
+        const options = this.params;
         //返回一个 Promise 实例，可扩展性更强
         return co(_fetch);
+
+        /**
+         * @description 内部方法，发送计算结果的中间状态
+         */
+        function _sendFetchProgressP(msg) {
+            const cb = options.callback;
+            const params = options.params.apply(options, [msg, Date.now()]);
+            return cb(params.message, params.socket);
+        }
 
         /**
          * @description 内部方法，具体处理解析 profile 数据的逻辑
@@ -458,26 +474,36 @@ module.exports = function (_common, config, logger, utils) {
 
             /** 以下对采集到的 CPU 数据进行分析 */
             //1. 初始化数据
+            yield _sendFetchProgressP({ prefix: `进入分析函数`, suffix: `准备开始初始化 Attribution...` });
             initAttribution(profile);
             //2. 扁平化树结构
+            yield _sendFetchProgressP({ prefix: `初始化 Attribution 完毕`, suffix: `准备开始扁平化 HeadNodes...` });
             flatHeadNodes(profile);
             //3. 遍历出从根节点起始的树结构
+            yield _sendFetchProgressP({ prefix: `扁平化 HeadNodes 完毕`, suffix: `准备开始创建 HeadTree...` });
             createHeadTree(profile);
             //4. 计算父子节点关系以及深度树深度
+            yield _sendFetchProgressP({ prefix: `创建 HeadTree 完毕`, suffix: `准备开始构建 ParentAndDepth...` });
             buildParentAndDepth(profile);
             //5. 计算各个节点的 total 属性
+            yield _sendFetchProgressP({ prefix: `构建 ParentAndDepth 完毕`, suffix: `准备开始构建 Totals...` });
             buildTotals(profile);
             //6. 获取 id -> node 映射关系
+            yield _sendFetchProgressP({ prefix: `构建 Totals 完毕`, suffix: `准备开始构建 IdToNodeMap...` });
             buildIdToNodeMap(profile);
             //7. 找出 gc / program / idle 等节点
+            yield _sendFetchProgressP({ prefix: `构建 IdToNodeMap 完毕`, suffix: `准备开始找出 GC / Program / Idle 节点信息...` });
             extractMetaNodes(profile)
             //8. 计算出真正的 totle 时间
+            yield _sendFetchProgressP({ prefix: `GC / Program / Idle 节点信息定位完毕`, suffix: `准备开始计算真正的函数执行耗费...` });
             calculateTotle(profile);
 
             /** 过滤出所需要的数据 */
+            yield _sendFetchProgressP({ prefix: `真正的函数执行耗费计算完毕`, suffix: `准备开始过滤出分析结果...` });
             const result = fetchResult(profile, timeout, limit, filter);
             //清除数据
             profile = null;
+            yield _sendFetchProgressP({ prefix: `Performance 所有分析完成` }, true);
             return result;
         }
     }
