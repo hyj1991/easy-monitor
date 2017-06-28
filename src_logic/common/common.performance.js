@@ -361,7 +361,7 @@ module.exports = function (_common, config, logger, utils) {
         const bailoutCache = {};
 
         //初始化 total time 缓存
-        totalTimeCache.set(`${profile.root}::@-1`, profile.total);
+        totalTimeCache.set(`${profile.root}::@-1`, [profile.total]);
 
         //组装结果
         const result = {
@@ -380,11 +380,17 @@ module.exports = function (_common, config, logger, utils) {
             const bailoutReason = node.bailoutReason;
             const url = node.url && `(${node.url} ${node.lineNumber})` || `(${node.lineNumber})`;
 
-            //过滤掉的数据
-            if (!filter(url, funcName)) return;
+            //缓存每一个父节点的耗费时长
+            const durationKey = `${funcName}::@${entry.depth}`;
+            const durationList = totalTimeCache.get(durationKey);
+            if (!durationList) totalTimeCache.set(durationKey, [duration]);
+            else {
+                durationList.push(duration);
+                totalTimeCache.set(durationKey, durationList);
+            }
 
-            //缓存每一个父节点的耗费市场
-            totalTimeCache.set(`${funcName}::@${entry.depth}`, duration);
+            //过滤掉的数据，等到父节点信息设置完毕后再启用过滤函数
+            if (!filter(url, funcName)) return;
 
             //过滤出运算时长数据
             const key = `${funcName}::${url}`;
@@ -411,10 +417,10 @@ module.exports = function (_common, config, logger, utils) {
         const timeList = Object.keys(executeCache).map(key => {
             const executeMessage = executeCache[key];
             const node = executeMessage.node;
-            const parentDuration = totalTimeCache.get(`${node.parent && node.parent.functionName}::@${node.parent && node.parent.depth}`) || 0;;
+            const parentDurationList = totalTimeCache.get(`${node.parent && node.parent.functionName}::@${node.parent && node.parent.depth}`) || 0;;
             executeMessage.execTime = executeMessage.execTime / executeMessage.hitTimes;
-            executeMessage.parentDuration = parentDuration;
-            executeMessage.percentage = (parentDuration && ((executeMessage.execTime / parentDuration) * 100).toFixed(2)) || '100.00';
+            const parentDuration = Array.isArray(parentDurationList) && parentDurationList.reduce((acc, p) => acc + Number(p), 0);
+            executeMessage.percentage = (parentDuration && ((executeMessage.execTime / parentDuration) * 100).toFixed(2)) || '父节点未知';
             //删除 node 节点
             delete executeMessage.node;
             return executeMessage;
