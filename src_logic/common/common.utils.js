@@ -13,7 +13,11 @@ module.exports = function (_common, config, logger) {
      * @description 启动子进程
      */
     function forkNode(forkPath, argv) {
-        const dashboard = child_process.fork(forkPath, argv);
+        /**
+         * @description 在开启 inspect 或者 debug 模式下子进程自动失败
+         * @description issue 地址: https://github.com/hyj1991/easy-monitor/issues/10，
+         */
+        const dashboard = child_process.fork(forkPath, argv, { silent: false, execArgv: [] });
         //侦听到 'exit' 事件则输出日志后退出
         dashboard.on('exit', signal => {
             if (signal === 0) {
