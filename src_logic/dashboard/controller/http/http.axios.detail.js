@@ -58,7 +58,7 @@ module.exports = function (app) {
         }
 
         //先返回大小，再返回数据
-        if (data.done === true && !data.setSize) {
+        if (data.done === true && !data.error && !data.setSize) {
             data.done = false;
             const dataTmp = data.results.data;
             const sequenceTmp = Number(data.results.sequence);

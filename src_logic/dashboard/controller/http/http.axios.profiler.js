@@ -45,6 +45,16 @@ module.exports = function (app) {
         //将初始化后的数据结构塞进缓存
         list.initList.push(`${params.name}_${params.server}_${params.pid}_${params.opt}`);
         yield cacheUtils.storage.setP(key, result, config.cache.opt_list);
+
+        //做一个异常检测盘简单判定，3s 后还未发现缓存数据变更，则认为本次操作失败
+        setTimeout(co.wrap((function* (key, result) {
+            const res = yield cacheUtils.storage.getP(`${key}1`, config.cache.opt_list);
+            if (!res) {
+                result.done = true;
+                result.error = 'Notify embrace process failed, Please refresh this page!';
+                yield cacheUtils.storage.setP(`${key}1`, result, config.cache.opt_list);
+            }
+        })).bind(null, key, result), config.http.timeout);
     }
 
     /**
