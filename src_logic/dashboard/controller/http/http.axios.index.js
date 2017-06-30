@@ -31,8 +31,19 @@ module.exports = function (app) {
             response.success = false;
         }
 
+        //过滤掉因为异常掉线但是一直没去除的链接
+        const processList = Object.keys(processInfo).filter(item => {
+            const ts = processInfo[item].__timestamp__ || Date.now();
+            const duration = Date.now() - ts;
+            //预留 10s 操作空间
+            const out = Boolean(duration < (config.tcp_heartbeat + 10 * 1000));
+            !out && cacheUtils.storage.delP(item, config.cache.socket_list);
+
+            return out;
+        });
+
         //处理获取到的 socket 列表信息
-        Object.keys(processInfo).forEach(item => {
+        processList.forEach(item => {
             const keyObject = cacheUtils.decodeKey(item);
             const keyTmp = `${keyObject.name}${config.seg}${keyObject.server}`
             const projectPidMap = response.data.projectPidMap;

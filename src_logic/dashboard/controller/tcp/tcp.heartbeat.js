@@ -30,7 +30,9 @@ module.exports = function (server) {
         cacheUtils.storage && cacheUtils.storage.setP(key, socket, config.cache.socket_list, true);
         //强制缓存一份数据至内存
         cacheUtils.storage && cacheUtils.storage.setP(key, socket, config.cache.socket_list, true, true);
+        //给 socket 对象写入一些常用的值备用
         socket.__key__ = key;
+        socket.__timestamp__ = Date.now();
 
         //返回 heartbeat 的成功响应给客户端
         return common.socket.composeMessage('res', 1, {});
