@@ -25,6 +25,7 @@ function _gzip(data, unknown) {
  * @description 对 ms 级别的时间进行格式化
 */
 function _formatTime(ts) {
+    ts = !isNaN(ts) && ts || 0;
     let str = '';
     if (ts < 1e3) {
         str = `${ts.toFixed(2)} ms`;
@@ -46,9 +47,12 @@ exports = module.exports = function (config) {
         profiler: {
             /**
              * @type {number}
-             * @description cpu / mem 采集数据分析采用：0 就地分析(默认)，1 上报分析
+             * @description cpu / mem 采集数据分析采用：0 就地分析(默认)，1 开启子进程分析
              */
-            mode: 0,
+            mode: 1,
+
+            //是否允许修改
+            modeDisable: false,
 
             //最终完成态 key 增加后缀
             finish: '_FINISH',
@@ -114,7 +118,8 @@ exports = module.exports = function (config) {
                 //cpu profing 结束
                 end_profiling(info) {
                     info = info || '';
-                    return `${info}采集 CPU 数据完毕，即将开始分析...`;
+                    const extra = Number(config.profiler.mode) === 1 && '开启子进程' || '开始'
+                    return `${info}采集 CPU 数据完毕，即将${extra}进行数据分析...`;
                 },
                 //cpu analysis 结束
                 end_analysis(data) {
@@ -186,8 +191,9 @@ exports = module.exports = function (config) {
                 end_profiling(info, stream) {
                     info = info || '';
                     let str = '';
-                    if (stream) str = `${info}Memory Stream 准备完毕，开始流式读取，此过程较慢，请耐心等待...`;
-                    else str = `${info}采集 Memory 数据完毕，即将开始分析...`;
+                    const extra = Number(config.profiler.mode) === 1 && '开启子进程' || '开始'
+                    if (stream) str = `${info}Memory Stream 准备完毕，即将${extra}进行流式读取，此过程较慢，请耐心等待...`;
+                    else str = `${info}采集 Memory 数据完毕，即将${extra}进行数据分析...`;
                     return str;
                 },
                 //cpu analysis 结束

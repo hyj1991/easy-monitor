@@ -470,7 +470,7 @@ module.exports = function (_common, config, logger, utils) {
             timeout = !isNaN(timeout) && timeout || 200;
             filter = typeof filter === 'function' && filter || function (path, file) { return true }
             //无 head 节点直接 reject 掉
-            if (!profile['head']) return reject('Illegal CPU Profiler!');
+            if (!profile['head']) return 'Illegal CPU Profiler!';
 
             /** 以下对采集到的 CPU 数据进行分析 */
             //1. 初始化数据

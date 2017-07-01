@@ -8,6 +8,7 @@ import router from '../main.js';
  * @descript: 对时间 ms 进行格式化
  */
 function formatTime(ts) {
+    ts = !isNaN(ts) && ts || 0;
     let str = '';
     if (ts < 1e3) {
         str = `${ts.toFixed(2)} ms`;

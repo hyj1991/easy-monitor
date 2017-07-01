@@ -39,13 +39,20 @@ strong {
                 </Radio-group>
             </p>
             <!-- 日志级别调整相关 -->
-            <p style="font-size:1.1em;margin-bottom:20px">日志级别:
+            <p style="font-size:1.1em;margin-bottom:10px">日志级别:
                 <Radio-group v-model="logLevel" style="margin-left:10px;vertical-align:2px">
                     <Radio label="error" :disabled="loggerDisable"></Radio>
                     <Radio label="warn" :disabled="loggerDisable"></Radio>
                     <Radio label="info" :disabled="loggerDisable"></Radio>
                     <Radio label="debug" :disabled="loggerDisable"></Radio>
                 </Radio-group>
+            </p>
+            <!-- 数据采集分析相关 -->
+            <p style="font-size:1.1em;margin-bottom:20px">开启子进程分析采集数据:
+                <i-switch size="large" v-model="cpas" :disabled="cpasDisable" style="margin-left:10px;vertical-align:-7px">
+                    <span slot="open">开启</span>
+                    <span slot="close">关闭</span>
+                </i-switch>
             </p>
 
             <!-- CPU Profiling 配置 -->
@@ -171,6 +178,7 @@ strong {
                 serverPid:[], done: false, error: null, user: null,
                 runMode: '', runModeDisable: false,
                 logLevel: '', loggerDisable: false,
+                cpas: false, cpasDisable: false,
                 cpuFilter: false, cpuFilterDisable: false,
                 cpuProfiler: 1, cpuProfilerDisable: false,
                 cpuTimeout: 1, cpuTimeoutDisable: false,

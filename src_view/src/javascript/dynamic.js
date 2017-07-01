@@ -55,6 +55,11 @@ function fetchConfig(data, cb) {
                     vm.logLevel = _getLogger(logger.log_level);
                     vm.loggerDisable = logger.disable;
 
+                    //取出分析采集数据相关
+                    const profiler = msg.profiler || {};
+                    vm.cpas = Boolean(Number(profiler.mode) === 1);
+                    vm.cpasDisable = profiler.modeDisable;
+
                     //取出 cpu 相关
                     const cpu = msg.cpu || {};
                     vm.cpuFilter = Boolean(cpu.need_filter);
@@ -139,6 +144,9 @@ function axiosFetch(type, cb) {
         const data = { type: 'modify', name: this.name };
         //设置修改后的 logger 配置
         data.logger = this.logLevel !== '' && { log_level: this.logLevel };
+
+        //设置修改后的分析数据采集模式配置
+        data.profiler = { mode: this.cpas && 1 || 0 };
 
         //设置修改后的 cpu 配置
         data.cpu = {

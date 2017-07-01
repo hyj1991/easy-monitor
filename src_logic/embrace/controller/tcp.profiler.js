@@ -1,5 +1,6 @@
 'use strict';
 const co = require('co');
+const path = require('path');
 const lodash = require('lodash');
 
 module.exports = function (server) {
@@ -64,22 +65,55 @@ module.exports = function (server) {
             const profilingEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_profiling(null, !notStream) });
             yield common.socket.notifySide.apply(ctx, [profilingEndMessage, socket]);
 
-            //执行分析操作
-            const analysis = yield common.profiler.analyticsP.apply(ctx, [data.opt, profiler, {
-                start: Date.now(),
-                middle: Date.now(),
-                /**
-                 * @param {string} msg @param {number} time @param {boolean} end
-                 * @description 生成回调 callback 所需参数
-                 */
-                params: function (msg, time, end) {
-                    const duration = common.utils.formatTime(time - (!end && this.middle || this.start));
-                    const message = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: `${msg.prefix || '未知操作'}, 耗时 ${duration}${msg.suffix && `, ${msg.suffix}` || ''}...` });
-                    this.middle = time;
-                    return { message, socket };
-                },
-                callback: common.socket.notifySide.bind(ctx)
-            }]);
+            //根据配置决定启动子进程分析亦或是本地分析
+            let analysis = {};
+            if (Number(config.profiler.mode) === 1) {
+                //子进程处理数据
+                const cps = common.calculate.fork(path.join(__dirname, '../calculator.js'), { opt: data.opt, profiler: config.profiler });
+                //调用内部的 send 方法
+                cps.innerSend(profiler);
+                //获取结果
+                analysis = yield new Promise((resolve, reject) => {
+                    cps.on('message', co.wrap(function* (msg) {
+                        //成功返回
+                        if (msg.done) return resolve(msg.analysis);
+                        //错误处理
+                        if (msg.error) return reject(msg.error);
+                        //中间态发送
+                        const loadingMsg = msg.loadingMsg;
+                        if (loadingMsg) {
+                            const profilingMiddleMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg });
+                            yield common.socket.notifySide.apply(ctx, [profilingMiddleMessage, socket]);
+                        }
+                    }));
+
+                    //计算完毕或者异常请况下的退出
+                    cps.on('exit', signal => {
+                        if (Number(signal) === 0) dbl.debug(`tcp.profiler calculate success with exit code ${signal}!`);
+                        else {
+                            dbl.error(`tcp.profiler calculate failed with exit code ${signal}!`);
+                            reject(`calculate failed with exit code ${signal}`);
+                        }
+                    });
+                });
+            } else {
+                //执行分析操作
+                analysis = yield common.profiler.analyticsP.apply(ctx, [data.opt, profiler, {
+                    start: Date.now(),
+                    middle: Date.now(),
+                    /**
+                     * @param {string} msg @param {number} time @param {boolean} end
+                     * @description 生成回调 callback 所需参数
+                     */
+                    params: function (msg, time, end) {
+                        const duration = common.utils.formatTime(time - (!end && this.middle || this.start));
+                        const message = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: `${msg.prefix || '未知操作'}, 耗时 ${duration}${msg.suffix && `, ${msg.suffix}` || ''}...` });
+                        this.middle = time;
+                        return { message, socket };
+                    },
+                    callback: common.socket.notifySide.bind(ctx)
+                }]);
+            }
 
             //发送分析数据操作结束
             const analysisEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_analysis(analysis) });

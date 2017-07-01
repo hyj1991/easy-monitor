@@ -38,6 +38,12 @@ module.exports = function (_common, config, logger, utils) {
             disable: config.logger.disable
         };
 
+        //获取 profiler 相关
+        result.profiler = {
+            mode: config.profiler.mode,
+            modeDisable: config.profiler.modeDisable
+        };
+
         //获取 CPU 参数
         const optionalCpu = config.profiler.cpu.optional;
         result.cpu = {
@@ -107,6 +113,12 @@ module.exports = function (_common, config, logger, utils) {
             logger.setLevel(logLevel);
             if (dbl) dbl.setLevel(logLevel);
             if (result) result.logger = true;
+        }
+
+        //修改采集数据分析模式
+        const profilerMode = data.profiler && data.profiler.mode;
+        if (!isNaN(profilerMode)) {
+            config.profiler.mode = Number(profilerMode);
         }
 
         //修改 cpu
