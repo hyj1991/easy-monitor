@@ -35,7 +35,7 @@ module.exports = function (_common, config, logger, utils) {
 
         //fork 进程，stdio 设置子进程的 stdin 为 pipe 备用传输数据，其余默认
         params = typeof params === 'string' && params || params && JSON.stringify(params) || '';
-        const ps = cp.fork(cpath, [params], { stdio: ['pipe', 1, 2, 'ipc'] });
+        const ps = cp.fork(cpath, [params], { stdio: ['pipe', 1, 2, 'ipc'], silent: false, execArgv: [] });
         //设置子进程内部方法
         ps.innerSend = _innerSend;
 
