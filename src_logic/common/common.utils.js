@@ -15,7 +15,7 @@ module.exports = function (_common, config, logger) {
     function forkNode(forkPath, argv) {
         /**
          * @description 在开启 inspect 或者 debug 模式下子进程自动失败
-         * @description issue 地址: https://github.com/hyj1991/easy-monitor/issues/10，
+         * @description issue 地址: https://github.com/hyj1991/easy-monitor/issues/10
          */
         const dashboard = child_process.fork(forkPath, argv, { silent: false, execArgv: [] });
         //侦听到 'exit' 事件则输出日志后退出
@@ -224,8 +224,40 @@ module.exports = function (_common, config, logger) {
         return str;
     }
 
+    /**
+     * @param {string} target
+     * @description 校验当前 node 版本 > target
+     */
+    function checkNodeVersion(target) {
+        //不传入 target，认为正确
+        if (!target) return true;
+        const now = process.versions.node;
+
+        //两者恒等
+        if (now === target) return false;
+
+        //循环判断
+        let result = false;
+        let compare = [now, target];
+        while (compare) {
+            //分割数据
+            const now = String(compare[0]).split('.');
+            const tar = String(compare[1]).split('.');
+
+            //比较首位
+            const nowFirst = Number(now.shift());
+            const tarFirst = Number(tar.shift());
+
+            //仅当首位相等时需要循环
+            result = Boolean(nowFirst > tarFirst);
+            compare = nowFirst === tarFirst && [now.join('.'), tar.join('.')] || false;
+        }
+
+        return result;
+    }
+
     return {
-        event, forkNode, jsonParse,
+        event, forkNode, jsonParse, checkNodeVersion,
         compressMsg, bufferSplit, parseMessage, isPromise,
         commonInitP, startMq, joinCacheKey, formatTime, cacheProcessInfoP
     }

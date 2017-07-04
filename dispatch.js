@@ -33,4 +33,4 @@ module.exports = co.wrap(function* (options) {
     //非 cluster 模式下，embrace 嵌入业务进程，dashboard 以 fork 形式启动
     embrace.start(config, common);
     common.utils.forkNode(path.join(rootPath, 'dashboard/_fork.js'), [JSON.stringify(options)]);
-})
+});
