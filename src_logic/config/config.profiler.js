@@ -1,5 +1,4 @@
 'use strict';
-const gzipSize = require('gzip-size');
 const prettyBytes = require('pretty-bytes');
 
 /**
@@ -14,7 +13,7 @@ function _gzip(data, unknown) {
 
     //否则返回 gizp 后大小
     data = typeof data === 'object' && JSON.stringify(data) || data;
-    const pretty = prettyBytes(gzipSize.sync(data)) || '';
+    const pretty = prettyBytes(data.length) || '';
 
     return String(pretty.toUpperCase());
 }
@@ -123,13 +122,11 @@ exports = module.exports = function (config) {
                 },
                 //cpu analysis 结束
                 end_analysis(data) {
-                    return `CPU 数据分析完毕，正在传输，大小为: ${_gzip(data)}...`;
+                    return `CPU 数据分析完毕，正在传输，原始大小为: ${_gzip(data)}...`;
                 },
                 //所有操作完毕，准备返回给客户端数据
                 end(data) {
-                    data = typeof data === 'object' && JSON.stringify(data) || data;
-                    const gzip = gzipSize.sync(data);
-                    return `分析数据准备完毕，大小为: ${prettyBytes(gzip)}，请耐心等待下载...`;
+                    return `分析数据准备完毕，原始大小为: ${_gzip(data)}，请耐心等待下载...`;
                 }
             },
 
@@ -201,11 +198,11 @@ exports = module.exports = function (config) {
                 },
                 //cpu analysis 结束
                 end_analysis(data) {
-                    return `Memory 数据分析完毕，正在传输，大小为: ${_gzip(data)}...`;
+                    return `Memory 数据分析完毕，正在传输，原始大小为: ${_gzip(data)}...`;
                 },
                 //所有操作完毕，准备返回给客户端数据
                 end(data) {
-                    return `分析数据准备完毕，大小为: ${_gzip(data)}，请耐心等待下载...`;
+                    return `分析数据准备完毕，原始大小为: ${_gzip(data)}，请耐心等待下载...`;
                 }
             },
 

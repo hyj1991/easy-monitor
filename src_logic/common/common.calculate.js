@@ -42,9 +42,9 @@ module.exports = function (_common, config, logger, utils) {
          * @description issue 地址: https://github.com/hyj1991/easy-monitor/issues/17
          */
         if (utils.checkNodeVersion('6.4.0')) {
-            ps = cp.fork(cpath, [params], { stdio: ['pipe', 1, 2, 'ipc'], silent: false, execArgv: [] });
+            ps = cp.fork(cpath, [params], { stdio: ['pipe', 1, 2, 'ipc'], silent: false, execArgv: ['--max_old_space_size=4096'] });
         } else {
-            ps = cp.fork(cpath, [params], { silent: true, execArgv: [] });
+            ps = cp.fork(cpath, [params], { silent: true, execArgv: ['--max_old_space_size=4096'] });
         }
 
         //设置子进程内部方法
