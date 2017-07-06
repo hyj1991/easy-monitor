@@ -4,7 +4,7 @@ const co = require('co');
 发布 v8-profiler-node8 作为临时方案，等到官方修复后再恢复官方版本 */
 // const v8Profiler = require('v8-profiler');
 const v8Profiler = require('v8-profiler-node8');
-const analysisLib = require('../../../v8-analytics');
+const analysisLib = require('v8-analytics');
 
 module.exports = function (_common, config, logger, utils) {
     /**
