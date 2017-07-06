@@ -174,7 +174,10 @@ exports = module.exports = function (config) {
                     distance_limit_disable: false,
 
                     //展示疑似泄漏点深度
-                    leak_limit: 8
+                    leak_limit: 8,
+
+                    //展示全量数据的深度
+                    child_node_display: 4,
                 },
 
                 //初始化阶段的提示

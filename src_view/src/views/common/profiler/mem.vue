@@ -102,6 +102,22 @@
 
                 <!-- memory 数据采集结束，展示此 -->
                 <div style="text-align:center" v-if="!server_error && listInfo.done">
+                    <!-- 任意搜索提供的节点引力图 -->
+                    <Row type="flex" justify="center" class="code-row-bg">
+                        <Col span=12>
+                            <header class="header">
+                                <span>搜索任意节点</span>
+                            </header>
+                        </Col>
+                    </Row>
+                    <Row type="flex" justify="center" class="code-row-bg">
+                        <Col span=8>
+                            <Select v-model="node_id" placeholder="请输入需要搜索的节点 ID" filterable remote :remote-method="remoteMethod" :loading="remoteLoading" @on-change="selectHandle" class="ivu-select-input-my-style-mem">
+                                <Option v-for="item in idList" :value="item.value" :key="new Date()">{{ item.label }}</Option>
+                            </Select>
+                        </Col>
+                    </Row>
+
                     <!-- 根据 retainedSize 最大节点占比，来给出内存泄漏风险提示 -->
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
@@ -189,22 +205,6 @@
                         </Col>
                     </Row>
                     <br>
-
-                    <!-- 任意搜索提供的节点引力图 -->
-                    <Row type="flex" justify="center" class="code-row-bg">
-                        <Col span=12>
-                            <header class="header">
-                                <span>搜索任意节点</span>
-                            </header>
-                        </Col>
-                    </Row>
-                    <Row type="flex" justify="center" class="code-row-bg">
-                        <Col span=8>
-                            <Select v-model="node_id" placeholder="请输入需要搜索的节点 ID" filterable @on-change="selectHandle" class="ivu-select-input-my-style-mem">
-                                <Option v-for="item in idList" :value="item.value" :key="item">{{ item.label }}</Option>
-                            </Select>
-                        </Col>
-                    </Row>
                 </div>
             </Card>
 
@@ -235,6 +235,14 @@
                     :formatSize="formatSize">
                 </force>
             </Modal>
+            <!-- Modals Tree -->
+            <Modal
+                v-model="tree"
+                :title="`${tree_id} 树状结构`"
+                width="950"
+                @on-cancel="treeCancel">
+                <Tree :data="tree_data" @on-toggle-expand="onTreeSelect"></Tree>
+            </Modal>
         </Col>
     </Row>
 </div>
@@ -252,7 +260,7 @@
             return { 
                 constructor: false, type: false, force: false, modal_node_id: null,
                 singleProfiler: null, error: null, checkStatTimer: null,
-                axiosDone: { profilerDetail: false },
+                axiosDone: { profilerDetail: false }, remoteLoading: false,
                 axiosSended: true, node_id: '', sequence: 0,
                 process_status: 1, //1.healthy 2.warning 3.leaking 
                 circle_color: { healthy: '#5cb85c', warning: '#ff9900', leaking: '#ff3300' },
@@ -263,7 +271,8 @@
                     { title: '对象数量', key: 'object_count', align: 'center', sortable: true },
                     { title: '浅引用大小', key: 'shallow_size', align: 'center', sortable: true, sortMethod: this.sortBySize },
                     { title: '保留引用大小', key: 'retained_size', align: 'center', sortable: true, sortMethod: this.sortBySize }
-                ]
+                ],
+                idListCalculate: [], tree: false, tree_id: '', tree_data: []
             }
         },
 
@@ -284,6 +293,8 @@
         components: { force, echart3, loadingSpin },
 
         methods: {
+            treeCancel() { return this.$_js.mem.methods.treeCancel.call(this); },
+            remoteMethod(query) { return this.$_js.mem.methods.remoteMethod.call(this, query); },
             formatPercentage(num, limit=2) { return this.$_js.mem.methods.formatPercentage.call(this, num, limit); },
             formatSize(size){ return this.$_js.mem.methods.formatSize.call(this, size); },
             sortBySize(o, n, t) { return this.$_js.mem.methods.sortBySize.apply(this, [o, n, t]); },
@@ -291,7 +302,8 @@
             typeHandle() { this.$_js.mem.methods.typeHandle.call(this); },
             constructorHandle() { this.$_js.mem.methods.constructorHandle.call(this); },
             selectHandle(id) { this.$_js.mem.methods.selectHandle.call(this, id); },
-            leakHandle(id) { this.$_js.mem.methods.leakHandle.call(this, id); }
+            leakHandle(id) { this.$_js.mem.methods.leakHandle.call(this, id); },
+            onTreeSelect(id) { this.$_js.mem.methods.onTreeSelect.call(this, id); }
         },
 
         computed: {

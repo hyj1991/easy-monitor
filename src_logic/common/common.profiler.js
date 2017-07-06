@@ -4,9 +4,40 @@ const co = require('co');
 发布 v8-profiler-node8 作为临时方案，等到官方修复后再恢复官方版本 */
 // const v8Profiler = require('v8-profiler');
 const v8Profiler = require('v8-profiler-node8');
-const analysisLib = require('v8-analytics');
+const analysisLib = require('../../../v8-analytics');
 
 module.exports = function (_common, config, logger, utils) {
+    /**
+     * @param {number} rootIndex @param {object} heapUsed @param {function} serialize
+     * @description 加入从 root 节点开始的信息
+     */
+    function addRootDisplay(rootIndex, heapUsed, serialize) {
+        //root 节点展示的深度
+        const distanceLimit = config.profiler.mem.optional.distance_root_limit;
+
+        //下面开始计算节点属性
+        let distanceDisplay = 1;
+        let tmpList = [rootIndex]
+        while (distanceDisplay < distanceLimit && tmpList.length) {
+            const childList = []
+            //将本深度全部收掉
+            while (tmpList.length) {
+                const index = tmpList.pop();
+                //已经存储的过去丢弃
+                if (heapUsed[index]) continue;
+                const detail = serialize(index, Boolean(distanceDisplay < config.profiler.mem.optional.child_node_display));
+                heapUsed[index] = detail;
+                //保持 while 循环
+                detail && Array.isArray(detail.children) && detail.children.forEach(item => childList.push(item.index));
+            }
+
+            //重置 tmpList 数据
+            tmpList = childList;
+            //深度 + 1
+            distanceDisplay++;
+        }
+    }
+
     /**
      * @param {array} nodes @param {string} key @param {string} value 
      * @description 找到指定 index 的节点
@@ -17,10 +48,10 @@ module.exports = function (_common, config, logger, utils) {
 
     /**
      * @param {HeapSnapshotWorker.JSHeapSnapshot} jsHeapSnapShot 
-     * @param {number} limit @param {number} rootIndex
+     * @param {number} limit
      * @description 柯里化，根据 jsHeapSnapShot 以及 index 的值计算出节点详细属性
      */
-    function serializeNode(jsHeapSnapShot, limit, rootIndex) {
+    function serializeNode(jsHeapSnapShot, limit) {
         const _cache = {};
 
         /**
@@ -28,12 +59,12 @@ module.exports = function (_common, config, logger, utils) {
          * @return {object}
          * @description 根据节点索引，得出节点详细信息
          */
-        return function (index) {
+        return function (index, need) {
             let cache = _cache[index];
             //已经计算过的数据缓存起来
             if (cache) return cache;
             //否则调用 serialize 函数序列化数据，并且缓存起来
-            cache = analysisLib.serialize(jsHeapSnapShot, index, limit, rootIndex);
+            cache = analysisLib.serialize(jsHeapSnapShot, index, limit, need);
             _cache[index] = cache;
             return cache;
         }
@@ -41,24 +72,22 @@ module.exports = function (_common, config, logger, utils) {
 
     /**
      * @param {object} heapUsed @param {function} serialize @param {array} leakPoint
-     * @param {Number} rootIndex 根节点 id
      * @return {object}
      * @description 解析出引力图所需的数据结构
      */
-    function createForceGraph(heapUsed, serialize, leakPoint, rootIndex) {
+    function createForceGraph(heapUsed, serialize, leakPoint) {
         //开始进行逻辑处理
         let forceGraphAll = {};
         let leakPointLength = leakPoint.length;
         for (let i = 0; i < leakPointLength; i++) {
             let leak = leakPoint[i];
-            let isRoot = Boolean(Number(leak.index) === rootIndex);
             let forceGraph = { nodes: [], links: [] };
             let forceMaps = {};
 
             let biggestList = {};
             let isRecorded = {};
             let distanceDisplay = 1;
-            let distanceLimit = isRoot && config.profiler.mem.optional.distance_root_limit || config.profiler.mem.optional.distance_limit;
+            let distanceLimit = config.profiler.mem.optional.distance_limit;
             let childrenLimit = config.profiler.mem.optional.node_limit;
             let leakDistanceLimit = config.profiler.mem.optional.leak_limit;
 
@@ -76,7 +105,7 @@ module.exports = function (_common, config, logger, utils) {
                     //tip: child's distance === parent.distance + 1
                     // if (children.length > 100) children = children.slice(0, 100);
                     //root节点不过滤
-                    children = isRoot && children || children.filter(item => Boolean(Number(serialize(item.index).distance) === (1 + Number(nodeDetail.distance))));
+                    children = children.filter(item => Boolean(Number(serialize(item.index).distance) === (1 + Number(nodeDetail.distance))));
                     // children.sort((o, n) => Number(serialize(o.index).retainedSize) < Number(serialize(n.index).retainedSize) ? 1 : -1);
                     // children = children.filter((item, index) => index < childrenLimit);
 
@@ -119,7 +148,7 @@ module.exports = function (_common, config, logger, utils) {
                         }
 
                         //TODO, filter reason
-                        if (!isRoot && Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)) {
+                        if (Math.abs(rootDistance - childDetail.distance) < leakDistanceLimit && biggestList[nodeDetail.index] && childDetail.retainedSize / biggestList[nodeDetail.index].retainedSize > (1 / childrenLimit)) {
                             biggestList[cIndex] = { id: childDetail.id, source: nodeDetail.index, sourceId: nodeDetail.id, distance: childDetail.distance, retainedSize: childDetail.retainedSize };
                         }
 
@@ -222,13 +251,12 @@ module.exports = function (_common, config, logger, utils) {
     }
 
     /**
-     * @param {object} heapUsed @param {function} serialize @param {array} leakPoint @param {number} rootIndex 
+     * @param {object} heapUsed @param {function} serialize @param {array} leakPoint @param
      * @description 根据上述方法，计算出最终的 force-graph 引力图计算所需数据
      */
-    function memCalculator(heapUsed, serialize, leakPoint, rootIndex) {
-        const needRoot = Boolean(config.profiler.mem.optional.need_root);
-        const searchList = needRoot && [{ index: Number(rootIndex) }].concat(leakPoint) || leakPoint;
-        const forceGraph = createForceGraph(heapUsed, serialize, searchList, rootIndex);
+    function memCalculator(heapUsed, serialize, leakPoint) {
+        const searchList = leakPoint;
+        const forceGraph = createForceGraph(heapUsed, serialize, searchList);
         return { forceGraph, searchList };
     }
 
@@ -375,18 +403,20 @@ module.exports = function (_common, config, logger, utils) {
                 const aggregates = jsHeapSnapShot._aggregates.allObjects;
 
                 //节点计算柯里化函数
-                const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit, rootIndex);
+                const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit);
 
                 //TODO
                 const heapUsed = leakPoint.reduce((pre, next) => {
                     pre[next.index] = serialize(next.index);
                     return pre;
                 }, {});
-                //加入 root 节点信息
-                heapUsed[rootIndex] = serialize(rootIndex);
+
+                //如果配置打开了 root 节点信息加入 root 节点起始的信息
+                const needRoot = Boolean(config.profiler.mem.optional.need_root);
+                needRoot && addRootDisplay(rootIndex, heapUsed, serialize);
 
                 //获取最终分析结果
-                const mem_data = memCalculator(heapUsed, serialize, leakPoint, rootIndex);
+                const mem_data = memCalculator(heapUsed, serialize, leakPoint);
                 const forceGraph = mem_data.forceGraph;
                 const searchList = mem_data.searchList.map(item => item.index);
 

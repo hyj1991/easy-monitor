@@ -3,6 +3,74 @@ import axios from 'axios';
 import router from '../main.js';
 
 /**
+ * @param {string} query @param {number} limit
+ * @description 内部方法，根据过滤条件进行过滤
+ */
+function innerCalculate(query, limit) {
+    limit = !isNaN(limit) && limit || 20;
+    const leakPoint = (this.singleProfilerData && this.singleProfilerData.leakPoint || []).map(item => item.index);
+    const singleProfilerData = this.singleProfilerData || {};
+    const heapUsed = singleProfilerData.heapUsed || {};
+
+    const list = Object.keys(heapUsed);
+    const result = { length: 0, result: [] };
+
+    /**
+     * @param {string} str
+     * @description 将字符串转换成大写
+     */
+    function _upper(str) {
+        return String(str).toUpperCase();
+    }
+
+    /**
+     * @param {string} str
+     * @description 将字符串转换成小写
+     */
+    function _lower(str) {
+        return String(str).toLowerCase();
+    }
+
+    for (let i = 0, l = list.length; i < l; i++) {
+        if (result.length > limit) break;
+
+        const detail = heapUsed[list[i]] || {};
+        if (Number(list[i]) === 0) detail.name = 'Root';
+        const key = `${detail.index} => ${detail.name}::${detail.id}${~leakPoint.indexOf(detail.index) && ` (force: ${formatSize(detail.retainedSize)})` || ``}`;
+        if (~_upper(key).indexOf(_upper(query)) || ~_lower(key).indexOf(_lower(query))) {
+            result.result.push({ value: key, label: key });
+            result.length++;
+        }
+    }
+
+    if (result.result.length === 0) result.result.push({ value: 'No Data', label: 'No Data' });
+    return result.result;
+}
+
+/**
+ * @component: views/common/profiler/mem.vue
+ * @vue-data: methods
+ * @descript: tree modal 框关闭时的回调，清除默认设置以便于下次点击
+ */
+function treeCancel() {
+    this.node_id = '';
+}
+
+/**
+ * @component: views/common/profiler/mem.vue
+ * @vue-data: methods
+ * @descript: 动态计算节点展示结果
+ */
+function remoteMethod(query) {
+    const vm = this;
+    vm.remoteLoading = true;
+    const result = innerCalculate.call(this, query);
+    vm.remoteLoading = false;
+
+    this.idListCalculate = result;
+}
+
+/**
  * @component: views/common/profiler/mem.vue
  * @vue-data: methods
  * @descript: 格式化百分数
@@ -148,8 +216,28 @@ function constructorHandle() {
  * @descript: 选中某一个 id 的节点进行引力图追踪详情
  */
 function selectHandle(id) {
-    this.modal_node_id = id;
-    this.force = true;
+    if (!id) return;
+
+    const nodeDetail = id.split(' => ');
+    //获取 index 和组装原始的 key
+    const index = nodeDetail[0];
+    const extraIndex = nodeDetail[1].indexOf(' (force:');
+    const tree_id = nodeDetail[1] && ~extraIndex && nodeDetail[1].slice(0, extraIndex) || nodeDetail[1];
+    //打开树节点
+    this.tree_id = tree_id;
+    this.tree = true;
+
+    //获取该根节点信息
+    const singleProfilerData = this.singleProfilerData || {};
+    const heapUsed = singleProfilerData.heapUsed || {};
+    const detail = heapUsed[index];
+
+    //预留 children 占位
+    this.tree_data = [{
+        index: index,
+        title: `<p style="font-size:1.0em"><strong>${tree_id}</strong>  (type: ${detail.type}, size: ${formatSize(detail.retainedSize)})</p>`,
+        children: [{ fake: true }]
+    }];
 }
 
 /**
@@ -160,6 +248,59 @@ function selectHandle(id) {
 function leakHandle(id) {
     this.modal_node_id = id;
     this.force = true;
+}
+
+/**
+ * @component: views/common/profiler/mem.vue
+ * @vue-data: methods
+ * @descript: tree 节点被点击时触发
+ */
+function onTreeSelect(obj) {
+    const index = obj.index;
+    const singleProfilerData = this.singleProfilerData || {};
+    const heapUsed = singleProfilerData.heapUsed || {};
+    //获取节点详情
+    const nodeDetail = heapUsed[index] || { children: [] };
+    const children = obj.children;
+    //设置异常下的默认数据
+    const exception = { title: `<p style="font-size:1.0em;color:#b3b3b3"><i>暂无该节点数据</i></p>`, disabled: true };
+
+    //如果子节点是占位，则替换成真正的子节点数据
+    if (children.length === 1 && children[0].fake) {
+        obj.children = nodeDetail.children.map(item => {
+            const cIndex = item.index;
+            const cDetail = heapUsed[cIndex];
+            //节点不存在则直接返回
+            if (!cDetail) return exception;
+
+            //以下是需要判断的变量
+            let disabled = false;
+            let title = `<p style="font-size:1.0em"><strong>.${item.name_or_index}</strong> => <strong>${cDetail.name}::${cDetail.id}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
+
+            //判断该节点是否循环
+            let parent = obj;
+            while (!disabled && parent) {
+                if (Number(cIndex) === Number(parent.index)) {
+                    disabled = true;
+                    title = `<p style="font-size:1.0em;color:#b3b3b3"><strong>.${item.name_or_index}</strong> => <strong>${cDetail.name}::${cDetail.id}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
+                };
+                parent = parent.parent;
+            }
+
+            return {
+                parent: obj,
+                disabled,
+                index: cIndex,
+                title,
+                children: [{ fake: true }]
+            }
+        });
+
+        //预留占位
+        if (obj.children.length === 0) {
+            obj.children = [exception];
+        }
+    }
 }
 
 /**
@@ -277,18 +418,11 @@ function leakPoint() {
  * @descript: 展示所有允许用户查询的节点列表
  */
 function idList() {
-    const singleProfilerData = this.singleProfilerData || {};
-    const heapUsed = singleProfilerData.heapUsed || {};
-    const indexList = singleProfilerData.searchList || [];
-    indexList.sort((o, n) => Number(heapUsed[o].distance) < Number(heapUsed[n].distance) ? -1 : 1);
-    return indexList.map(item => {
-        const detail = heapUsed[item] || {};
-        const data = `${detail.name}::${detail.id}`;
-        return {
-            value: data,
-            label: data
-        };
-    });
+    const idListCalculate = this.idListCalculate;
+    if (idListCalculate.length) return this.idListCalculate;
+
+    //否则返回初始化数据
+    return innerCalculate.call(this, '', 10);
 }
 
 /**
@@ -365,8 +499,9 @@ function forceGraphLeakPoint() {
 //导出 mem.vue 所需
 export default {
     methods: {
+        remoteMethod, treeCancel,
         formatPercentage, formatSize, sortBySize, checkStat,
-        typeHandle, constructorHandle, selectHandle, leakHandle
+        typeHandle, constructorHandle, selectHandle, leakHandle, onTreeSelect
     },
     computed: {
         singleProfilerData, listInfo, server_error, statistics,
