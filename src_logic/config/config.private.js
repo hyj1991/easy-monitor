@@ -201,15 +201,19 @@ module.exports = {
                     form: { data: msg }
                 },
                     function (err, res, data) {
-                        if (err) {
+                        if (err || (res && Number(res.statusCode !== 200))) {
                             //如果链接有错误，则 1s 后再次发送心跳包
                             dbl.error(`send msg: ${msg} error: ${err}`);
                             return setTimeout(_send, config.reconnect_time, msg);
                         }
                         dbl.debug(`private->_send msg: ${msg} statusCode: ${res.statusCode} receive data: ${data}`);
                         data = utils.jsonParse(data);
-                        //立即返回一个心跳包请求给服务器
-                        _send(heartBeatMessage);
+
+                        //这表示响应，偶数是请求，仅有请求才重新发送心跳包
+                        if (data.id && data.id % 2 === 0) {
+                            //立即返回一个心跳包请求给服务器
+                            _send(heartBeatMessage);
+                        }
 
 
                         //处理真正的请求
