@@ -92,7 +92,6 @@ function start() {
         if (notStream) onRegularMessage(params, config, common);
         else onStreamMessage(params, config, common);
     }
-
 }
 
 //启动计算函数

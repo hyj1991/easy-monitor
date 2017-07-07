@@ -47,7 +47,7 @@ module.exports = function (server) {
                     //针对通知客户端开始进行 profiling 操作
                     case config.message.response[3]:
                         //获取 loadingMsg
-                        let loadingMsg = config.profiler[data.raw.opt].end(data.result);
+                        const loadingMsg = config.profiler[data.raw.opt].end(data.result);
                         //根据原始参数组装出 key
                         const key = common.profiler.composeKey(lodash.merge({ opt: data.opt }, data.raw));
 

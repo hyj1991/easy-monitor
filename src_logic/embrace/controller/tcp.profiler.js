@@ -71,7 +71,15 @@ module.exports = function (server) {
                 //子进程处理数据
                 const cps = common.calculate.fork(path.join(__dirname, '../calculator.js'), { opt: data.opt, profiler: config.profiler });
                 //调用内部的 send 方法
-                cps.innerSend(profiler);
+                const error = yield cps.innerSend(profiler);
+                if (error) {
+                    const profilingErrorMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, error });
+                    yield common.socket.notifySide.apply(ctx, [profilingErrorMessage, socket]);
+                    //重置标记位，并返回错误响应给客户端
+                    doingProfiling[data.opt] = false;
+                    return;
+                }
+
                 //获取结果
                 analysis = yield new Promise((resolve, reject) => {
                     cps.on('message', co.wrap(function* (msg) {

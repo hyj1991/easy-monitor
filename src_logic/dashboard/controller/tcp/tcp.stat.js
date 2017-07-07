@@ -28,6 +28,7 @@ module.exports = function (server) {
 
             const loadingMsg = data.loadingMsg;
             const raw = data.raw;
+            const error = data.error;
 
             //根据原始参数组装出 key
             const key = common.profiler.composeKey(raw);
@@ -51,6 +52,12 @@ module.exports = function (server) {
             if (oldData.results && oldData.results.loadingMsg) {
                 oldData.results.sequence = data.sequence;
                 oldData.results.loadingMsg = loadingMsg;
+            }
+
+            //如果有错误设置错误
+            if (error) {
+                oldData.done = true;
+                oldData.error = error;
             }
 
             //更新完毕后的数据重新塞进缓存

@@ -9,17 +9,24 @@ module.exports = function (_common, config, logger, utils) {
      * @description 发送数据，进行一些预处理
      */
     function _innerSend(msg) {
-        if (!msg) return;
         const vm = this;
 
-        //对流式数据进行特殊处理
-        if (msg instanceof stream.Stream) {
-            msg.pipe(vm.stdin);
-            return;
-        }
+        return new Promise((resolve, reject) => {
+            if (!msg) return resolve('msg could not be empty!');
+            //对流式数据进行特殊处理
+            if (msg instanceof stream.Stream) {
+                msg.pipe(vm.stdin);
+                //end 时返回
+                msg.on('end', resolve);
+                //发生错误直接 reject
+                vm.stdin.on('error', resolve);
 
-        //其余数据直接发送
-        vm.send(msg);
+                return;
+            }
+
+            //其余数据直接发送
+            vm.send(msg, err => resolve);
+        });
     }
 
     /**
