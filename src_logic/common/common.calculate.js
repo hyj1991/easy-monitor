@@ -25,7 +25,7 @@ module.exports = function (_common, config, logger, utils) {
             }
 
             //其余数据直接发送
-            vm.send(msg, err => resolve);
+            vm.send(msg, resolve);
         });
     }
 
