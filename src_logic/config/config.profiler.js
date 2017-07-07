@@ -135,7 +135,7 @@ exports = module.exports = function (config) {
                 //可选配置参数
                 optional: {
                     //是否输出根节点
-                    need_root: true,
+                    need_root: false,
 
                     /** 是否允许修改 */
                     need_root_disable: false,
