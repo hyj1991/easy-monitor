@@ -121,7 +121,7 @@ app.listen(8082);
 * 优化了负责数据解析的子进程启动参数，以能够处理更大的 HeapSnapshot
 * 优化了 CPU & Memory 分析期间的中间态错误提示
 
-## IV. License
+## V. License
 
 [MIT License](LICENSE)
 
