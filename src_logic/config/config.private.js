@@ -98,7 +98,7 @@ module.exports = {
                 res.on('finish', () => {
                     dbl.debug(`private_client finish, info is: ${res.__key__}`);
                     //cacheUtils.storage.delP(res.__key__, config.cache.socket_list);
-                })
+                });
 
                 if (controller[data.msgType]) {
                     const fn = controller[data.msgType];
@@ -209,8 +209,8 @@ module.exports = {
                         dbl.debug(`private->_send msg: ${msg} statusCode: ${res.statusCode} receive data: ${data}`);
                         data = utils.jsonParse(data);
 
-                        //这表示响应，偶数是请求，仅有请求才重新发送心跳包
-                        if (data.id && data.id % 2 === 0) {
+                        //这表示响应，偶数是请求，仅有请求或者心跳包响应才重新发送心跳包
+                        if (data.id && (data.id % 2 === 0) || Number(data.id) === 1) {
                             //立即返回一个心跳包请求给服务器
                             _send(heartBeatMessage);
                         }
