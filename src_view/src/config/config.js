@@ -1,23 +1,27 @@
 import Env from './env';
 import lodash from 'lodash';
 
+//获取配置
+const options = window.options || {};
+const httpPrefix = options.http_prefix || '';
+
 let config = {
     env: Env,
     axiosPath: {
-        indexPage: '/axiosIndexPage',
-        startProfiler: '/axiosProfiler',
-        getProfilerDetail: '/axiosProfilerDetail',
-        getOverview: '/axiosOverview',
-        checkConfig: '/axiosConfig',
-        fetchConfig: '/axiosFetchConfig',
+        indexPage: `${httpPrefix}/axiosIndexPage`,
+        startProfiler: `${httpPrefix}/axiosProfiler`,
+        getProfilerDetail: `${httpPrefix}/axiosProfilerDetail`,
+        getOverview: `${httpPrefix}/axiosOverview`,
+        checkConfig: `${httpPrefix}/axiosConfig`,
+        fetchConfig: `${httpPrefix}/axiosFetchConfig`,
     },
 
     vueRouter: {
-        root: '/',
-        index: '/index',
-        profiler: '/profiler',
-        overview: '/overview',
-        document: '/document'
+        root: `${httpPrefix}/`,
+        index: `${httpPrefix}/index`,
+        profiler: `${httpPrefix}/profiler`,
+        overview: `${httpPrefix}/overview`,
+        document: `${httpPrefix}/document`
     }
 };
 

@@ -49,7 +49,7 @@
                         <Row type="flex" justify="center" class="code-row-bg">
                             <Col span=10>
                                 <Select size="small" v-model="server" filterable class="ivu-select-input-my-style" @on-change="selectHandle">
-                                    <Option v-for="item in serverList" :value="item.value" :key="item">{{ item.label }}</Option>
+                                    <Option v-for="item in serverList" :value="item.value" :key="item.label">{{ item.label }}</Option>
                                 </Select>
                             </Col>
                         </Row>

@@ -12,5 +12,5 @@ module.exports = function (app) {
         `${config.http.prefix}/${config.http.router.page_index}`,
         `${config.http.prefix}/${config.http.router.page_profiler}`,
         `${config.http.prefix}/${config.http.router.page_overview}`],
-        (req, res, next) => res.render('index'));
+        (req, res, next) => res.render('index', { config: { prefix: config.http.prefix } }));
 }

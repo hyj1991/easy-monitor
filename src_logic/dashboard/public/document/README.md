@@ -673,6 +673,27 @@ easyMonitor({
 
 !> 此模式下必须配置 ```auth.admin```，如果没有 admin 参数，则认为是第一种简单鉴权模式。cluster 模式下 ```auth``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
+### - 虚拟路径转发
+
+Easy-Monitor 使用过程中，有一部分公司对服务器开启的端口数做了限制，所以需要提供一个虚拟路径前缀，以方便 nginx 等反向代理工具根据路径做转发。
+
+可以通过在传入 Easy-Monitor 的启动参数中增加 ```http``` 节点，来开启虚拟路径转发的功能，样例如下所示:
+
+```js
+'use strict';
+const easyMonitor = require('easy-monitor');
+easyMonitor({
+    project_name: 'Game Boy',
+    http: {
+		prefix: '/monitor'
+    }
+});
+```
+
+启动后，可以在 nginx 中配置将 ```/monitor``` 转发至对应的 Easy-Monitor 启动的 Dashboard 端口即可访问。
+
+!> cluster 模式下 ```http ``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
+
 ## **IV. 通用配置**
 
 Easy-Monitor 绝大多数允许开发者定制的参数都是为了 ```cluster``` 部署和 ```定制私有通信方案``` 而设计的，而这些涉及到的参数在 [定制化](#iii-定制化) 一节中已经介绍了。
