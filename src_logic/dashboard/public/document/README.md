@@ -69,6 +69,11 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的 Node 项目进程，�
 * 优化了负责数据解析的子进程启动参数，以能够处理更大的 HeapSnapshot
 * 优化了 CPU & Memory 分析期间的中间态错误提示
 
+**v2.1.4:**
+
+* 优化了文档
+* 增加了虚拟路径转发的功能，文档增加对应的 [虚拟路径转发](#-虚拟路径转发) 功能说明
+
 ## **II. 快速开始**
 
 ### - 安装模块
@@ -691,6 +696,25 @@ easyMonitor({
 ```
 
 启动后，可以在 nginx 中配置将 ```/monitor``` 转发至对应的 Easy-Monitor 启动的 Dashboard 端口即可访问。
+
+Nginx.conf 配置转发样例如下:
+
+```bash
+server {
+	listen 80;
+	server_name www.easy-monitor.cn;
+	charset utf-8;
+	access_log  /var/log/nginx/easy_monitor.access.log  main;
+
+	location ~ ^/(monitor.*) {
+		proxy_pass http://127.0.0.1:12333/$1;
+	}
+}
+```
+
+这里可以看到，所有以 ```/monitor``` 开始的 URL，均会被转发到本地的 12333 端口，即 Easy-Monitor 的 Dashboard 启动的 Http 展示服务器的端口，这样就达到了虚拟路径转发的目的。
+
+可以点击 [虚拟路径转发部署实例](http://www.easy-monitor.cn/monitor) 来感受一番~
 
 !> cluster 模式下 ```http ``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
