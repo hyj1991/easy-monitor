@@ -121,7 +121,7 @@ app.listen(8082);
 * 优化了负责数据解析的子进程启动参数，以能够处理更大的 HeapSnapshot
 * 优化了 CPU & Memory 分析期间的中间态错误提示
 
-**v2.1.4:**
+**v2.1.5:**
 
 * 增加了虚拟路径转发的功能，[Easy-Monitor 详细文档](http://easy-monitor.cn/document) 中同步添加虚拟路径转发的功能说明
 
