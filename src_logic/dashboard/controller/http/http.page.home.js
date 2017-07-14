@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 
 module.exports = function (app) {
     //取出公共对象
@@ -13,4 +14,12 @@ module.exports = function (app) {
         `${config.http.prefix}/${config.http.router.page_profiler}`,
         `${config.http.prefix}/${config.http.router.page_overview}`],
         (req, res, next) => res.render('index', { config: { prefix: config.http.prefix } }));
+
+    /** 以下是针对配置单页路由后的静态资源文件重定向 **/
+    const forwardList = ['/echarts2.min.js', '/dist/main.css', '/dist/vendors.js', '/dist/main.js'];
+    forwardList.forEach(fd => {
+        app.get(`${config.http.prefix}${fd}`, function (req, res, next) {
+            res.sendFile(config.dashboard.public || path.join(__dirname, `../../public${fd}`));
+        });
+    });
 }
