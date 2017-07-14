@@ -123,7 +123,6 @@ app.listen(8082);
 
 **v2.1.4:**
 
-* 优化了文档
 * 增加了虚拟路径转发的功能，[Easy-Monitor 详细文档](http://easy-monitor.cn/document) 中同步添加虚拟路径转发的功能说明
 
 
