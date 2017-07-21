@@ -4,7 +4,8 @@
   "description": "a node.js performance analysis tool",
   "main": "index.js",
   "scripts": {
-    "test": "egg-bin cov"
+    "test": "egg-bin test",
+    "cov": "egg-bin cov"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,7 @@
   },
   "homepage": "https://github.com/hyj1991/easy-monitor#readme",
   "devDependencies": {
-    "egg-bin": "^3.4.0"
+    "egg-bin": "^3.7.0"
   },
   "dependencies": {
     "basic-auth": "^1.1.0",

@@ -130,6 +130,7 @@ module.exports = function (_common, config, logger, utils, cache) {
 
                 //根据 key 获取 socket
                 const socket = yield cacheUtils.storage.getP(key, config.cache.socket_list, true);
+                if (!socket) return;
                 //通知服务器
                 const ctx = { config, common, dbl };
                 yield common.socket.notifySide.apply(ctx, [msg, socket]);
@@ -139,7 +140,7 @@ module.exports = function (_common, config, logger, utils, cache) {
             //以下是有操作类型处理
             if (type === config.message.other[1]) {
                 //处理 dashboard 进程本身的更新操作
-                const data = message.msg && message.msg.data && common.utils.jsonParse(message.msg.data);
+                const data = message.msg && message.msg.data && common.utils.jsonParse(message.msg.data) || { data: {} };
                 common.fetch.modifyConfig(data.data, dbl);
                 return;
             }

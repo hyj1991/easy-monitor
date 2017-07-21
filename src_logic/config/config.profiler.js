@@ -13,7 +13,7 @@ function _gzip(data, unknown) {
 
     //否则返回 gizp 后大小
     data = typeof data === 'object' && JSON.stringify(data) || data;
-    const pretty = prettyBytes(data.length) || '';
+    const pretty = prettyBytes(data.length);
 
     return String(pretty.toUpperCase());
 }
