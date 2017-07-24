@@ -125,8 +125,29 @@ app.listen(8082);
 
 * 增加了虚拟路径转发的功能，[Easy-Monitor 详细文档](http://easy-monitor.cn/document) 中同步添加虚拟路径转发的功能说明
 
+**v2.1.6:**
 
-## V. License
+* 增加了针对核心的 common & config 模块的单元测试
+* 修正了内存 dump 的结束未删除的 bug
+* 修正了 node 版本为 6.4.0 时，fork 子进程 stdio 入参错误的问题
+
+## V. 单元 & 覆盖率测试
+
+git clone 下本项目并且安装完毕 dependence 依赖后，执行如下命令进行单元测试:
+
+```bash
+npm run test
+```
+
+也可以执行如下命令查看单元测试覆盖率:
+
+```bash
+npm run cov
+```
+
+如果执行了覆盖率测试，使用浏览器打开 **coverage/lcov-report/index.html** 文件，则可以看到详细的覆盖率信息。
+
+## VI. License
 
 [MIT License](LICENSE)
 
