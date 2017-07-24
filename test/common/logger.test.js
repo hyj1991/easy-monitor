@@ -4,7 +4,7 @@ const path = require('path');
 const rootPath = path.join(__dirname, '../../src_logic');
 const _common = require(path.join(rootPath, 'common/common'));
 
-describe('日志测试', () => {
+describe('日志模块测试', () => {
     let common = null;
     let config = null;
     let logger = null;
@@ -22,8 +22,8 @@ describe('日志测试', () => {
     });
 
     it('设置日志前缀，应该设置成功', () => {
-        logger.addPrefix('test');
-        assert(logger.prefix === '[Easy-Monitor] test');
+        logger.addPrefix('日志测试 ');
+        assert(logger.prefix === '[Easy-Monitor] 日志测试 ');
     });
 
     it('输出 Error、Warn、Info、Debug 级别日志，应该输出成功', () => {

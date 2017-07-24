@@ -6,15 +6,18 @@ const _common = require(path.join(rootPath, 'common/common'));
 
 describe('不开启第三方缓存-缓存模块测试', () => {
     let common = null;
+    let config = null;
     let cache = null;
     before(() => {
         common = _common({ pre: ['config', 'logger', 'utils', 'cache'] });
+        config = common.config;
         cache = common.cache;
     });
 
     it('初始化 cache 模块, 应该成功', function* () {
         try {
             yield cache.initP();
+            yield common.utils.cacheProcessInfoP.call({ common, config, dbl: { error: new Function(), debug: new Function() } });
             //开启第三方缓存情况下初始化
             assert(true);
         } catch (e) {

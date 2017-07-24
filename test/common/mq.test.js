@@ -14,7 +14,7 @@ describe('MQ 模块测试', () => {
             cluster: true,
             storage: {
                 type: 'redis',
-                init: function(config, logger, utils) {
+                init: function (config, logger, utils) {
                     const Event = require('events').EventEmitter;
                     const event = new Event();
                     const cache = {};
@@ -53,6 +53,7 @@ describe('MQ 模块测试', () => {
         config.storage.type = 'redis';
         try {
             yield mq.initP();
+            common.utils.startMq(mq, new Function());
             assert(true);
         } catch (e) {
             console.error(e);

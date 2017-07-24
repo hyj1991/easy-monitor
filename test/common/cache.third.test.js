@@ -55,9 +55,11 @@ describe('开启第三方缓存-缓存模块测试', () => {
         try {
             common.config.storage.type = 'redis';
             yield cache.initP();
+            yield common.utils.cacheProcessInfoP.call({ common, config, dbl: { error: new Function(), debug: new Function() } });
             //开启第三方缓存情况下初始化
             assert(true);
         } catch (e) {
+            console.error(e);
             assert(false);
         }
     });
