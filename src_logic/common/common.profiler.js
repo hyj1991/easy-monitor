@@ -349,6 +349,8 @@ module.exports = function (_common, config, logger, utils) {
                 //创建 transform 流
                 const transform = snapshot.export();
                 resolve(transform);
+                //结束后删除
+                transform.on('finish', snapshot.delete.bind(snapshot));
             }
         });
     }

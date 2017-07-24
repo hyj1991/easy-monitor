@@ -30,6 +30,8 @@ module.exports = function (_common, config, logger) {
 
         //侦听到配置的 fork_restart 事件，则重新生成子进程
         event.on(config.fork_restart, forkNode.bind(null, forkPath, argv));
+        //返回句柄
+        return dashboard;
     }
 
     /**
@@ -225,16 +227,16 @@ module.exports = function (_common, config, logger) {
     }
 
     /**
-     * @param {string} target
+     * @param {string} target @param {string | undefined} now
      * @description 校验当前 node 版本 > target
      */
-    function checkNodeVersion(target) {
+    function checkNodeVersion(target, now) {
         //不传入 target，认为正确
         if (!target) return true;
-        const now = process.versions.node;
+        now = now || process.versions.node;
 
         //两者恒等
-        if (now === target) return false;
+        if (now === target) return true;
 
         //循环判断
         let result = false;
