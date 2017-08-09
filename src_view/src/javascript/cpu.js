@@ -5,6 +5,39 @@ import router from '../main.js';
 /**
  * @component: views/common/profiler/cpu.vue
  * @vue-data: methods
+ * @descript: 对时间进行自定义排序
+ */
+function sortByTime(o, n, t) {
+    if (~o.indexOf(' s')) {
+        o = Number(o.slice(0, o.indexOf(' s'))) * 1000;
+    } else if (~o.indexOf(' min')) {
+        o = Number(o.slice(0, o.indexOf(' min'))) * 1000 * 60;
+    } else if (~o.indexOf(' h')) {
+        o = Number(o.slice(0, o.indexOf(' h'))) * 1000 * 60 * 60;
+    } else if (~o.indexOf(' ms')) {
+        o = Number(o.slice(0, o.indexOf(' ms')));
+    }
+
+    if (~n.indexOf(' s')) {
+        n = Number(n.slice(0, n.indexOf(' s'))) * 1000;
+    } else if (~n.indexOf(' min')) {
+        n = Number(n.slice(0, n.indexOf(' min'))) * 1000 * 60;
+    } else if (~n.indexOf(' h')) {
+        n = Number(n.slice(0, n.indexOf(' h'))) * 1000 * 60 * 60;
+    } else if (~n.indexOf(' ms')) {
+        n = Number(n.slice(0, n.indexOf(' ms')));
+    }
+
+    o = Number(o);
+    n = Number(n);
+
+    if (t === 'desc') return o < n ? 1 : -1;
+    if (t === 'asc') return o < n ? -1 : 1;
+}
+
+/**
+ * @component: views/common/profiler/cpu.vue
+ * @vue-data: methods
  * @descript: 对时间 ms 进行格式化
  */
 function formatTime(ts) {
@@ -171,6 +204,7 @@ function data_long() {
     return this.singleProfilerData.longFunctions.map(item => ({
         functionName: item.funcName,
         execTime: this.formatTime(item.execTime),
+        execTimeAll: this.formatTime(item.execTimeAll),
         parent: item.parent,
         execPercentage: item.percentage,
         filePath: item.url
@@ -186,6 +220,7 @@ function data_top() {
     return this.singleProfilerData.topExecutingFunctions.map(item => ({
         functionName: item.funcName,
         execTime: this.formatTime(item.execTime),
+        execTimeAll: this.formatTime(item.execTimeAll),
         parent: item.parent,
         execPercentage: item.percentage,
         filePath: item.url
@@ -208,6 +243,6 @@ function data_bail() {
 
 //导出 cpu.vue 所需
 export default {
-    methods: { formatTime, render, checkStat },
+    methods: { sortByTime, formatTime, render, checkStat },
     computed: { singleProfilerData, listInfo, server_error, data_long, data_top, data_bail }
 }

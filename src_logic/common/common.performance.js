@@ -422,6 +422,7 @@ module.exports = function (_common, config, logger, utils) {
             executeMessage.parent = parent;
             executeMessage.id = id;
             const parentDurationList = totalTimeCache.get(`${parent}::@${id}`) || 0;
+            executeMessage.execTimeAll = executeMessage.execTime;
             executeMessage.execTime = executeMessage.execTime / executeMessage.hitTimes;
             //父函数可能多次调用子函数
             const parentDuration = Array.isArray(parentDurationList) && parentDurationList.length && parentDurationList.reduce((acc, p) => acc + Number(p), 0) / executeMessage.hitTimes || 0;

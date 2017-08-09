@@ -131,6 +131,11 @@ app.listen(8082);
 * 修正了内存 dump 的结束未删除的 bug
 * 修正了 node 版本为 6.4.0 时，fork 子进程 stdio 入参错误的问题
 
+**v2.1.7:**
+
+* 增加了在线 CPU Profiling 展示 CPU 数据采集期间函数执行总时长
+* 增加了在线 CPU Profiling 展示对函数执行总时长和平均时长的升降序排序
+
 ## V. 单元 & 覆盖率测试
 
 git clone 下本项目并且安装完毕 dependence 依赖后，执行如下命令进行单元测试:

@@ -14,7 +14,7 @@
   position: relative;
   top: -1px;
 }
-p[data-v-3c49d015]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-3c49d015]{-webkit-animation:ani-spin 1s linear infinite;animation:ani-spin 1s linear infinite}@-webkit-keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}@keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}.spin-col[data-v-3c49d015]{height:100px;position:relative;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:-webkit-flex}
+p[data-v-3c49d015]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-3c49d015]{-webkit-animation:ani-spin-data-v-3c49d015 1s linear infinite;animation:ani-spin-data-v-3c49d015 1s linear infinite}@-webkit-keyframes ani-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}@keyframes ani-spin-data-v-3c49d015{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg)}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg)}to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}.spin-col[data-v-3c49d015]{height:100px;position:relative;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:-webkit-flex}
 .spin-col .ivu-alert-error {
   border: 0px;
 }

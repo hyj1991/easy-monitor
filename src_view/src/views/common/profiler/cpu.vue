@@ -20,13 +20,13 @@
 <div>
     <Row type="flex" justify="center" class="code-row-bg">
         <!-- 渲染 cpu 数据信息组件标题: pid -->
-        <Col span=16 style="text-align:center" :id="listInfo.process.href">
+        <Col span=17 style="text-align:center" :id="listInfo.process.href">
             <h2>PID-{{ pid }}</h2>
         </Col>
         <br>
 
         <!-- 渲染 cpu 数据信息组件内容 -->
-        <Col span=16>
+        <Col span=17>
             <Card>
                 <!-- loading 界面，出现条件: 1. 出现服务器错误 2. 数据请求还未结束 -->
                 <loading-spin v-if="server_error || !listInfo.done" 
@@ -100,14 +100,16 @@
                 axiosDone: { profilerDetail: false }, axiosSended: true, sequence: 0,
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
-                    { title: '平均执行时长', key: 'execTime', align: 'center' },
+                    { title: '平均执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
+                    { title: '总执行时长', key: 'execTimeAll', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
                 ],
                 columns_top: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
-                    { title: '平均执行时长', key: 'execTime', align: 'center' },
+                    { title: '平均执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
+                    { title: '总执行时长', key: 'execTimeAll', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
@@ -137,6 +139,7 @@
         components: { loadingSpin },
 
         methods: {
+            sortByTime(o, n, t) { return this.$_js.cpu.methods.sortByTime.apply(this, [o, n, t]); },
             checkStat(data) { this.$_js.cpu.methods.checkStat.call(this, data); },
             formatTime(ts) { return this.$_js.cpu.methods.formatTime.call(this, ts); },            
             render (row, column, index) { return this.$_js.cpu.methods.render.apply(this, [row, column, index]); }
