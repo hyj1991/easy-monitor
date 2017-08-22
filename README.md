@@ -89,6 +89,7 @@ app.listen(8082);
 ## III. 深度定制化 & 通用配置 &动态更新配置
 
 深度定制化开发、通用配置项以及如何动态更新配置项详见 [Easy-Monitor 详细文档](http://easy-monitor.cn/document)
+
 图文指南，参见 [Easy-Monitor 2.0: 开启你的 Node.js 内核性能监控](https://cnodejs.org/topic/594f6e21642874f845d9fe0d#599beae0bae6f2ed6f7e4c45)
 
 ## IV. 更新日志
