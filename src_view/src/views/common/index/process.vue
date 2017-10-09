@@ -26,7 +26,7 @@
                         <h2 :id="processName">{{ processName }}</h2>
                 </Button>
                 <Button :disabled="disabled" type="ghost" shape="circle" size="small" @click="radioHandle" :loading="loading" 
-                            style="position:absolute;top:22px;margin-left:20px;color:#657180;font-weight:200;">
+                            style="position:absolute;top:22px;color:#657180;font-weight:200;right: -70px;">
                         Start
                 </Button>
             </Col>
