@@ -2,7 +2,6 @@
 
 module.exports = function (_common, config, logger, utils) {
     /**
-     * 
      * @param {number} code @param {string} msg
      * @description 组装 axios 请求的响应体
      */
