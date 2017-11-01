@@ -1,5 +1,7 @@
 'use strict';
 
+let searching = 0;
+
 // 以下是公共方法
 function find_child(parent, name, attr) {
     let children = parent.childNodes;
@@ -21,6 +23,18 @@ function orig_save(e, attr, val) {
     if (e.attributes[attr] == undefined) return;
     if (val == undefined) val = e.attributes[attr].value;
     e.setAttribute("_orig_" + attr, val);
+}
+
+function g_to_text(e) {
+    var text = find_child(e, "title").firstChild.nodeValue;
+    return (text)
+}
+
+function g_to_func(e) {
+    var func = g_to_text(e);
+    if (func != null)
+        func = func.replace(/ .*/, "");
+    return (func);
 }
 
 function zoom_child(e, x, ratio) {
@@ -93,11 +107,110 @@ function zoom_reset(e) {
         orig_load(e, "width");
     }
     if (e.childNodes == undefined) return;
-    for (var i = 0, c = e.childNodes; i < c.length; i++) {
+    for (let i = 0, c = e.childNodes; i < c.length; i++) {
         zoom_reset(c[i]);
     }
 }
 
+function search(term, matchedtxt, searchbtn) {
+    let re = new RegExp(term);
+    let el = document.getElementsByTagName("g");
+    let matches = new Object();
+    let maxwidth = 0;
+    for (let i = 0; i < el.length; i++) {
+        let e = el[i];
+        if (e.attributes["class"].value != "func_g")
+            continue;
+        let func = g_to_func(e);
+        let rect = find_child(e, "rect");
+        if (rect == null) {
+            // the rect might be wrapped in an anchor
+            // if nameattr href is being used
+            if (rect = find_child(e, "a")) {
+                rect = find_child(r, "rect");
+            }
+        }
+        if (func == null || rect == null)
+            continue;
+
+        // Save max width. Only works as we have a root frame
+        let w = parseFloat(rect.attributes["width"].value);
+        if (w > maxwidth)
+            maxwidth = w;
+
+        if (func.match(re)) {
+            // highlight
+            let x = parseFloat(rect.attributes["x"].value);
+            orig_save(rect, "fill");
+            rect.attributes["fill"].value =
+                "rgb(230,0,230)";
+
+            // remember matches
+            if (matches[x] == undefined) {
+                matches[x] = w;
+            } else {
+                if (w > matches[x]) {
+                    // overwrite with parent
+                    matches[x] = w;
+                }
+            }
+            searching = 1;
+        }
+    }
+    if (!searching) {
+        matchedtxt.style["opacity"] = "1.0";
+        matchedtxt.firstChild.nodeValue = "Matched: none";
+        return;
+    }
+
+    searchbtn.style["opacity"] = "1.0";
+    searchbtn.firstChild.nodeValue = "Reset Search"
+
+    // calculate percent matched, excluding vertical overlap
+    let count = 0;
+    let lastx = -1;
+    let lastw = 0;
+    let keys = Array();
+    for (let k in matches) {
+        if (matches.hasOwnProperty(k))
+            keys.push(k);
+    }
+    // sort the matched frames by their x location
+    // ascending, then width descending
+    keys.sort(function (a, b) {
+        return a - b;
+        if (a < b || a > b)
+            return a - b;
+        return matches[b] - matches[a];
+    });
+    // Step through frames saving only the biggest bottom-up frames
+    // thanks to the sort order. This relies on the tree property
+    // where children are always smaller than their parents.
+    for (let k in keys) {
+        let x = parseFloat(keys[k]);
+        let w = matches[keys[k]];
+        if (x >= lastx + lastw) {
+            count += w;
+            lastx = x;
+            lastw = w;
+        }
+    }
+    // display matched percent
+    matchedtxt.style["opacity"] = "1.0";
+    let pct = 100 * count / maxwidth;
+    if (pct == 100)
+        pct = "100"
+    else
+        pct = pct.toFixed(1)
+    matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+}
+
+function reset_search() {
+    var el = document.getElementsByTagName("rect");
+    for (var i = 0; i < el.length; i++) {
+        orig_load(el[i], "fill")
+    }
+}
 
 /**
  * @component: views/common/profiler/flamegraph.vue
@@ -194,6 +307,52 @@ function unzoom() {
 
 /**
  * @component: views/common/profiler/flamegraph.vue
+ * @vue-data: methods
+ * @descript: 鼠标置于搜索框上
+ */
+function searchover(e) {
+    this.$refs.search.style["opacity"] = "1.0";
+}
+
+/**
+ * @component: views/common/profiler/flamegraph.vue
+ * @vue-data: methods
+ * @descript: 鼠标移开搜索框
+ */
+function searchout(e) {
+    let searchbtn = this.$refs.search;
+    if (searching) {
+        searchbtn.style["opacity"] = "1.0";
+    } else {
+        searchbtn.style["opacity"] = "0.1";
+    }
+}
+
+/**
+ * @component: views/common/profiler/flamegraph.vue
+ * @vue-data: search_prompt
+ * @descript: 开始搜索
+ */
+function search_prompt() {
+    let searchbtn = this.$refs.search;
+    let matchedtxt = this.$refs.matched;
+    if (!searching) {
+        let term = prompt("请输入需要查询的函数名: (允许输入正则表达式，例如: ^ext4_)", "");
+        if (term != null) {
+            search(term, matchedtxt, searchbtn);
+        }
+    } else {
+        reset_search();
+        searching = 0;
+        searchbtn.style["opacity"] = "0.1";
+        searchbtn.firstChild.nodeValue = "Search"
+        matchedtxt.style["opacity"] = "0.0";
+        matchedtxt.firstChild.nodeValue = "";
+    }
+}
+
+/**
+ * @component: views/common/profiler/flamegraph.vue
  * @vue-data: computed
  * @descript: 函数节点展示
  */
@@ -203,6 +362,6 @@ function nodes() {
 
 //导出 flamegraph.vue 所需
 export default {
-    methods: { s, c, zoom, unzoom },
+    methods: { s, c, zoom, unzoom, searchover, searchout, search_prompt },
     computed: { nodes }
 }
