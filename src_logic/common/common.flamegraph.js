@@ -357,6 +357,7 @@ module.exports = function (_common, config, logger, utils) {
                 , xpad: xpad
                 , titleX: opts.imagewidth / 2
                 , detailsY: imageHeight - (frameHeight / 2)
+                , viewbox: `0 0 ${opts.imagewidth} ${imageHeight}`
             })
 
             ctx.nodes = processNodes(parsed.nodes)

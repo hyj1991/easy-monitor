@@ -384,11 +384,12 @@ module.exports = function (_common, config, logger, utils) {
                 const timeout = params.timeout || optional.timeout;
                 const limit = { long: params.long_limit || optional.long_limit, top: params.top_limit || optional.top_limit, bail: params.bail_limit || optional.bail_limit };
                 const filter = config.profiler.need_filter && config.profiler.filter_function;
-                const falmegraphData = common.flamegraph.fetchSvgRenderContext(profiler);
+                const flamegraphData = common.flamegraph.fetchSvgRenderContext(profiler);
                 const resultProfiler = yield common.performance.fetchCPUProfileP.apply({ params }, [profiler, timeout, limit, filter]);
                 result.longFunctions = resultProfiler.longFunctions;
                 result.topExecutingFunctions = resultProfiler.topExecutingFunctions;
                 result.bailoutFunctions = resultProfiler.bailoutFunctions;
+                result.flamegraphData = flamegraphData;
             }
 
             //解析 mem-profiler 操作结果
