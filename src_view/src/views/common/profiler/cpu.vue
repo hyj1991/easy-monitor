@@ -59,7 +59,7 @@
                     </Row>
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=22>
-                            <flamegraph :data="singleProfilerData.flamegraphData"></flamegraph>
+                            <flamegraph :flamegraphData="singleProfilerData.flamegraphData"></flamegraph>
                         </Col>
                     </Row>
                     

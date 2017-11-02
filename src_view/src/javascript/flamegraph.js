@@ -212,6 +212,276 @@ function reset_search() {
     }
 }
 
+// flamegraph 颜色
+const colorMap = (function () {
+    function scalarReverse(s) {
+        return s.split('').reverse().join('')
+    }
+
+    function nameHash(name) {
+        let vector = 0
+        let weight = 1
+        let max = 1
+        let mod = 10
+        let ord
+
+        name = name.replace(/.(.*?)`/, '')
+        let splits = name.split('')
+        for (let i = 0; i < splits.length; i++) {
+            ord = splits[i].charCodeAt(0) % mod
+            vector += (ord / (mod++ - 1)) * weight
+            max += weight
+            weight *= 0.70
+            if (mod > 12) break
+        }
+
+        return (1 - vector / max)
+    }
+
+    function color(type, hash, name) {
+        let v1, v2, v3, r, g, b
+        if (!type) return 'rgb(0, 0, 0)'
+
+        if (hash) {
+            v1 = nameHash(name)
+            v2 = v3 = nameHash(scalarReverse(name))
+        } else {
+            v1 = Math.random() + 1
+            v2 = Math.random() + 1
+            v3 = Math.random() + 1
+        }
+
+        switch (type) {
+            case 'hot':
+                r = 205 + Math.round(50 * v3);
+                g = 0 + Math.round(230 * v1);
+                b = 0 + Math.round(55 * v2);
+                return `rgb(${r}, ${g}, ${b})`;
+            case 'mem':
+                r = 0
+                g = 190 + Math.round(50 * v2)
+                b = 0 + Math.round(210 * v1)
+                return `rgb(${r}, ${g}, ${b})`
+            case 'io':
+                r = 80 + Math.round(60 * v1)
+                g = r
+                b = 190 + Math.round(55 * v2)
+                return `rgb(${r}, ${g}, ${b})`
+            default:
+                throw new Error('Unknown type ' + type)
+        }
+    }
+
+    function colorMap(paletteMap, colorTheme, hash, func) {
+        if (paletteMap[func]) return paletteMap[func]
+        paletteMap[func] = color(colorTheme, hash, func)
+        return paletteMap[func]
+    }
+
+    return colorMap;
+})();
+
+// 获取渲染的 context 信息
+const contextify = (function () {
+
+    function oneDecimal(x) {
+        return (Math.round(x * 10) / 10)
+    }
+
+    function htmlEscape(s) {
+        return s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+    }
+
+    function contextify(parsed, opts) {
+        let each = parsed.each;
+        let time = parsed.time
+        let timeMax = opts.timemax
+        let ypadTop = opts.fontsize * 4           // pad top, include title
+        let ypadBottom = opts.fontsize * 2 + 10      // pad bottom, include labels
+        let xpad = 10
+        let xpad2 = opts.imagewidth * 0.85
+        let depthMax = 0
+        let frameHeight = opts.frameheight
+        let paletteMap = {}
+
+        if (timeMax < time && timeMax / time > 0.02) {
+            console.error('Specified timemax %d is less than actual total %d, so it will be ignored', timeMax, time)
+            timeMax = Infinity
+        }
+
+        timeMax = Math.min(time, timeMax)
+
+        let widthPerTime = (opts.imagewidth - 2 * xpad) / timeMax
+        let minWidthTime = opts.minwidth / widthPerTime
+
+        function markNarrowBlocks(nodes) {
+            function mark(k) {
+                let val = parsed.nodes[k]
+                if (typeof val.stime !== 'number') throw new Error('Missing start for ' + k)
+                if ((val.etime - val.stime) < minWidthTime) {
+                    val.narrow = true
+                    return
+                }
+
+                val.narrow = false
+                depthMax = Math.max(val.depth, depthMax)
+            }
+
+            Object.keys(nodes).forEach(mark)
+        }
+
+        // NodeProcessor proto
+        function processNode(node) {
+            let func = node.func
+            let depth = node.depth
+            let etime = node.etime
+            let stime = node.stime
+            let factor = opts.factor
+            let countName = opts.countname
+            let isRoot = !func.length && depth === 0
+
+            if (isRoot) etime = timeMax
+
+            let samples = Math.round((etime - stime * factor) * 10) / 10
+            let costTime = samples * each
+            let samplesTxt = samples.toLocaleString()
+            let pct
+            let pctTxt
+            let escapedFunc
+            let name
+            let sampleInfo
+
+            if (isRoot) {
+                name = 'all'
+                sampleInfo = `(${samplesTxt} ${countName} ${utils.formatTime(costTime)}, 100%)`
+            } else {
+                pct = Math.round((100 * samples) / (timeMax * factor) * 10) / 10
+                pctTxt = pct.toLocaleString()
+                escapedFunc = htmlEscape(func)
+
+                name = escapedFunc
+                sampleInfo = `(${samplesTxt} ${countName} ${utils.formatTime(costTime)}), ${pctTxt}%)`
+            }
+
+            let x1 = oneDecimal(xpad + stime * widthPerTime)
+            let x2 = oneDecimal(xpad + etime * widthPerTime)
+            let y1 = oneDecimal(imageHeight - ypadBottom - (depth + 1) * frameHeight + 1)
+            let y2 = oneDecimal(imageHeight - ypadBottom - depth * frameHeight)
+
+            let chars = (x2 - x1) / (opts.fontsize * opts.fontwidth)
+            let showText = false
+            let text
+
+            if (chars >= 3) { // enough room to display function name?
+                showText = true
+                text = func.slice(0, chars)
+                if (chars < func.length) text = text.slice(0, chars - 2) + '..'
+                text = htmlEscape(text)
+            }
+
+            return {
+                name: name
+                , search: name.toLowerCase()
+                , samples: sampleInfo
+                , rect_x: x1
+                , rect_y: y1
+                , rect_w: x2 - x1
+                , rect_h: y2 - y1
+                , rect_fill: colorMap(paletteMap, opts.colors, opts.hash, func)
+                , text: text
+                , text_x: x1 + (showText ? 3 : 0)
+                , text_y: 3 + (y1 + y2) / 2
+                , narrow: node.narrow
+                , func: htmlEscape(func)
+            }
+        }
+
+        function processNodes(nodes) {
+            let keys = Object.keys(nodes)
+            let acc = new Array(keys.length)
+
+            for (let i = 0; i < keys.length; i++) {
+                acc[i] = processNode(nodes[keys[i]], each)
+            }
+
+            return acc
+        }
+
+        markNarrowBlocks(parsed.nodes)
+
+        let imageHeight = (depthMax * frameHeight) + ypadTop + ypadBottom
+        let ctx = Object.assign(opts, {
+            imageheight: imageHeight
+            , xpad: xpad
+            , xpad2: xpad2
+            , titleX: opts.imagewidth / 2
+            , detailsY: imageHeight - (frameHeight / 2)
+            , viewbox: `0 0 ${opts.imagewidth} ${imageHeight}`
+        })
+
+        ctx.nodes = processNodes(parsed.nodes)
+        return ctx
+    }
+
+    return contextify;
+})();
+
+const utils = (function () {
+
+    function formatTime(ts) {
+        ts = !isNaN(ts) && ts || 0;
+        let str = '';
+        if (ts < 1e3) {
+            str = `${ts.toFixed(2)} ms`;
+        } else if (ts < 1e3 * 60) {
+            str = `${(ts / 1e3).toFixed(2)} s`;
+        } else if (ts < 1e3 * 60 * 60) {
+            str = `${(ts / (1e3 * 60)).toFixed(2)} min`;
+        } else if (ts < 1e3 * 60 * 60 * 60) {
+            str = `${(ts / (1e3 * 60 * 60)).toFixed(2)} h`;
+        } else {
+            str = `${ts.toFixed(2)} ms`;
+        }
+
+        return str;
+    }
+    return { formatTime };
+})();
+
+function narrowify(context, opts) {
+    function processNode(n) {
+        n.class = n.narrow ? 'hidden' : ''
+    }
+
+    function filterNode(n) {
+        return !n.narrow
+    }
+
+    if (opts.removenarrows) context.nodes = context.nodes.filter(filterNode)
+    else context.nodes.forEach(processNode)
+}
+
+/**
+ * @component: views/common/profiler/flamegraph.vue
+ * @vue-data: mounted
+ * @descript: 计算 svg 渲染数据
+ */
+function mounted() {
+    // 计算 svg 真实宽度
+    const imagewidth = this.$refs.svg.clientWidth;
+    this.flamegraphData.fconfig.imagewidth = imagewidth;
+    // 传输过程中 timemax 会丢失
+    this.flamegraphData.fconfig.timemax = Infinity;
+    // 计算 svg 其余渲染数据
+    const context = contextify(this.flamegraphData.parsed, this.flamegraphData.fconfig);
+    narrowify(context, this.flamegraphData.fconfig);
+
+    this.data = context;
+}
+
 /**
  * @component: views/common/profiler/flamegraph.vue
  * @vue-data: methods
@@ -362,6 +632,7 @@ function nodes() {
 
 //导出 flamegraph.vue 所需
 export default {
+    mounted,
     methods: { s, c, zoom, unzoom, searchover, searchout, search_prompt },
     computed: { nodes }
 }

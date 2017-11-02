@@ -5,8 +5,8 @@
 </style>
 
 <template>
-<svg version="1.1" id="flamegraph-svg"
-  :data-width="data.imagewidth" :width="data.imagewidth" 
+<svg ref="svg" version="1.1" id="flamegraph-svg"
+  data-width="100%" width="100%"
   :height="data.imageheight" :data-height="data.imageheight"
   :viewBox="data.viewbox" 
   xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -21,8 +21,8 @@
 <rect x="0.0" y="0" id="svg-background" :width="data.imagewidth" :height="data.imageheight" fill="url(#background)"  />
 <text text-anchor="left" :x="data.xpad" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" id="details">{{ show }}</text>
 <text text-anchor="" :x="data.xpad" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="unzoom" v-on:click="unzoom()" style="opacity:0.0;cursor:pointer" >Reset Zoom</text>
-<text text-anchor="" x="690.00" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="search" v-on:mouseover="searchover()" v-on:mouseout="searchout()" v-on:click="search_prompt()" style="opacity:0.1;cursor:pointer" >Search</text>
-<text text-anchor="" x="690.00" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="matched" >{{ matchedtxt }}</text>
+<text text-anchor="" :x="data.xpad2" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="search" v-on:mouseover="searchover()" v-on:mouseout="searchout()" v-on:click="search_prompt()" style="opacity:0.1;cursor:pointer" >Search</text>
+<text text-anchor="" :x="data.xpad2" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="matched" >{{ matchedtxt }}</text>
 
 <g v-for="(node, index) in nodes" :node-index="index" class="func_g" v-on:mouseover="s(`${node.name} ${node.samples}`)" v-on:mouseout="c()" v-on:click="zoom($event)" :data-search="node.search" :data-funcname="node.func">
   <title>{{ node.name }} {{node.samples}}</title>
@@ -37,13 +37,16 @@
     export default {
         data() {
             return {
+                data: {},
                 matchedtxt: '',
                 show: 'Easy-Monitor',
                 need_unzoom: {}
             }
         },
 
-        props: ['data'],
+        props: ['flamegraphData'],
+
+        mounted: function() { this.$_js.flamegraph.mounted.call(this); },
 
         methods: {
             s(info) { this.$_js.flamegraph.methods.s.call(this, info); },
