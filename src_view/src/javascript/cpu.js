@@ -151,8 +151,9 @@ function singleProfilerData() {
     const longFunctions = data.longFunctions || [];
     const topExecutingFunctions = data.topExecutingFunctions || [];
     const bailoutFunctions = data.bailoutFunctions || [];
+    const flamegraphData = data.flamegraphData || {};
 
-    return { timeout, longFunctions, topExecutingFunctions, bailoutFunctions };
+    return { timeout, longFunctions, topExecutingFunctions, bailoutFunctions, flamegraphData };
 }
 
 /**

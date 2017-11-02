@@ -1,6 +1,6 @@
 {
   "name": "easy-monitor",
-  "version": "2.1.7",
+  "version": "2.1.8-beta.2",
   "description": "a node.js performance analysis tool",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,13 @@
     "url": "https://github.com/hyj1991/easy-monitor/issues"
   },
   "homepage": "https://github.com/hyj1991/easy-monitor#readme",
+  "files": [
+    "src_logic",
+    "dispatch.js",
+    "index.js",
+    "LICENSE",
+    "README.md"
+  ],
   "devDependencies": {
     "egg-bin": "^3.7.0"
   },

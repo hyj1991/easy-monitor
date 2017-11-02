@@ -36,8 +36,8 @@
 
                 <!-- 数据请求结束，并且没有错误，则展示对应的信息 -->
                 <div style="text-align:center" v-if="!server_error && listInfo.done">
-                    <!-- 展示执行时长超过你预设的值的函数列表，默认为 500ms -->
-                    <Row type="flex" justify="center" class="code-row-bg">
+                    <!-- 展示执行时长超过你预设的值的函数列表，默认为 500ms，暂时去除 -->
+                    <!-- <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
                                 <span>执行大于 {{ listInfo.long.timeout }}ms 的函数</span>
@@ -49,7 +49,19 @@
                             <Table border :columns="columns_long" :data="data_long"></Table>
                         </Col>
                     </Row>
-                    <br>
+                    <br> -->
+                    <Row type="flex" justify="center" class="code-row-bg">
+                        <Col span=12>
+                            <header class="header">
+                                <span>火焰图概览</span>
+                            </header>
+                        </Col>
+                    </Row>
+                    <Row type="flex" justify="center" class="code-row-bg">
+                        <Col span=22>
+                            <flamegraph :data="singleProfilerData.flamegraphData"></flamegraph>
+                        </Col>
+                    </Row>
                     
                     <!-- 展示耗费最久的函数列表 -->
                     <Row type="flex" justify="center" class="code-row-bg">
@@ -92,6 +104,7 @@
     import axios from 'axios';
     import lodash from 'lodash';
     import loadingSpin from '../loading.vue';
+    import flamegraph from './flamegraph.vue';
 
     export default {
         data() {
@@ -136,7 +149,7 @@
 
         props: ['pid', 'rawParams', 'startProfiling'],
 
-        components: { loadingSpin },
+        components: { loadingSpin, flamegraph },
 
         methods: {
             sortByTime(o, n, t) { return this.$_js.cpu.methods.sortByTime.apply(this, [o, n, t]); },

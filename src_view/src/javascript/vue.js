@@ -10,11 +10,12 @@ import loading from './loading';
 import overview from './overview';
 import dashboard from './dashboard';
 import dynamic from './dynamic';
+import flamegraph from './flamegraph';
 
 const vue = {};
 
 function install(Vue, options) {
-    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3, loading, overview, dashboard, dynamic };
+    Vue.prototype.$_js = { cpu, mem, index, process, profiler, force, echart3, loading, overview, dashboard, dynamic, flamegraph };
 }
 
 vue.install = install;
