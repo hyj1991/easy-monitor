@@ -4,7 +4,7 @@ module.exports = {
     flamegraph: {
         fonttype: 'Verdana'     // font type
         , fontsize: 12            // base text size
-        , imagewidth: 800          // max width, pixels
+        , imagewidth: '100%'          // max width, pixels
         , frameheight: 16.0          // max height is dynamic
         , fontwidth: 0.59          // avg width relative to fontsize
         , minwidth: 0.1           // min function width, pixels
