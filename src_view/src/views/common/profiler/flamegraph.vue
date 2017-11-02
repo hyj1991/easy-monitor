@@ -23,7 +23,7 @@
 <text text-anchor="" :x="data.xpad2" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="search" v-on:mouseover="searchover()" v-on:mouseout="searchout()" v-on:click.stop="search_prompt()" style="opacity:0.1;cursor:pointer" >Search</text>
 <text text-anchor="" :x="data.xpad2" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="matched" >{{ matchedtxt }}</text>
 
-<g v-for="(node, index) in nodes" :node-index="index" class="func_g" v-on:mouseover="s(`${node.name} ${node.samples}`)" v-on:mouseout="c()" v-on:click.stop="zoom($event)" :data-search="node.search" :data-funcname="node.func">
+<g v-for="node in nodes" :node-index="node.index" class="func_g" v-on:mouseover="s(`${node.name} ${node.samples}`)" v-on:mouseout="c()" v-on:click.stop="zoom($event)" :data-search="node.search" :data-funcname="node.func">
   <title>{{ node.name }} {{node.samples}}</title>
   <rect :x="node.rect_x" :data-x="node.rect_x" :y="node.rect_y" :width="node.rect_w" :data-width="node.rect_w" :height="node.rect_h" :data-height="node.rect_h" :fill="node.rect_fill" rx="2" ry="2"></rect>
   <text :data-x="node.text_x" :x="node.text_x" :y="node.text_y" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)">{{ node.text }}</text>

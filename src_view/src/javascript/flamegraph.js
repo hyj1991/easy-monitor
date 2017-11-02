@@ -1,5 +1,6 @@
 'use strict';
 
+let width_cache = {};
 let searching = 0;
 
 // 以下是公共方法
@@ -334,7 +335,7 @@ const contextify = (function () {
         }
 
         // NodeProcessor proto
-        function processNode(node) {
+        function processNode(node, index) {
             let func = node.func
             let depth = node.depth
             let etime = node.etime
@@ -382,14 +383,22 @@ const contextify = (function () {
                 text = htmlEscape(text)
             }
 
+            let rect_w = x2 - x1;
+            let rect_h = y2 - y1;
+            if (rect_w < 1) {
+                width_cache[index] = { rect_w };
+                rect_w = 1;
+            }
+
             return {
                 name: name
+                , index: index
                 , search: name.toLowerCase()
                 , samples: sampleInfo
                 , rect_x: x1
                 , rect_y: y1
-                , rect_w: x2 - x1
-                , rect_h: y2 - y1
+                , rect_w: rect_w
+                , rect_h: rect_h
                 , rect_fill: colorMap(paletteMap, opts.colors, opts.hash, func)
                 , text: text
                 , text_x: x1 + (showText ? 3 : 0)
@@ -404,7 +413,7 @@ const contextify = (function () {
             let acc = new Array(keys.length)
 
             for (let i = 0; i < keys.length; i++) {
-                acc[i] = processNode(nodes[keys[i]], each)
+                acc[i] = processNode(nodes[keys[i]], i)
             }
 
             return acc
@@ -507,16 +516,18 @@ function c() {
  */
 function zoom(event) {
     let node = event.currentTarget;
-    if (this.need_unzoom[node.attributes['node-index'].value]) {
+    let index = node.attributes['node-index'].value;
+    if (this.need_unzoom[index]) {
         unzoom.call(this);
     }
     let svg = document.getElementsByTagName("svg")[0];
     let attr = find_child(node, "rect").attributes;
-    let width = parseFloat(attr["width"].value);
+    let width = width_cache[index] && width_cache[index].rect_w || parseFloat(attr["width"].value);
     let xmin = parseFloat(attr["x"].value);
     let xmax = parseFloat(xmin + width);
     let ymin = parseFloat(attr["y"].value);
-    let ratio = (svg.width.baseVal.value - 2 * 10) / width;
+    // 计算倍率使用原来的 width
+    let ratio = (svg.width.baseVal.value - 2 * 10) / parseFloat(attr["width"].value);;
     let fudge = 0.0001;
 
     let unzoombtn = this.$refs.unzoom;
@@ -526,9 +537,10 @@ function zoom(event) {
     let upstack;
     for (let i = 0; i < el.length; i++) {
         let e = el[i];
+        let ei = e.attributes['node-index'].value;
         let a = find_child(e, "rect").attributes;
         let ex = parseFloat(a["x"].value);
-        let ew = parseFloat(a["width"].value);
+        let ew = width_cache[ei] && width_cache[ei].rect_w || parseFloat(a["width"].value);
         if (0 == 0) {
             upstack = parseFloat(a["y"].value) > ymin;
         } else {
