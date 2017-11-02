@@ -64,7 +64,7 @@ function zoom_parent(e, svg) {
         }
         if (e.attributes["width"] != undefined) {
             orig_save(e, "width");
-            e.attributes["width"].value = parseInt(svg.width.baseVal.value) - (10 * 2);
+            e.attributes["width"].value = parseFloat(svg.width.baseVal.value) - (10 * 2);
         }
     }
     if (e.childNodes == undefined) return;
