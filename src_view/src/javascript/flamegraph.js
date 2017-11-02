@@ -2,6 +2,7 @@
 
 let width_cache = {};
 let searching = 0;
+let zoomclick = null;
 
 // 以下是公共方法
 function find_child(parent, name, attr) {
@@ -47,7 +48,10 @@ function zoom_child(e, x, ratio) {
         }
         if (e.attributes["width"] != undefined) {
             orig_save(e, "width");
-            e.attributes["width"].value = parseFloat(e.attributes["width"].value) * ratio;
+            const index = e.attributes['node-index'].value;
+            const width_origin = zoomclick != index && e.attributes["width"].value <= 1 && width_cache[index] && width_cache[index].rect_w || e.attributes["width"].value;
+            e.attributes["width"].value = parseFloat(width_origin) * ratio;
+            e.attributes["width"].value = e.attributes["width"].value < 1 && 1 || e.attributes["width"].value;
         }
     }
 
@@ -304,6 +308,7 @@ const contextify = (function () {
         let ypadBottom = opts.fontsize * 2 + 10      // pad bottom, include labels
         let xpad = 10
         let xpad2 = opts.imagewidth * 0.85
+        let xpad3 = opts.imagewidth * 0.92
         let depthMax = 0
         let frameHeight = opts.frameheight
         let paletteMap = {}
@@ -426,6 +431,7 @@ const contextify = (function () {
             imageheight: imageHeight
             , xpad: xpad
             , xpad2: xpad2
+            , xpad3: xpad3
             , titleX: opts.imagewidth / 2
             , detailsY: imageHeight - (frameHeight / 2)
             , viewbox: `0 0 ${opts.imagewidth} ${imageHeight}`
@@ -517,6 +523,7 @@ function c() {
 function zoom(event) {
     let node = event.currentTarget;
     let index = node.attributes['node-index'].value;
+    zoomclick = index;
     if (this.need_unzoom[index]) {
         unzoom.call(this);
     }
@@ -527,7 +534,7 @@ function zoom(event) {
     let xmax = parseFloat(xmin + width);
     let ymin = parseFloat(attr["y"].value);
     // 计算倍率使用原来的 width
-    let ratio = (svg.width.baseVal.value - 2 * 10) / parseFloat(attr["width"].value);;
+    let ratio = (svg.width.baseVal.value - 2 * 10) / parseFloat(attr["width"].value);
     let fudge = 0.0001;
 
     let unzoombtn = this.$refs.unzoom;
@@ -540,7 +547,7 @@ function zoom(event) {
         let ei = e.attributes['node-index'].value;
         let a = find_child(e, "rect").attributes;
         let ex = parseFloat(a["x"].value);
-        let ew = width_cache[ei] && width_cache[ei].rect_w || parseFloat(a["width"].value);
+        let ew = /* width_cache[ei] && width_cache[ei].rect_w || */ parseFloat(a["width"].value);
         if (0 == 0) {
             upstack = parseFloat(a["y"].value) > ymin;
         } else {

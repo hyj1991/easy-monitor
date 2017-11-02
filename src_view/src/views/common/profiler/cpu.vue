@@ -67,7 +67,7 @@
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
-                                <span>火焰图概览</span>
+                                <span>火焰图</span>
                             </header>
                         </Col>
                     </Row>
