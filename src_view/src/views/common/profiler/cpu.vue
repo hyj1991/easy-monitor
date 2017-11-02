@@ -3,7 +3,20 @@
         h2 {
             font-size: 3em;
         }
-    }    
+    }
+    .w-flamegraph-change{
+        position: fixed;
+        z-index: 200;
+    }
+    .mask{
+        position:fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        background-color: rgba(0, 0, 0, 0.4);
+        left: 0;
+        top: 0;
+    }       
 </style>
 <style>
     .overflow-ivu-poptip-ivu-poptip-rel {}
@@ -18,6 +31,7 @@
 
 <template>
 <div>
+    <div class="mask" v-show="showBigPic"></div>
     <Row type="flex" justify="center" class="code-row-bg">
         <!-- 渲染 cpu 数据信息组件标题: pid -->
         <Col span=17 style="text-align:center" :id="listInfo.process.href">
@@ -58,8 +72,8 @@
                         </Col>
                     </Row>
                     <Row type="flex" justify="center" class="code-row-bg">
-                        <Col span=22>
-                            <flamegraph :flamegraphData="singleProfilerData.flamegraphData"></flamegraph>
+                        <Col span=22 :class="{'w-flamegraph-change': showBigPic}">
+                            <flamegraph :flamegraphData="singleProfilerData.flamegraphData" v-on:changPic="doTransform"></flamegraph>
                         </Col>
                     </Row>
                     
@@ -108,7 +122,8 @@
 
     export default {
         data() {
-            return {                
+            return { 
+                showBigPic: false,               
                 singleProfiler: null, error: null, checkStatTimer: null,
                 axiosDone: { profilerDetail: false }, axiosSended: true, sequence: 0,
                 columns_long: [
@@ -155,7 +170,8 @@
             sortByTime(o, n, t) { return this.$_js.cpu.methods.sortByTime.apply(this, [o, n, t]); },
             checkStat(data) { this.$_js.cpu.methods.checkStat.call(this, data); },
             formatTime(ts) { return this.$_js.cpu.methods.formatTime.call(this, ts); },            
-            render (row, column, index) { return this.$_js.cpu.methods.render.apply(this, [row, column, index]); }
+            render (row, column, index) { return this.$_js.cpu.methods.render.apply(this, [row, column, index]); },
+            doTransform() {return this.$_js.cpu.methods.doTransform.call(this)}
         },
 
         computed: {

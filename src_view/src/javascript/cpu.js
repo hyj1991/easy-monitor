@@ -241,9 +241,17 @@ function data_bail() {
     }));
 }
 
+/**
+ * @component: views/common/profiler/cpu.vue
+ * @vue-data: methods
+ * @descript: data change
+ */
+function doTransform() {
+    this.$data.showBigPic = !this.$data.showBigPic
+}
 
 //导出 cpu.vue 所需
 export default {
-    methods: { sortByTime, formatTime, render, checkStat },
+    methods: { sortByTime, formatTime, render, checkStat, doTransform },
     computed: { singleProfilerData, listInfo, server_error, data_long, data_top, data_bail }
 }

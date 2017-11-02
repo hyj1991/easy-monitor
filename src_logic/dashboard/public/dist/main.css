@@ -18,7 +18,7 @@ p[data-v-3c49d015]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-3c49d015]{
 .spin-col .ivu-alert-error {
   border: 0px;
 }
-.index h1[data-v-3dee23b4]{font-size:5em}.index h2[data-v-6cadd30e]{font-size:3em}
+.index h1[data-v-3dee23b4]{font-size:5em}.index h2[data-v-6cadd30e]{font-size:3em}.w-flamegraph-change[data-v-6cadd30e]{position:fixed;z-index:200}.mask[data-v-6cadd30e]{position:fixed;width:100%;height:100%;z-index:100;background-color:rgba(0,0,0,.4);left:0;top:0}
 .overflow-ivu-poptip-ivu-poptip-rel.ivu-tooltip,
 .overflow-ivu-poptip-ivu-poptip-rel .ivu-tooltip-rel {
   display: block;
