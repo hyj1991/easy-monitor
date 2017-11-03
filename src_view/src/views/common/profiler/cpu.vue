@@ -31,7 +31,7 @@
 
 <template>
 <div>
-    <div class="mask" v-show="showBigPic"></div>
+    <div class="mask" v-show="showBigPic" @click="hideMask"></div>
     <Row type="flex" justify="center" class="code-row-bg">
         <!-- 渲染 cpu 数据信息组件标题: pid -->
         <Col span=17 style="text-align:center" :id="listInfo.process.href">
@@ -73,7 +73,9 @@
                     </Row>
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=22 :class="{'w-flamegraph-change': showBigPic}">
-                            <flamegraph :flamegraphData="singleProfilerData.flamegraphData" v-on:changPic="doTransform"></flamegraph>
+                            <div v-on:mousedown="eidtClient($event)" v-on:mouseup="recordPosition" v-on:mousemove="onDrag($event)" id="drag">
+                                <flamegraph :flamegraphData="singleProfilerData.flamegraphData" v-on:changPic="doTransform"></flamegraph>
+                            </div>
                         </Col>
                     </Row>
                     
@@ -146,7 +148,13 @@
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '逆优化原因', key: 'bailoutReason', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
-                ]
+                ],
+                //拖拽参数记录
+                transformX: 0,
+                transformY: 0,
+                flag: false,
+                currentX: 0,
+                currentY: 0
             }
         }, 
 
@@ -171,7 +179,11 @@
             checkStat(data) { this.$_js.cpu.methods.checkStat.call(this, data); },
             formatTime(ts) { return this.$_js.cpu.methods.formatTime.call(this, ts); },            
             render (row, column, index) { return this.$_js.cpu.methods.render.apply(this, [row, column, index]); },
-            doTransform() {return this.$_js.cpu.methods.doTransform.call(this)}
+            doTransform() {return this.$_js.cpu.methods.doTransform.call(this)},
+            hideMask() {return this.$_js.cpu.methods.hideMask.call(this)},
+            eidtClient(event) {return this.$_js.cpu.methods.eidtClient.call(this, event)},
+            recordPosition() {return this.$_js.cpu.methods.recordPosition.call(this)},
+            onDrag(event) {return this.$_js.cpu.methods.onDrag.call(this, event)}
         },
 
         computed: {
