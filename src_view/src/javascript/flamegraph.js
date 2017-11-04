@@ -641,7 +641,10 @@ function search_prompt() {
 }
 
 function set_parent_inf() {
-    this.$emit('changPic');
+    this.showBigPic
+        ? this.$emit('hidePic')
+        : this.$emit('changPic');
+    
 }
 
 /**

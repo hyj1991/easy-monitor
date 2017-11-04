@@ -20,7 +20,7 @@
 <rect x="0.0" y="0" id="svg-background" width="100%" :height="data.imageheight" fill="url(#background)" />
 <text text-anchor="left" :x="data.xpad" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" id="details">{{ show }}</text>
 <text text-anchor="" :x="data.xpad" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="unzoom" v-on:click.stop="unzoom()" style="opacity:0.0;cursor:pointer" >Reset Zoom</text>
-<text text-anchor="" :x="data.xpad3" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="enlarge" v-on:mouseover="zoomover()" v-on:mouseout="zoomout()" v-on:click="set_parent_inf" style="opacity:0.1;cursor:pointer">{{ enlarge }}</text>
+<text text-anchor="" :x="data.xpad3" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="enlarge" v-on:mouseover="zoomover()" v-on:mouseout="zoomout()" v-on:click.stop="set_parent_inf" style="opacity:0.1;cursor:pointer">{{ enlarge }}</text>
 <text text-anchor="" :x="data.xpad2" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="search" v-on:mouseover="searchover()" v-on:mouseout="searchout()" v-on:click.stop="search_prompt()" style="opacity:0.1;cursor:pointer" >Search</text>
 <text text-anchor="" :x="data.xpad2" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="matched" >{{ matchedtxt }}</text>
 

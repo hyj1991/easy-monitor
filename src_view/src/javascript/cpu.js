@@ -242,8 +242,7 @@ function data_bail() {
 }
 
 /**
- * @component: views/common/profiler/cpu.vue
- * @vue-data: methods
+ * @component: views/common/profiler/cpu.vues
  * @descript: data change
  */
 function doTransform() {
@@ -287,6 +286,9 @@ function recordPosition() {
         this.$data.flag = false;
         let str = document.querySelector('#drag').style.transform;
         let xyPos = str.match(/(\-)?\d+/g);
+        if (!xyPos) {
+            xyPos = [0,0]
+        }      
         [this.$data.transformX, this.$data.transformY] = xyPos;
     }
 }
