@@ -20,7 +20,7 @@
 <rect x="0.0" y="0" id="svg-background" width="100%" :height="data.imageheight" fill="url(#background)" />
 <text text-anchor="left" :x="data.xpad" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" id="details">{{ show }}</text>
 <text text-anchor="" :x="data.xpad" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="unzoom" v-on:click.stop="unzoom()" style="opacity:0.0;cursor:pointer" >Reset Zoom</text>
-<text text-anchor="" :x="data.xpad3" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="enlarge" v-on:mouseover="zoomover()" v-on:mouseout="zoomout()" v-on:click="setParentInf" style="opacity:0.1;cursor:pointer">{{ enlarge }}</text>
+<text text-anchor="" :x="data.xpad3" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="enlarge" v-on:mouseover="zoomover()" v-on:mouseout="zoomout()" v-on:click="set_parent_inf" style="opacity:0.1;cursor:pointer">{{ enlarge }}</text>
 <text text-anchor="" :x="data.xpad2" y="21" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="search" v-on:mouseover="searchover()" v-on:mouseout="searchout()" v-on:click.stop="search_prompt()" style="opacity:0.1;cursor:pointer" >Search</text>
 <text text-anchor="" :x="data.xpad2" :y="data.detailsY" :font-size="data.fontsize" :font-family="data.fonttype" fill="rgb(0,0,0)" ref="matched" >{{ matchedtxt }}</text>
 
@@ -40,12 +40,11 @@
                 data: {},
                 matchedtxt: '',
                 show: 'Easy-Monitor',
-                enlarge: 'ZoomIn',
                 need_unzoom: {}
             }
         },
 
-        props: ['flamegraphData'],
+        props: ['flamegraphData', 'showBigPic'],
 
         mounted: function() { this.$_js.flamegraph.mounted.call(this); },
 
@@ -57,13 +56,14 @@
             searchover() { this.$_js.flamegraph.methods.searchover.call(this); },
             searchout() { this.$_js.flamegraph.methods.searchout.call(this); },
             search_prompt() { this.$_js.flamegraph.methods.search_prompt.call(this); },
-            setParentInf() { this.enlarge = this.enlarge === 'ZoomIn' && 'ZoomOut' || 'ZoomIn';this.$emit('changPic'); },
+            set_parent_inf() { this.$_js.flamegraph.methods.set_parent_inf.call(this); },
             zoomover() { this.$refs.enlarge.style["opacity"] = "1.0"; },
             zoomout() { this.$refs.enlarge.style["opacity"] = "0.1"; }
         },
 
         computed: {
-            nodes(){ return this.$_js.flamegraph.computed.nodes.call(this); }
+            nodes(){ return this.$_js.flamegraph.computed.nodes.call(this); },
+            enlarge() { return this.showBigPic && 'ZoomOut' || 'ZoomIn'; }
         }
     }
 

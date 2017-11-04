@@ -288,7 +288,6 @@ function recordPosition() {
         let str = document.querySelector('#drag').style.transform;
         let xyPos = str.match(/(\-)?\d+/g);
         [this.$data.transformX, this.$data.transformY] = xyPos;
-        console.log(this.$data.transformX, this.$data.transformY)
     }
 }
 

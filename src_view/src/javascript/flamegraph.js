@@ -307,7 +307,7 @@ const contextify = (function () {
         let ypadTop = opts.fontsize * 4           // pad top, include title
         let ypadBottom = opts.fontsize * 2 + 10      // pad bottom, include labels
         let xpad = 10
-        let xpad2 = opts.imagewidth * 0.85
+        let xpad2 = opts.imagewidth * 0.82
         let xpad3 = opts.imagewidth * 0.92
         let depthMax = 0
         let frameHeight = opts.frameheight
@@ -547,7 +547,7 @@ function zoom(event) {
         let ei = e.attributes['node-index'].value;
         let a = find_child(e, "rect").attributes;
         let ex = parseFloat(a["x"].value);
-        let ew = /* width_cache[ei] && width_cache[ei].rect_w || */ parseFloat(a["width"].value);
+        let ew = width_cache[ei] && width_cache[ei].rect_w || parseFloat(a["width"].value);
         if (0 == 0) {
             upstack = parseFloat(a["y"].value) > ymin;
         } else {
@@ -640,6 +640,10 @@ function search_prompt() {
     }
 }
 
+function set_parent_inf() {
+    this.$emit('changPic');
+}
+
 /**
  * @component: views/common/profiler/flamegraph.vue
  * @vue-data: computed
@@ -652,6 +656,6 @@ function nodes() {
 //导出 flamegraph.vue 所需
 export default {
     mounted,
-    methods: { s, c, zoom, unzoom, searchover, searchout, search_prompt },
+    methods: { s, c, zoom, unzoom, searchover, searchout, search_prompt, set_parent_inf },
     computed: { nodes }
 }

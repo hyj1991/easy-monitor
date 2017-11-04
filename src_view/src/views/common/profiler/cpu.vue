@@ -74,7 +74,7 @@
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=22 :class="{'w-flamegraph-change': showBigPic}">
                             <div v-on:mousedown="eidtClient($event)" v-on:mouseup="recordPosition" v-on:mousemove="onDrag($event)" id="drag">
-                                <flamegraph :flamegraphData="singleProfilerData.flamegraphData" v-on:changPic="doTransform"></flamegraph>
+                                <flamegraph :showBigPic="showBigPic" :flamegraphData="singleProfilerData.flamegraphData" v-on:changPic="doTransform"></flamegraph>
                             </div>
                         </Col>
                     </Row>
