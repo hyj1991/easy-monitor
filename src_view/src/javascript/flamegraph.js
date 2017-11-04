@@ -427,7 +427,7 @@ const contextify = (function () {
         markNarrowBlocks(parsed.nodes)
 
         let imageHeight = (depthMax * frameHeight) + ypadTop + ypadBottom
-        let ctx = Object.assign(opts, {
+        let ctx = Object.assign({}, opts, {
             imageheight: imageHeight
             , xpad: xpad
             , xpad2: xpad2
@@ -644,7 +644,7 @@ function set_parent_inf() {
     this.showBigPic
         ? this.$emit('hidePic')
         : this.$emit('changPic');
-    
+
 }
 
 /**
@@ -656,9 +656,29 @@ function nodes() {
     return this.data.nodes || [];
 }
 
+/**
+ * @component: views/common/profiler/flamegraph.vue
+ * @vue-data: watch
+ * @descript: 缩放时进行处理
+ */
+function showBigPic() {
+    // 计算 svg 真实宽度
+    const imagewidth = this.$refs.svg.clientWidth;
+    this.flamegraphData.fconfig.imagewidth = imagewidth;
+    // 传输过程中 timemax 会丢失
+    this.flamegraphData.fconfig.timemax = Infinity;
+    // 计算 svg 其余渲染数据
+    const context = contextify(this.flamegraphData.parsed, this.flamegraphData.fconfig);
+    narrowify(context, this.flamegraphData.fconfig);
+    this.data = context;
+
+    unzoom.call(this);
+}
+
 //导出 flamegraph.vue 所需
 export default {
     mounted,
     methods: { s, c, zoom, unzoom, searchover, searchout, search_prompt, set_parent_inf },
-    computed: { nodes }
+    computed: { nodes },
+    watch: { showBigPic }
 }

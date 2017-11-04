@@ -64,6 +64,10 @@
         computed: {
             nodes(){ return this.$_js.flamegraph.computed.nodes.call(this); },
             enlarge() { return this.showBigPic && 'ZoomOut' || 'ZoomIn'; }
+        },
+
+        watch: {
+            showBigPic() { return this.$_js.flamegraph.watch.showBigPic.call(this); }
         }
     }
 
