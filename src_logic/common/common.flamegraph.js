@@ -29,11 +29,11 @@ module.exports = function (_common, config, logger, utils) {
          * @description 组装展示的 func 名称
          */
         static funcName(node, parent) {
-            let n = node.functionName
+            let n = node.functionName || 'anonymous';
             if (node.url) n += ' ' + node.url + ':' + node.lineNumber
             return {
                 func: n,
-                funcName: node.functionName,
+                funcName: node.functionName || 'anonymous',
                 bailoutReason: node.bailoutReason,
                 parent,
                 url: node.url && `(${node.url} ${node.lineNumber})` || `(${node.lineNumber})`
@@ -133,7 +133,7 @@ module.exports = function (_common, config, logger, utils) {
          * @description 深度优先遍历得到 profiling 期间的 stack 以及对应 sample 采集到的次数
          */
         _explorePaths(node, stack) {
-            const parent = stack.length === 0 && { funcName: '-' } || stack[stack.length - 1];
+            const parent = stack.length === 0 && { funcName: '-', mock: true } || stack[stack.length - 1];
             stack.push(CPULogParser.funcName(node, parent))
             // if (node.hitCount) {
             this._paths.push({ frames: stack.slice(), hitCount: node.hitCount })
@@ -177,15 +177,17 @@ module.exports = function (_common, config, logger, utils) {
             funcList.forEach(f => {
                 const execTime = (nodes[f].etime - nodes[f].stime) * each;
                 nodes[f].execTime = execTime;
-                if (!nodes[f].parent.etime) {
+                if (nodes[f].parent.mock) {
                     nodes[f].percentage = '-';
                 } else {
                     const pExecTime = (nodes[f].parent.etime - nodes[f].parent.stime) * each;
-                    nodes[f].percentage = `${((execTime / pExecTime) * 100).toFixed(2)}%`;
+                    nodes[f].percentage = pExecTime && `${((execTime / pExecTime) * 100).toFixed(2)}%` || '100%';
                 }
                 nodes[f].parent = nodes[f].parent.funcName;
             });
-            this._top = funcList.map(f => nodes[f]).sort((o, n) => o.execTime < n.execTime ? 1 : -1).filter((n, i) => i < Number(this._limit.top));
+            this._top = funcList.map(f => nodes[f]).sort((o, n) => Number(o.execTime) < Number(n.execTime) ||
+                Number(o.execTime) === Number(n.execTime) && Number(o.depth) > Number(n.depth) ? 1 : -1)
+                .filter((n, i) => i < Number(this._limit.top));
             this._bail = funcList.map(f => nodes[f]).filter(n => n.bailoutReason && n.bailoutReason !== 'no reason');
         }
 
