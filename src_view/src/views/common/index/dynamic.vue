@@ -72,25 +72,25 @@ strong {
                  s
             </p>
             <!-- Long 时间阈值 -->
-            <p style="font-size:1.1em;margin-bottom:10px">过滤执行时长阈值:
+            <!-- <p style="font-size:1.1em;margin-bottom:10px">过滤执行时长阈值:
                 <Input-number :max="100000" :min="1" v-model="cpuTimeout" :disabled="cpuTimeoutDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  ms
-            </p>
+            </p> -->
             <!-- Long 展示条数限制 -->
-            <p style="font-size:1.1em;margin-bottom:10px">执行超过阈值函数展示数量限制:
+            <!-- <p style="font-size:1.1em;margin-bottom:10px">执行超过阈值函数展示数量限制:
                 <Input-number :max="500" :min="1" v-model="cpuLong" :disabled="cpuLongDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  条
-            </p>
+            </p> -->
             <!-- Top 展示条数限制 -->
             <p style="font-size:1.1em;margin-bottom:10px">耗费最长函数展示数量限制:
                 <Input-number :max="500" :min="1" v-model="cpuTop" :disabled="cpuTopDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  条
             </p>
             <!-- Bail 展示条数限制 -->
-            <p style="font-size:1.1em;margin-bottom:20px">引擎逆优化最频繁展示数量限制:
+            <!-- <p style="font-size:1.1em;margin-bottom:20px">引擎逆优化最频繁展示数量限制:
                 <Input-number :max="500" :min="1" v-model="cpuBailout" :disabled="cpuBailoutDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  条
-            </p>
+            </p> -->
 
             <!-- Memory Profiling 配置 -->
             <header class="header">

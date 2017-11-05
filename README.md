@@ -138,6 +138,13 @@ app.listen(8082);
 * 增加了在线 CPU Profiling 展示 CPU 数据采集期间函数执行总时长
 * 增加了在线 CPU Profiling 展示对函数执行总时长和平均时长的升降序排序
 
+**v2.1.8:**
+
+* 修正了 [issue#35](https://github.com/hyj1991/easy-monitor/issues/35) 提供的 bug
+* 增加了 CPU Profiling 日志解析后的 Flamegraph 展示
+* 优化了解析算法
+* 去除了 CPU Profiling 展示韩函数执行超过阈值的列表（意义不是很大，替换为火焰图展示）
+
 ## V. 单元 & 覆盖率测试
 
 git clone 下本项目并且安装完毕 dependence 依赖后，执行如下命令进行单元测试:

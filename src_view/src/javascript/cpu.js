@@ -205,7 +205,6 @@ function data_long() {
     return this.singleProfilerData.longFunctions.map(item => ({
         functionName: item.funcName,
         execTime: this.formatTime(item.execTime),
-        execTimeAll: this.formatTime(item.execTimeAll),
         parent: item.parent,
         execPercentage: item.percentage,
         filePath: item.url
@@ -241,9 +240,74 @@ function data_bail() {
     }));
 }
 
+/**
+ * @component: views/common/profiler/cpu.vues
+ * @descript: data change
+ */
+function doTransform() {
+    this.$data.showBigPic = !this.$data.showBigPic
+}
+
+/**
+ * @component: views/common/profiler/cpu.vue
+ * @vue-data: methods
+ * @descript: hide mask
+ */
+function hideMask() {
+    this.$data.showBigPic = false;
+    this.$data.flag = false
+    this.$data.transformX = 0;
+    this.$data.transformY = 0;
+    document.querySelector('#drag').style.transform = 'translate(0px, 0px)';
+}
+
+/**
+ * @component: views/common/profiler/cpu.vue
+ * @vue-data: methods
+ * @descript: onDragDown
+ */
+function eidtClient(e) {
+    if (this.$data.showBigPic) {
+        this.$data.flag = true;
+        this.$data.currentX = e.clientX;
+        this.$data.currentY = e.clientY;
+        e.preventDefault();
+    }
+}
+
+/**
+ * @component: views/common/profiler/cpu.vue
+ * @vue-data: methods
+ * @descript: onDragUp
+ */
+function recordPosition() {
+    if (this.$data.showBigPic) {
+        this.$data.flag = false;
+        let str = document.querySelector('#drag').style.transform;
+        let xyPos = str.match(/(\-)?\d+/g);
+        if (!xyPos) {
+            xyPos = [0, 0]
+        }
+        [this.$data.transformX, this.$data.transformY] = xyPos;
+    }
+}
+
+/**
+ * @component: views/common/profiler/cpu.vue
+ * @vue-data: methods
+ * @descript: onDragMove
+ */
+function onDrag(e) {
+    if (this.$data.showBigPic && this.$data.flag) {
+        var disX = Number(this.$data.transformX) + Number(e.clientX) - Number(this.$data.currentX);
+        var disY = Number(this.$data.transformY) + Number(e.clientY) - Number(this.$data.currentY);
+
+        document.querySelector('#drag').style.transform = `translate(${disX}px, ${disY}px)`
+    }
+}
 
 //导出 cpu.vue 所需
 export default {
-    methods: { sortByTime, formatTime, render, checkStat },
+    methods: { sortByTime, formatTime, render, checkStat, doTransform, hideMask, eidtClient, recordPosition, onDrag },
     computed: { singleProfilerData, listInfo, server_error, data_long, data_top, data_bail }
 }

@@ -380,16 +380,20 @@ module.exports = function (_common, config, logger, utils) {
                 // result.topExecutingFunctions = analysisLib(profiler, 1, false, true, { limit: params.top_limit || optional.top_limit }, config.profiler.need_filter && config.profiler.filter_function);
                 // result.bailoutFunctions = analysisLib(profiler, null, true, true, { limit: params.bail_limit || optional.bail_limit }, config.profiler.need_filter && config.profiler.filter_function);
 
-                //优化后的新逻辑
+                //优化后的新逻辑，已经是老逻辑了，再去除
                 const timeout = params.timeout || optional.timeout;
                 const limit = { long: params.long_limit || optional.long_limit, top: params.top_limit || optional.top_limit, bail: params.bail_limit || optional.bail_limit };
                 const filter = config.profiler.need_filter && config.profiler.filter_function;
-                const flamegraphData = common.flamegraph.fetchSvgRenderContext(profiler);
-                const resultProfiler = yield common.performance.fetchCPUProfileP.apply({ params }, [profiler, timeout, limit, filter]);
-                result.longFunctions = resultProfiler.longFunctions;
-                result.topExecutingFunctions = resultProfiler.topExecutingFunctions;
-                result.bailoutFunctions = resultProfiler.bailoutFunctions;
-                result.flamegraphData = flamegraphData;
+                // const resultProfiler = yield common.performance.fetchCPUProfileP.apply({ params }, [profiler, timeout, limit, filter]);
+                // result.longFunctions = resultProfiler.longFunctions;
+                // result.topExecutingFunctions = resultProfiler.topExecutingFunctions;
+                // result.bailoutFunctions = resultProfiler.bailoutFunctions;
+
+                // 再次优化 cpu 日志分析算法
+                const parsed = common.flamegraph.fetchSvgRenderContext(profiler, limit, filter);
+                result.topExecutingFunctions = parsed.top;
+                result.bailoutFunctions = parsed.bail;
+                result.flamegraphData = parsed.flamegraph;
             }
 
             //解析 mem-profiler 操作结果

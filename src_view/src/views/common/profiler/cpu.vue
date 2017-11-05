@@ -3,7 +3,20 @@
         h2 {
             font-size: 3em;
         }
-    }    
+    }
+    .w-flamegraph-change{
+        position: fixed;
+        z-index: 200;
+    }
+    .mask{
+        position:fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        background-color: rgba(0, 0, 0, 0.4);
+        left: 0;
+        top: 0;
+    }       
 </style>
 <style>
     .overflow-ivu-poptip-ivu-poptip-rel {}
@@ -18,6 +31,7 @@
 
 <template>
 <div>
+    <div class="mask" v-show="showBigPic" @click="hideMask"></div>
     <Row type="flex" justify="center" class="code-row-bg">
         <!-- 渲染 cpu 数据信息组件标题: pid -->
         <Col span=17 style="text-align:center" :id="listInfo.process.href">
@@ -53,13 +67,15 @@
                     <Row type="flex" justify="center" class="code-row-bg">
                         <Col span=12>
                             <header class="header">
-                                <span>火焰图概览</span>
+                                <span>火焰图</span>
                             </header>
                         </Col>
                     </Row>
                     <Row type="flex" justify="center" class="code-row-bg">
-                        <Col span=22>
-                            <flamegraph :data="singleProfilerData.flamegraphData"></flamegraph>
+                        <Col span=22 :class="{'w-flamegraph-change': showBigPic}">
+                            <div v-on:mousedown="eidtClient($event)" v-on:mouseup="recordPosition" v-on:mousemove="onDrag($event)" id="drag">
+                                <flamegraph :showBigPic="showBigPic" :flamegraphData="singleProfilerData.flamegraphData" v-on:changPic="doTransform" v-on:hidePic="hideMask"></flamegraph>
+                            </div>
                         </Col>
                     </Row>
                     
@@ -108,12 +124,12 @@
 
     export default {
         data() {
-            return {                
+            return { 
+                showBigPic: false,               
                 singleProfiler: null, error: null, checkStatTimer: null,
                 axiosDone: { profilerDetail: false }, axiosSended: true, sequence: 0,
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
-                    { title: '平均执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '总执行时长', key: 'execTimeAll', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
@@ -121,8 +137,7 @@
                 ],
                 columns_top: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
-                    { title: '平均执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
-                    { title: '总执行时长', key: 'execTimeAll', align: 'center', sortable: true, sortMethod: this.sortByTime },
+                    { title: '总执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
@@ -131,7 +146,13 @@
                     { title: '函数名称', key: 'functionName', align: 'center' },
                     { title: '逆优化原因', key: 'bailoutReason', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }
-                ]
+                ],
+                //拖拽参数记录
+                transformX: 0,
+                transformY: 0,
+                flag: false,
+                currentX: 0,
+                currentY: 0
             }
         }, 
 
@@ -155,7 +176,12 @@
             sortByTime(o, n, t) { return this.$_js.cpu.methods.sortByTime.apply(this, [o, n, t]); },
             checkStat(data) { this.$_js.cpu.methods.checkStat.call(this, data); },
             formatTime(ts) { return this.$_js.cpu.methods.formatTime.call(this, ts); },            
-            render (row, column, index) { return this.$_js.cpu.methods.render.apply(this, [row, column, index]); }
+            render (row, column, index) { return this.$_js.cpu.methods.render.apply(this, [row, column, index]); },
+            doTransform() {return this.$_js.cpu.methods.doTransform.call(this)},
+            hideMask() {return this.$_js.cpu.methods.hideMask.call(this)},
+            eidtClient(event) {return this.$_js.cpu.methods.eidtClient.call(this, event)},
+            recordPosition() {return this.$_js.cpu.methods.recordPosition.call(this)},
+            onDrag(event) {return this.$_js.cpu.methods.onDrag.call(this, event)}
         },
 
         computed: {

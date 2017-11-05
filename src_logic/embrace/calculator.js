@@ -41,7 +41,7 @@ function analytics(profiler) {
     }]).then(analysis => {
         return sendMessage({ done: true, analysis });
     }).catch(err => {
-        common.logger.error(`child_process calculator-> analytics error: ${err}`);
+        common.logger.error(`child_process calculator-> analytics error: ${err.stack}`);
         return sendMessage({ done: true, error: err });
     }).then(() => {
         //结束并退出计算进程
