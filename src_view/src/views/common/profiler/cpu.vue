@@ -130,7 +130,6 @@
                 axiosDone: { profilerDetail: false }, axiosSended: true, sequence: 0,
                 columns_long: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
-                    { title: '平均执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '总执行时长', key: 'execTimeAll', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
@@ -138,8 +137,7 @@
                 ],
                 columns_top: [
                     { title: '函数名称', key: 'functionName', align: 'center' },
-                    { title: '平均执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
-                    { title: '总执行时长', key: 'execTimeAll', align: 'center', sortable: true, sortMethod: this.sortByTime },
+                    { title: '总执行时长', key: 'execTime', align: 'center', sortable: true, sortMethod: this.sortByTime },
                     { title: '调用者名称', key: 'parent', align: 'center' },
                     { title: '占据调用者百分比', key: 'execPercentage', align: 'center' },
                     { title: '系统路径', key: 'filePath', align: 'center', render: this.render }

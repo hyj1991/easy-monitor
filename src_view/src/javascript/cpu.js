@@ -205,7 +205,6 @@ function data_long() {
     return this.singleProfilerData.longFunctions.map(item => ({
         functionName: item.funcName,
         execTime: this.formatTime(item.execTime),
-        execTimeAll: this.formatTime(item.execTimeAll),
         parent: item.parent,
         execPercentage: item.percentage,
         filePath: item.url
@@ -287,8 +286,8 @@ function recordPosition() {
         let str = document.querySelector('#drag').style.transform;
         let xyPos = str.match(/(\-)?\d+/g);
         if (!xyPos) {
-            xyPos = [0,0]
-        }      
+            xyPos = [0, 0]
+        }
         [this.$data.transformX, this.$data.transformY] = xyPos;
     }
 }

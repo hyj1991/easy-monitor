@@ -102,7 +102,7 @@ module.exports = function (_common, config, logger, utils, cache) {
                     const returnMsg = typeof fn === 'function' && fn(socket, item.data) || false;
                     //如果 controller 返回的值是 promise，则调用 then 后再返回
                     if (common.utils.isPromise(returnMsg)) {
-                        returnMsg.then(r => r && common.socket.sendMessage(socket, r)).catch(e => dbl.error(`common.socket->onData error: ${e}`));
+                        returnMsg.then(r => r && common.socket.sendMessage(socket, r)).catch(e => dbl.error(`common.socket->onData error: ${e.stack}`));
                         return;
                     }
                     //普通对象或者字符串直接调用返回数据方法将处理数据返回给请求方

@@ -1,6 +1,5 @@
 'use strict';
 
-let width_cache = {};
 let searching = 0;
 let zoomclick = null;
 
@@ -49,9 +48,9 @@ function zoom_child(e, x, ratio) {
         if (e.attributes["width"] != undefined) {
             orig_save(e, "width");
             const index = e.attributes['node-index'].value;
-            const width_origin = zoomclick != index && e.attributes["width"].value <= 1 && width_cache[index] && width_cache[index].rect_w || e.attributes["width"].value;
+            const width_origin = e.attributes["width"].value;
             e.attributes["width"].value = parseFloat(width_origin) * ratio;
-            e.attributes["width"].value = e.attributes["width"].value < 1 && 1 || e.attributes["width"].value;
+            e.attributes["width"].value = e.attributes["width"].value;
         }
     }
 
@@ -390,10 +389,6 @@ const contextify = (function () {
 
             let rect_w = x2 - x1;
             let rect_h = y2 - y1;
-            if (rect_w < 1) {
-                width_cache[index] = { rect_w };
-                rect_w = 1;
-            }
 
             return {
                 name: name
@@ -529,7 +524,7 @@ function zoom(event) {
     }
     let svg = document.getElementsByTagName("svg")[0];
     let attr = find_child(node, "rect").attributes;
-    let width = width_cache[index] && width_cache[index].rect_w || parseFloat(attr["width"].value);
+    let width = parseFloat(attr["width"].value);
     let xmin = parseFloat(attr["x"].value);
     let xmax = parseFloat(xmin + width);
     let ymin = parseFloat(attr["y"].value);
@@ -547,7 +542,7 @@ function zoom(event) {
         let ei = e.attributes['node-index'].value;
         let a = find_child(e, "rect").attributes;
         let ex = parseFloat(a["x"].value);
-        let ew = width_cache[ei] && width_cache[ei].rect_w || parseFloat(a["width"].value);
+        let ew = parseFloat(a["width"].value);
         if (0 == 0) {
             upstack = parseFloat(a["y"].value) > ymin;
         } else {
