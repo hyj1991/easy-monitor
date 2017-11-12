@@ -55,6 +55,7 @@ function createLibrary(base, files) {
 
         const logger = preLoad[loggerIndex + 1];
 
+        const common = { getFileList, createLibrary };
         //以预加载的 common 文件为参数，加载剩余文件
         return fileList.reduce((pre, file) => {
             const basename = path.basename(file);
@@ -67,10 +68,11 @@ function createLibrary(base, files) {
             };
             try {
                 const fn = require(file);
+                preLoad.push(common);
                 pre[filename] = fn.apply(null, preLoad);
             } catch (e) { logger & logger.error(`<${basename}> load error: ${e}`) }
             return pre;
-        }, { getFileList, createLibrary })
+        }, common);
     }
 }
 

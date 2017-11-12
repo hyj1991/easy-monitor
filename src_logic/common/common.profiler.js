@@ -4,9 +4,9 @@ const co = require('co');
 发布 v8-profiler-node8 作为临时方案，等到官方修复后再恢复官方版本 */
 // const v8Profiler = require('v8-profiler');
 const v8Profiler = require('v8-profiler-node8');
-const analysisLib = require('v8-analytics');
+// const analysisLib = require('v8-analytics');
 
-module.exports = function (_common, config, logger, utils) {
+module.exports = function (_common, config, logger, utils, cache, common) {
     /**
      * @param {number} rootIndex @param {object} heapUsed @param {function} serialize
      * @description 加入从 root 节点开始的信息
@@ -64,7 +64,7 @@ module.exports = function (_common, config, logger, utils) {
             //已经计算过的数据缓存起来
             if (cache) return cache;
             //否则调用 serialize 函数序列化数据，并且缓存起来
-            cache = analysisLib.serialize(jsHeapSnapShot, index, limit, need);
+            cache = common.heap.heapNodeSerialize(jsHeapSnapShot, index, limit, need);
             _cache[index] = cache;
             return cache;
         }
@@ -359,8 +359,6 @@ module.exports = function (_common, config, logger, utils) {
      * @description 对 profiling 得到的结果进行解析
      */
     function analyticsP(type, profiler, params) {
-        const common = this.common;
-
         return co(_analysysG, type, profiler, params);
 
         /**
@@ -399,7 +397,9 @@ module.exports = function (_common, config, logger, utils) {
             //解析 mem-profiler 操作结果
             if (type === 'mem') {
                 params.limit = config.profiler.mem.optional.leakpoint_limit;
-                const memAnalytics = yield analysisLib.memAnalyticsP(profiler, params);
+                // 去除 v8-analytics 依赖
+                // const memAnalytics = yield analysisLib.memAnalyticsP(profiler, params);
+                const memAnalytics = yield common.heap.fetchHeapUsageP.call({ common }, profiler, params);
 
                 //取出分析结果
                 const leakPoint = memAnalytics.leakPoint;
