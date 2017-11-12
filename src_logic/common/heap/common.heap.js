@@ -15,6 +15,27 @@ module.exports = function (_common, config, logger, utils, cache, common) {
         kWeak: 6              // A weak reference (ignored by the GC).
     };
 
+    const HeapNodeType = {
+        '(Internalized strings)': { type: 'kStringTable', not_gc_root: true, desc: '' },
+        '(External strings)': { type: 'kExternalStringTable', not_gc_root: true, desc: '' },
+        '(Smi roots)': { type: 'kSmiRootList', not_gc_root: true, desc: '' },
+        '(Strong roots)': { type: 'kStrongRootList', not_gc_root: false, desc: 'js system object' },
+        '(Internal string)': { type: 'kInternalizedString', not_gc_root: false, desc: 'js system object' },
+        '(Bootstrapper)': { type: 'kBootstrapper', not_gc_root: false, desc: 'js system object' },
+        '(Isolate)': { type: 'kTop', not_gc_root: false, desc: 'js local' },
+        '(Relocatable)': { type: 'kRelocatable', not_gc_root: false, desc: 'js system object' },
+        '(Debugger)': { type: 'kDebug', not_gc_root: false, desc: 'js system object' },
+        '(Compilation cache)': { type: 'k(CompilationCache)', not_gc_root: false, desc: 'js system object' },
+        '(Handle scope)': { type: 'kHandleScope', not_gc_root: false, desc: 'js binding local' },
+        '(Builtins)': { type: 'kBuiltins', not_gc_root: false, desc: 'js system object' },
+        '(Global handles)': { type: 'kGlobalHandles', not_gc_root: false, desc: 'js binding global' },
+        '(Eternal handles)': { type: 'kEternalHandles', not_gc_root: false, desc: 'js binding global' },
+        '(Thread manager)': { type: 'kThreadManager', not_gc_root: false, desc: 'js system object' },
+        '(Strong roots)': { type: 'kStrongRoots', not_gc_root: false, desc: 'js system object' },
+        '(Extensions)': { type: 'kExtensions', not_gc_root: false, desc: 'js system object' },
+        '': { type: 'kUnidentified', not_gc_root: false, desc: 'unknown' }
+    }
+
     /**
      * 序列化 heap 节点
      */
@@ -139,29 +160,55 @@ module.exports = function (_common, config, logger, utils, cache, common) {
      */
     function peakLeakPoint(jsHeapSnapShot, rootIndex, limit) {
         limit = limit || 5;
-
-        let distancesList = jsHeapSnapShot._nodeDistances;
         let retainedSizeList = jsHeapSnapShot._retainedSizes;
-
-        let leakPoint = retainedSizeList.reduce((pre, next, index) => {
-            if (index === rootIndex) return pre;
-
-            if (Number(distancesList[index]) <= 1 || Number(distancesList[index]) >= 100000000) return pre;
-
-            if (pre.length < limit) {
-                pre.leakPoint.push({ index, size: next });
-                pre.length++;
-            } else {
-                pre.leakPoint.sort((o, n) => Number(o.size) < Number(n.size) ? 1 : -1);
-                if (pre.leakPoint[pre.leakPoint.length - 1].size < next) {
-                    pre.leakPoint.pop();
-                    pre.leakPoint.push({ index, size: next });
-                }
+        let root = heapNodeSerialize(jsHeapSnapShot, rootIndex);
+        let strongRoots = null;
+        for (let i = 0, e = root.children, l = e.length; i < l; i++) {
+            const edgeType = e[i].type;
+            if (edgeType === 'shortcut') {
+                continue;
             }
+            if (!strongRoots) {
+                strongRoots = heapNodeSerialize(jsHeapSnapShot, e[i].index);
+            }
+        }
 
-            return pre;
-        }, { leakPoint: [], length: 0, }).leakPoint;
+        let nodeToRootType = new Map();
+        strongRoots.children.forEach(edge => {
+            let node = heapNodeSerialize(jsHeapSnapShot, edge.index);
+            let name = node.name;
+            let ngr = true;
+            if (!HeapNodeType[name]) {
+                ngr = HeapNodeType[''].not_gc_root;
+            } else {
+                ngr = HeapNodeType[name].not_gc_root;
+            }
+            if (!ngr) {
+                nodeToRootType.set(node, HeapNodeType[name] || HeapNodeType['']);
+            }
+        });
 
+        let gcRootsList = [];
+        nodeToRootType.forEach((v, k) => {
+            k.children.forEach(e => {
+                let node = heapNodeSerialize(jsHeapSnapShot, e.index);
+                if (e.type === 'shortcut' || node.type === 'synthetic') {
+                    throw new Error('v8 heapsnapshot parser error')
+                }
+                if (e.type === 'weak') {
+                    return;
+                }
+                let rootName = null;
+                // TODO: null_value 和 the_hole_value 后续处理
+                gcRootsList.push({
+                    index: node.index,
+                    size: node.retainedSize
+                });
+            });
+        });
+
+        // 计算疑似泄漏点
+        let leakPoint = gcRootsList.sort((o, n) => o.size < n.size ? 1 : -1).filter((g, i) => i < limit);
         return leakPoint
     }
 

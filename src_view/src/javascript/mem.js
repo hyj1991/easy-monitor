@@ -321,7 +321,7 @@ function singleProfilerData() {
     //compute maxRetainedSize percentage
     const maxRetainedSize = leakPoint[0] && heapUsed[leakPoint[0].index].retainedSize || 0;
     const maxRetainedPercentage = statistics.total && this.formatPercentage(maxRetainedSize / statistics.total) || 0;
-    const maxRetainedStatus = maxRetainedPercentage < 30 && 1 || maxRetainedPercentage < 60 && 2 || 3;
+    const maxRetainedStatus = maxRetainedPercentage < 20 && 1 || maxRetainedPercentage < 60 && 2 || 3;
     const maxRetainedStatusString = maxRetainedStatus === 1 && '良好' || maxRetainedStatus === 2 && '风险' || '泄露';
     const maxRetainedColor = maxRetainedStatus === 1 && this.circle_color.healthy || maxRetainedStatus === 2 && this.circle_color.warning || this.circle_color.leaking;
     const maxRetainedString = maxRetainedPercentage <= 0 && '暂无信息' || `${maxRetainedPercentage} %`;
