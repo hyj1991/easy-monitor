@@ -1,7 +1,8 @@
 'use strict';
 const Node = require('./Node');
 const Edge = require('./Edge');
-const Identifier = require('./Identifier')
+const Identifier = require('./Identifier');
+const ObjectMarker = require('./ObjectMarker');
 
 const ROOT_NODE_ID = 0;
 const ROOT_NODE_OBJECT_ADDRESS = 1;
@@ -154,7 +155,7 @@ class Parser {
 
     // 计算可疑泄漏点使用到的数据
     this.realNodeCount = 0;
-    this.inboundIndexList = [];
+    this.inboundIndexList = {};
     this.outboundIndexList = [];
     this.gcRoots = [];
     this.heapSizeList = [];
@@ -190,6 +191,7 @@ class Parser {
     this.readNodes();
     // TODO: 这里没有把 unreachable 的节点加入 gcroots，最妥善的做法还是要加上，待补充
     this.map2ids();
+    this.createInbound();
   }
 
   getLeakMap(bigobjectId) {
@@ -198,7 +200,7 @@ class Parser {
     let leakMap = [bigobjectId];
     let nowDepth = 0;
     let parentSize = this.retainedSizes[bigobjectId + 2];
-    let bigChild = this.getChildsDetail(nodeSourceId);
+    let bigChild = this.getChildsDetail(nodeSourceId, leakMap);
     if (bigChild.length === 0) {
       return [];
     }
@@ -207,7 +209,7 @@ class Parser {
       nowDepth++;
       leakMap.push(bigChild.realId);
       parentSize = bigChild.retainedSize;
-      bigChild = this.getChildsDetail(bigChild.targetNode);
+      bigChild = this.getChildsDetail(bigChild.targetNode, leakMap);
       if (bigChild.length === 0) {
         break;
       }
@@ -216,14 +218,19 @@ class Parser {
     return leakMap;
   }
 
-  getChildsDetail(parentId) {
+  getChildsDetail(parentId, leakMap) {
     let details = [];
     let edges = this.nodeUtil.getEdges(parentId);
     for (let edge of edges) {
       let targetNode = this.edgeUtil.getTargetNode(edge);
       let realId = this.ordinalNode2realNode[targetNode];
       if (realId === -1) {
-        throw new Error('Bad Parent Id!');
+        // throw new Error('Bad Parent Id!');
+        continue;
+      }
+      // 防止重复访问
+      if (~leakMap.indexOf(realId)) {
+        continue;
       }
       details.push({ edge, targetNode, realId, retainedSize: this.retainedSizes[realId + 2] });
     }
@@ -512,6 +519,67 @@ class Parser {
       newRoots.push(idx);
     }
     this.gcRoots = newRoots;
+  }
+
+  createInbound() {
+    let oldNoOfObjects = this.identifiers.getsize();
+    const result = ObjectMarker.mark(this.gcRoots, oldNoOfObjects, this.outboundIndexList);
+    let reachable = result.reachable;
+    reachable = this.markUnreachableAsGCRoots(reachable);
+    let map = new Array(oldNoOfObjects).fill(0);
+    for (let ii = 0, jj = 0; ii < oldNoOfObjects; ii++) {
+      if (reachable[ii]) {
+        map[ii] = jj;
+        jj++;
+      } else {
+        map[ii] = -1;
+      }
+    }
+
+    for (let ii = 0; ii < oldNoOfObjects; ii++) {
+      let k = map[ii];
+      if (k < 0) {
+        continue;
+      }
+      let a = this.outboundIndexList[ii];
+      let tl = new Array(a.length).fill(0);
+      for (let jj = 0; jj < a.length; jj++) {
+        let t = map[a[jj]];
+        tl[jj] = t;
+        // w_in.log(t, k, jj == 0);
+        if (this.inboundIndexList[t]) {
+          this.inboundIndexList[t].push(k);
+        } else {
+          this.inboundIndexList[t] = [k];
+        }
+      }
+      // w_out.log(k, tl);
+    }
+  }
+
+  markUnreachableAsGCRoots(reachable) {
+    let noOfObjects = reachable.length;
+    let inbounds = new Array(noOfObjects).fill(0);
+    for (let ii = 0; ii < noOfObjects; ++ii) {
+      if (!reachable[ii]) {
+        for (let out of this.outboundIndexList[ii]) {
+          if (out != ii) {
+            if (inbounds[out] != -1)
+              inbounds[out]++;
+          }
+        }
+      }
+    }
+
+    for (let ii = 0; ii < noOfObjects; ++ii) {
+      if (!reachable[ii] && inbounds[ii] == 0) {
+        this.gcRoots.push(ii);
+      }
+    }
+
+    // 重新计算不可达节点
+    const result = ObjectMarker.mark(this.gcRoots, noOfObjects, this.outboundIndexList);
+    return result.reachable;
   }
 
   // createOutbound(objectId, references) {
