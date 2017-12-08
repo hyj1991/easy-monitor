@@ -188,6 +188,8 @@ class Parser {
     // 2.
     // this.identifiers.sort();
     this.readNodes();
+    // TODO: 这里没有把 unreachable 的节点加入 gcroots，最妥善的做法还是要加上，待补充
+    this.map2ids();
   }
 
   getLeakMap(bigobjectId) {
@@ -501,6 +503,15 @@ class Parser {
       last = current;
     }
     return objectIds;
+  }
+
+  map2ids() {
+    let newRoots = [];
+    for (let old of this.gcRoots) {
+      let idx = this.identifiers.reverse(old);
+      newRoots.push(idx);
+    }
+    this.gcRoots = newRoots;
   }
 
   // createOutbound(objectId, references) {
