@@ -99,7 +99,8 @@ const GCRootType = {
 }
 
 class Parser {
-  constructor(profile) {
+  constructor(profile, options) {
+    this.options = options;
     const snapshot = profile.snapshot;
     // 获取 strings 数组
     this.strings = profile.strings;
@@ -164,6 +165,18 @@ class Parser {
     this.heapSizeList = [];
     // 计算得到的 retained size list
     this.retainedSizes = [];
+    // 可疑泄漏点
+    this.topDominators = [];
+    //  获取饼图规整数据
+    this.statistics = {
+      total: 0,
+      v8heap: 0,
+      native: 0,
+      code: 0,
+      jsArrays: 0,
+      strings: 0,
+      system: 0
+    }
   }
 
   /**
@@ -196,31 +209,72 @@ class Parser {
     this.map2ids();
   }
 
+  /**
+   * @param {boolean} source true 表示 id 为 ordinal id，false 为 real id
+   * @desc 序列化节点信息
+   */
+  serializeNode(id, source) {
+    let ordinalNodeId = id;
+    let realId = id;
+    if (!source) {
+      ordinalNodeId = this.realNode2OrdinalNode[id];
+    } else {
+      realId = this.ordinalNode2realNode[id];
+    }
+    let name = this.nodeUtil.getName(ordinalNodeId);
+    // 名字太长的直接省略
+    if (name.length > 20) {
+      name = name.substring(0, 17) + '...'
+    }
+    return {
+      name,
+      address: this.nodeUtil.getAddress(ordinalNodeId),
+      type: this.nodeUtil.getType(ordinalNodeId),
+      retainedSize: this.retainedSizes[realId + 2],
+      edges: this.nodeUtil.getEdges(ordinalNodeId).filter((e, i) => i < this.options.limit),
+    }
+  }
+
+  /**
+   * @desc 序列化 edge 信息，这里的 id 必须是源 edges index
+   */
+  serializeEdge(id) {
+    return {
+      type: this.edgeUtil.getType(id),
+      nameOrIndex: this.edgeUtil.getNameOrIndex(id),
+      targetNode: this.edgeUtil.getTargetNode(id)
+    }
+  }
+
   getLeakMap(bigobjectId) {
     const MAX_DEPTH = 100;
     let nodeSourceId = this.realNode2OrdinalNode[bigobjectId];
-    let leakMap = [bigobjectId];
+    let record = [bigobjectId];
+    let leakMap = [{ realId: bigobjectId }];
     let nowDepth = 0;
     let parentSize = this.retainedSizes[bigobjectId + 2];
-    let bigChild = this.getChildsDetail(nodeSourceId, leakMap);
+    let bigChild = this.getChildsDetail(nodeSourceId, record);
     if (bigChild.length === 0) {
-      return [];
+      return leakMap;
     }
     bigChild = bigChild[0];
     while (nowDepth < MAX_DEPTH && (bigChild.retainedSize / parentSize > 0.7)) {
       nowDepth++;
-      leakMap.push(bigChild.realId);
+      record.push(bigChild.realId);
+      leakMap.push(bigChild);
       parentSize = bigChild.retainedSize;
-      bigChild = this.getChildsDetail(bigChild.targetNode, leakMap);
+      bigChild = this.getChildsDetail(bigChild.targetNode, record);
       if (bigChild.length === 0) {
         break;
       }
       bigChild = bigChild[0];
     }
+
+    record = null;
     return leakMap;
   }
 
-  getChildsDetail(parentId, leakMap) {
+  getChildsDetail(parentId, record) {
     let details = [];
     let edges = this.nodeUtil.getEdges(parentId);
     let maxNodeDetail = null;
@@ -232,7 +286,7 @@ class Parser {
         continue;
       }
       // 防止重复访问
-      if (~leakMap.indexOf(realId)) {
+      if (~record.indexOf(realId)) {
         continue;
       }
       let retainedSize = this.retainedSizes[realId + 2];
@@ -446,6 +500,7 @@ class Parser {
     let firstIgnoredObjectAddress = -1;
     let objectId = 0;
     for (let nodeOrdinalId = 0; nodeOrdinalId < this.nodeCount; nodeOrdinalId++) {
+      this.calculateStatics(nodeOrdinalId);
       if (!this.hasMap[nodeOrdinalId] && this.implicitMap[nodeOrdinalId] == 0) {
         const nodeType = this.nodeUtil.getType(nodeOrdinalId);
         if (nodeType == 'synthetic' || this.indirectSize[nodeOrdinalId] != -1) {
@@ -554,6 +609,31 @@ class Parser {
       outboundIndexList[real] = list;
     }
     this.outboundIndexList = outboundIndexList;
+  }
+
+  calculateStatics(nodeOrdinalId) {
+    let nodeType = this.nodeUtil.getType(nodeOrdinalId);
+    let nodeName = this.nodeUtil.getName(nodeOrdinalId);
+    let nodeSelfSize = this.nodeUtil.getSelfSize(nodeOrdinalId);
+    this.statistics.total += nodeSelfSize;
+    if (nodeName === 'Array') {
+      // TODO: 计算下属 js arrays 的大小，后续实现
+    }
+    switch (nodeType) {
+      case 'native':
+        this.statistics.native += nodeSelfSize;
+        break;
+      case 'code':
+        this.statistics.code += nodeSelfSize;
+        break;
+      case 'concatenated string':
+      case 'sliced string':
+      case 'string':
+        this.statistics.strings += nodeSelfSize;
+        break;
+      default:
+        break;
+    }
   }
 }
 

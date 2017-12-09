@@ -162,8 +162,8 @@
                         </Col>
                         <!-- show this when leaking -->
                         <Col span=8 v-if="this.process_status !== 1">
-                            <div v-for="item in leakPoint">
-                                <Button type="text" long size="small" style="height:28px" class="reset-button" @click="leakHandle(item.name)">
+                            <div v-for="(item, index) in leakPoint">
+                                <Button type="text" long size="small" style="height:28px" class="reset-button" @click="leakHandle(index)">
                                     <Alert :type="item.type" class="reset-alert">
                                         <p><Icon type="speedometer"></Icon>&nbsp;&nbsp;{{ item.name }}</p>
                                     </Alert>
@@ -227,10 +227,10 @@
             <!-- Modals Force -->
             <Modal
                 v-model="force"
-                :title="`[ ${modal_node_id} ] 引力图`"
+                :title="`引力图`"
                 width="1000">
                 <force 
-                    :forceGraph="forceGraphLeakPoint"
+                    :links="links"
                     :heapMap="singleProfilerData.heapUsed"
                     :formatSize="formatSize">
                 </force>
@@ -251,7 +251,7 @@
 <script>
     import axios from 'axios';
     import lodash from 'lodash';
-    import force from './force.vue';
+    import force from './force1.vue';
     import loadingSpin from '../loading.vue';
     import echart3 from '../echart3.vue';
 
@@ -315,7 +315,8 @@
             idList() { return this.$_js.mem.computed.idList.call(this); },
             dataConstructor() { return this.$_js.mem.computed.dataConstructor.call(this); },
             echart3Message() { return this.$_js.mem.computed.echart3Message.call(this); },
-            forceGraphLeakPoint() { return this.$_js.mem.computed.forceGraphLeakPoint.call(this); }
+            forceGraphLeakPoint() { return this.$_js.mem.computed.forceGraphLeakPoint.call(this); },
+            links() { return this.$_js.mem.computed.links.call(this); }
         }
     }
 </script>

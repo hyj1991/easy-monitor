@@ -36,7 +36,7 @@ function innerCalculate(query, limit) {
 
         const detail = heapUsed[list[i]] || {};
         if (Number(list[i]) === 0) detail.name = 'Root';
-        const key = `${detail.index} => ${detail.name}::${detail.id}${~leakPoint.indexOf(detail.index) && ` (force: ${formatSize(detail.retainedSize)})` || ``}`;
+        const key = `${detail.index} => ${detail.name}::${detail.address}${~leakPoint.indexOf(detail.index) && ` (force: ${formatSize(detail.retainedSize)})` || ``}`;
         if (~_upper(key).indexOf(_upper(query)) || ~_lower(key).indexOf(_lower(query))) {
             result.result.push({ value: key, label: key });
             result.length++;
@@ -317,9 +317,10 @@ function singleProfilerData() {
     const aggregates = data.aggregates || [];
     const searchList = data.searchList || [];
     const forceGraph = data.forceGraph || {};
+    const leakMaps = data.leakMaps || [];
 
     //compute maxRetainedSize percentage
-    const maxRetainedSize = leakPoint[0] && heapUsed[leakPoint[0].index].retainedSize || 0;
+    const maxRetainedSize = leakPoint[0] && heapUsed[leakPoint[0]].retainedSize || 0;
     const maxRetainedPercentage = statistics.total && this.formatPercentage(maxRetainedSize / statistics.total) || 0;
     const maxRetainedStatus = maxRetainedPercentage < 20 && 1 || maxRetainedPercentage < 60 && 2 || 3;
     const maxRetainedStatusString = maxRetainedStatus === 1 && '良好' || maxRetainedStatus === 2 && '风险' || '泄露';
@@ -333,7 +334,7 @@ function singleProfilerData() {
     }
 
     this.process_status = maxRetainedStatus;
-    return { maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex, aggregates, forceGraph, searchList };
+    return { maxRetainedInfo, statistics, leakPoint, heapUsed, rootIndex, aggregates, forceGraph, searchList, leakMaps };
 }
 
 /**
@@ -401,12 +402,12 @@ function leakPoint() {
     const leakPoint = this.singleProfilerData && this.singleProfilerData.leakPoint || [];
     const heapUsed = this.singleProfilerData.heapUsed;
     return leakPoint.reduce((pre, next) => {
-        const detail = heapUsed[next.index] || { retainedSize: 0 };
+        const detail = heapUsed[next] || { retainedSize: 0 };
         const percentage = this.statistics.total && this.formatPercentage(detail.retainedSize / this.statistics.total) || 0;
         const status = percentage < 60 && 2 || 3;
         const type = status === 2 && 'warning' || 'error';
-        const name = `${detail.name}::${detail.id}`;
-        const id = detail.id;
+        const name = `${detail.name}::${detail.address}`;
+        const id = detail.address;
         pre.push({ type, name, id });
         return pre;
     }, []).filter((item, index) => index < 5);
@@ -495,6 +496,15 @@ function forceGraphLeakPoint() {
     return leakGraph;
 }
 
+/**
+ * @component: views/common/profiler/mem.vue
+ * @vue-data: computed
+ * @descript: 获取引力图关系列表
+ */
+function links() {
+    const leakMaps = this.singleProfilerData.leakMaps;
+    return leakMaps && leakMaps[this.modal_node_id] || '';
+}
 
 //导出 mem.vue 所需
 export default {
@@ -504,7 +514,7 @@ export default {
         typeHandle, constructorHandle, selectHandle, leakHandle, onTreeSelect
     },
     computed: {
-        singleProfilerData, listInfo, server_error, statistics,
+        singleProfilerData, listInfo, server_error, statistics, links,
         leakPoint, idList, dataConstructor, echart3Message, forceGraphLeakPoint
     }
 }

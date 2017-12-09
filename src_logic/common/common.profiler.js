@@ -399,12 +399,40 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                 params.limit = config.profiler.mem.optional.leakpoint_limit;
                 // 去除 v8-analytics 依赖
                 // const memAnalytics = yield analysisLib.memAnalyticsP(profiler, params);
-                const memAnalytics = yield common.heap.fetchHeapUsageP.call({ common }, profiler, params);
+                // 后面会彻底去除此算法
+                // const memAnalytics = yield common.heap.fetchHeapUsageP.call({ common }, profiler, params);
+                // 引入新的算法，以后优化的方向
+                const parser = yield common.parser.fetchParserP(profiler, params);
 
                 //取出分析结果
-                const leakPoint = memAnalytics.leakPoint;
-                const rootIndex = Number(memAnalytics.rootIndex);
-                let jsHeapSnapShot = memAnalytics.jsHeapSnapShot;
+                // 注意 leakPoint 保存的是泄漏起始点的 realId
+                let heapUsed = {};
+                const leakPoints = parser.topDominators;
+                const leakMaps = leakPoints.map(point => {
+                    return parser.getLeakMap(point).map((m, i, a) => {
+                        heapUsed[m.realId] = parser.serializeNode(m.realId);
+                        if (a.length === 1) {
+                            return { source: m.realId };
+                        }
+                        if (a[i + 1]) {
+                            heapUsed[m.realId] = parser.serializeNode(a[i + 1].realId);
+                            return {
+                                source: m.realId,
+                                target: a[i + 1].realId,
+                                edge: a[i + 1].edge && parser.serializeEdge(a[i + 1].edge).nameOrIndex || false
+                            }
+                        }
+                        return false;
+                    }).filter(item => item);
+                });
+
+                // rootIndex 对应的是 ordinal id
+                const rootIndex = parser.rootNodeIndex;
+                result.leakPoint = leakPoints;
+                result.leakMaps = leakMaps;
+                result.heapUsed = heapUsed;
+                result.statistics = parser.statistics;
+                return result;
 
                 //根据分析结果初步计算属性
                 const statistics = jsHeapSnapShot._statistics;
@@ -414,10 +442,10 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                 const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit);
 
                 //TODO
-                const heapUsed = leakPoint.reduce((pre, next) => {
-                    pre[next.index] = serialize(next.index);
-                    return pre;
-                }, {});
+                // const heapUsed = leakPoint.reduce((pre, next) => {
+                //     pre[next.index] = serialize(next.index);
+                //     return pre;
+                // }, {});
 
                 //如果配置打开了 root 节点信息加入 root 节点起始的信息
                 const needRoot = Boolean(config.profiler.mem.optional.need_root);
