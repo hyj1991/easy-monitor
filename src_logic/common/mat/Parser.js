@@ -348,6 +348,9 @@ class Parser {
         this.addGCRoot(targetNode, v.value, rootName);
       }
     });
+
+    // 使用完毕后释放掉此内存
+    this.gcRootsMap = null;
   }
 
   /**
@@ -381,6 +384,8 @@ class Parser {
       // 标明此 node 存在 map 边
       this.hasMap[fromNode] = true;
     }
+    // 使用完毕后释放掉内存
+    this.edgeFromNodeIndexs = null;
   }
 
   reportInstances() {
@@ -428,6 +433,9 @@ class Parser {
     if (isEmpty) {
       throw new Error('SnapshotException');
     }
+
+    // 使用完毕后释放掉内存
+    this.namedRoots = null;
   }
 
   /**
@@ -461,6 +469,11 @@ class Parser {
     }
     // 获取过滤后真实的 node 节点数
     this.realNodeCount = objectId;
+
+    // 使用完毕后释放掉此内存
+    this.hasMap = null;
+    this.implicitMap = null;
+    this.indirectSize = null;
   }
 
   readEdges(nodeOrdinalId, objectId) {
