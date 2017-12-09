@@ -1,8 +1,6 @@
 'use strict';
 const Node = require('./Node');
 const Edge = require('./Edge');
-const Identifier = require('./Identifier');
-const ObjectMarker = require('./ObjectMarker');
 
 const ROOT_NODE_ID = 0;
 const ROOT_NODE_OBJECT_ADDRESS = 1;
@@ -143,7 +141,6 @@ class Parser {
     this.edgeUtil = new Edge(this);
 
     // 临时中间变量
-    this.identifiers = new Identifier();
     this.namedRoots = new Map();
     this.hasMap = new Array(this.nodeCount).fill(false);
     this.implicitMap = new Array(this.nodeCount).fill(0);
@@ -154,11 +151,17 @@ class Parser {
     this.ordinalNode2realNode = new Array(this.nodeCount).fill(-1);
 
     // 计算可疑泄漏点使用到的数据
+    // 真实 node 数
     this.realNodeCount = 0;
+    // inbound list 为 real id -> [real id, ...]
     this.inboundIndexList = {};
-    this.outboundIndexList = [];
+    // outbound list 为 real id -> [real id, ...]
+    this.outboundIndexList = {};
+    // gc roots 里面的 ordinal id -> real id
     this.gcRoots = [];
+    // 真实 node id -> node self size
     this.heapSizeList = [];
+    // 计算得到的 retained size list
     this.retainedSizes = [];
   }
 
@@ -187,11 +190,9 @@ class Parser {
     this.readMaps();
     this.reportInstances();
     // 2.
-    // this.identifiers.sort();
     this.readNodes();
     // TODO: 这里没有把 unreachable 的节点加入 gcroots，最妥善的做法还是要加上，待补充
     this.map2ids();
-    this.createInbound();
   }
 
   getLeakMap(bigobjectId) {
@@ -326,16 +327,10 @@ class Parser {
         if (rootName === null) {
           // rootName = this.edgeUtil.getNameOrIndex(edge);
         }
-        this.addGCRoot(this.nodeUtil.getAddress(targetNode), v.value, rootName);
+        // this.addGCRoot(this.nodeUtil.getAddress(targetNode), v.value, rootName);
+        this.addGCRoot(targetNode, v.value, rootName);
       }
     });
-
-    if (!foundNull) {
-      this.addGCRoot(this.namedRoots.get('instanceof_cache_answer'), GCRootInfo.JS_SYSTEM_OBJ, 'null_value');
-    }
-    if (!foundTheHole) {
-      this.addGCRoot(this.namedRoots.get('instanceof_cache_map'), GCRootInfo.JS_SYSTEM_OBJ, 'the_hole_value');
-    }
   }
 
   /**
@@ -380,7 +375,6 @@ class Parser {
     for (let nodeOrdinalId = 0; nodeOrdinalId < this.nodeCount; nodeOrdinalId++) {
       if (this.hasMap[nodeOrdinalId]) {
         isEmpty = false;
-        this.identifiers.add(this.nodeUtil.getAddress(nodeOrdinalId));
         continue;
       }
       const nodeType = this.nodeUtil.getType(nodeOrdinalId);
@@ -411,7 +405,6 @@ class Parser {
       }
 
       isEmpty = false;
-      this.identifiers.add(this.nodeUtil.getAddress(nodeOrdinalId));
     }
     // 不可能为空
     if (isEmpty) {
@@ -441,17 +434,17 @@ class Parser {
         continue;
       }
       let objectAddress = this.nodeUtil.getAddress(nodeOrdinalId);
-      objectId = this.identifiers.reverse(objectAddress);
       this.realNode2OrdinalNode[objectId] = nodeOrdinalId;
       this.ordinalNode2realNode[nodeOrdinalId] = objectId;
       const newReferences = this.readEdges(nodeOrdinalId, objectId);
       // 获取过滤后真实的 node outbound list
-      this.outboundIndexList[objectId] = this.log(newReferences);
+      this.outboundIndexList[objectId] = newReferences;
       // 获取过滤后真实的 node self size list
       this.heapSizeList[objectId] = this.nodeUtil.getSelfSize(nodeOrdinalId);
+      objectId++;
     }
     // 获取过滤后真实的 node 节点数
-    this.realNodeCount = objectId + 1;
+    this.realNodeCount = objectId;
   }
 
   readEdges(nodeOrdinalId, objectId) {
@@ -480,131 +473,61 @@ class Parser {
 
       // 这里处理是为了把第一条边设置为 map 边，由于之前已经排除掉了没有 map 边的情况，所以一定会存在
       if (edgeType === 'internal' && edgeName === 'map') {
-        newReferences.unshift(targetNodeAddress);
+        newReferences.unshift(targetNode);
       } else {
-        newReferences.push(targetNodeAddress);
+        newReferences.push(targetNode);
+      }
+
+      let inbound = this.inboundIndexList[targetNode];
+      if (inbound) {
+        if (~inbound.indexOf(nodeOrdinalId)) {
+
+        } else {
+          inbound.push(nodeOrdinalId);
+        }
+      } else {
+        this.inboundIndexList[targetNode] = [nodeOrdinalId];
       }
     }
     return newReferences;
   }
 
-  log(references) {
-    let pseudo = references[0];
-    // 按照自增进行排序（所谓的升序）
-    references.sort((o, n) => Number(o) < Number(n) ? -1 : 1);
-
-    let objectIds = new Array(references.length).fill(0);
-    let length = 1;
-
-    let current = 0;
-    let last = references[0] - 1;
-    for (let ii = 0; ii < objectIds.length; ii++) {
-      current = references[ii];
-      if (last != current) {
-        let objectIdTmp = this.identifiers.reverse(current);
-        if (objectIdTmp >= 0) {
-          let jj = (current == pseudo) ? 0 : length++;
-          objectIds[jj] = objectIdTmp;
-        }
-      }
-      last = current;
-    }
-    return objectIds;
-  }
-
   map2ids() {
+    // 1.将 gc roots 里面的 ordinal id -> real id
     let newRoots = [];
     for (let old of this.gcRoots) {
-      let idx = this.identifiers.reverse(old);
+      let idx = this.ordinalNode2realNode[old];
       newRoots.push(idx);
     }
     this.gcRoots = newRoots;
+
+    // 2.将 inboundIndexList 里面的 ordinal id -> real id
+    let inboundIndexList = {};
+    let allKeys1 = Object.keys(this.inboundIndexList);
+    for (let ordinal of allKeys1) {
+      let list = [];
+      let idx = this.ordinalNode2realNode[ordinal];
+      for (let ordinalIndex of this.inboundIndexList[ordinal]) {
+        let idx = this.ordinalNode2realNode[ordinalIndex];
+        list.push(idx);
+      }
+      inboundIndexList[idx] = list;
+    }
+    this.inboundIndexList = inboundIndexList;
+
+    // 3.将 outboundIndexList 里面的 oridinal id -> real id
+    let outboundIndexList = {};
+    let allKeys2 = Object.keys(this.outboundIndexList);
+    for (let real of allKeys2) {
+      let list = [];
+      for (let ordinalIndex of this.outboundIndexList[real]) {
+        let idx = this.ordinalNode2realNode[ordinalIndex];
+        list.push(idx);
+      }
+      outboundIndexList[real] = list;
+    }
+    this.outboundIndexList = outboundIndexList;
   }
-
-  createInbound() {
-    let oldNoOfObjects = this.identifiers.getsize();
-    const result = ObjectMarker.mark(this.gcRoots, oldNoOfObjects, this.outboundIndexList);
-    let reachable = result.reachable;
-    reachable = this.markUnreachableAsGCRoots(reachable);
-    let map = new Array(oldNoOfObjects).fill(0);
-    for (let ii = 0, jj = 0; ii < oldNoOfObjects; ii++) {
-      if (reachable[ii]) {
-        map[ii] = jj;
-        jj++;
-      } else {
-        map[ii] = -1;
-      }
-    }
-
-    for (let ii = 0; ii < oldNoOfObjects; ii++) {
-      let k = map[ii];
-      if (k < 0) {
-        continue;
-      }
-      let a = this.outboundIndexList[ii];
-      let tl = new Array(a.length).fill(0);
-      for (let jj = 0; jj < a.length; jj++) {
-        let t = map[a[jj]];
-        tl[jj] = t;
-        // w_in.log(t, k, jj == 0);
-        if (this.inboundIndexList[t]) {
-          this.inboundIndexList[t].push(k);
-        } else {
-          this.inboundIndexList[t] = [k];
-        }
-      }
-      // w_out.log(k, tl);
-    }
-  }
-
-  markUnreachableAsGCRoots(reachable) {
-    let noOfObjects = reachable.length;
-    let inbounds = new Array(noOfObjects).fill(0);
-    for (let ii = 0; ii < noOfObjects; ++ii) {
-      if (!reachable[ii]) {
-        for (let out of this.outboundIndexList[ii]) {
-          if (out != ii) {
-            if (inbounds[out] != -1)
-              inbounds[out]++;
-          }
-        }
-      }
-    }
-
-    for (let ii = 0; ii < noOfObjects; ++ii) {
-      if (!reachable[ii] && inbounds[ii] == 0) {
-        this.gcRoots.push(ii);
-      }
-    }
-
-    // 重新计算不可达节点
-    const result = ObjectMarker.mark(this.gcRoots, noOfObjects, this.outboundIndexList);
-    return result.reachable;
-  }
-
-  // createOutbound(objectId, references) {
-  //   let pseudo = references[0];
-  //   // 按照自增进行排序
-  //   references.sort((o, n) => Number(o) < Number(n) ? -1 : 1);
-
-  //   let objectIds = new Array(references.length).fill(0);
-  //   let length = 1;
-
-  //   let current = 0;
-  //   let last = references[0] - 1;
-  //   for (let ii = 0; ii < objectIds.length; ii++) {
-  //     current = references[ii];
-  //     if (last != current) {
-  //       let objectIdTmp = this.identifiers.reverse(current);
-  //       if (objectIdTmp >= 0) {
-  //         let jj = (current == pseudo) ? 0 : length++;
-  //         objectIds[jj] = objectIdTmp;
-  //       }
-  //     }
-  //     last = current;
-  //   }
-  //   this.outboundIndexList[objectId] = objectIds;
-  // }
 }
 
 module.exports = Parser;
