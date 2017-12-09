@@ -145,6 +145,7 @@ class Parser {
     this.hasMap = new Array(this.nodeCount).fill(false);
     this.implicitMap = new Array(this.nodeCount).fill(0);
     this.indirectSize = new Array(this.nodeCount).fill(-1);
+    this.gcRootsMap = {};
 
     // 过滤后真实的 node id 映射到 ordinal id 数组
     this.realNode2OrdinalNode = new Array(this.nodeCount).fill(-1);
@@ -191,7 +192,7 @@ class Parser {
     this.reportInstances();
     // 2.
     this.readNodes();
-    // TODO: 这里没有把 unreachable 的节点加入 gcroots，最妥善的做法还是要加上，待补充
+    // 3. 所有的 ordinal id -> real id
     this.map2ids();
   }
 
@@ -222,6 +223,7 @@ class Parser {
   getChildsDetail(parentId, leakMap) {
     let details = [];
     let edges = this.nodeUtil.getEdges(parentId);
+    let maxNodeDetail = null;
     for (let edge of edges) {
       let targetNode = this.edgeUtil.getTargetNode(edge);
       let realId = this.ordinalNode2realNode[targetNode];
@@ -233,9 +235,25 @@ class Parser {
       if (~leakMap.indexOf(realId)) {
         continue;
       }
-      details.push({ edge, targetNode, realId, retainedSize: this.retainedSizes[realId + 2] });
+      let retainedSize = this.retainedSizes[realId + 2];
+
+      if (!maxNodeDetail) {
+        maxNodeDetail = { edge, targetNode, realId, retainedSize };
+        continue;
+      }
+      if (maxNodeDetail && maxNodeDetail.retainedSize < retainedSize) {
+        details.push(maxNodeDetail);
+        maxNodeDetail = { edge, targetNode, realId, retainedSize };
+      } else {
+        details.push({ edge, targetNode, realId, retainedSize });
+      }
     }
-    details.sort((o, n) => Number(o.retainedSize) < Number(n.retainedSize) ? 1 : -1);
+
+    // sort 的效率也是非常差的
+    // details.sort((o, n) => Number(o.retainedSize) < Number(n.retainedSize) ? 1 : -1);
+    if (maxNodeDetail) {
+      details.unshift(maxNodeDetail);
+    }
     return details;
   }
 
@@ -327,7 +345,6 @@ class Parser {
         if (rootName === null) {
           // rootName = this.edgeUtil.getNameOrIndex(edge);
         }
-        // this.addGCRoot(this.nodeUtil.getAddress(targetNode), v.value, rootName);
         this.addGCRoot(targetNode, v.value, rootName);
       }
     });
@@ -340,7 +357,8 @@ class Parser {
     if (rootname != null) {
       this.namedRoots.set(rootname, address);
     }
-    if (!~this.gcRoots.indexOf(address)) {
+    if (this.gcRootsMap[address] === undefined) {
+      this.gcRootsMap[address] = true;
       this.gcRoots.push(address);
     }
   }
@@ -416,7 +434,6 @@ class Parser {
    * @desc 获取过滤后的 nodes
    */
   readNodes() {
-    let ignoredNodes = 0;
     let firstIgnoredNodeEdgeId = -1;
     let firstIgnoredObjectAddress = -1;
     let objectId = 0;
@@ -430,7 +447,6 @@ class Parser {
           firstIgnoredObjectAddress = this.nodeUtil.getAddress(nodeOrdinalId);
           firstIgnoredNodeEdgeId = this.firstEdgeIndexs[nodeOrdinalId];
         }
-        ignoredNodes++;
         continue;
       }
       let objectAddress = this.nodeUtil.getAddress(nodeOrdinalId);
@@ -473,18 +489,16 @@ class Parser {
 
       // 这里处理是为了把第一条边设置为 map 边，由于之前已经排除掉了没有 map 边的情况，所以一定会存在
       if (edgeType === 'internal' && edgeName === 'map') {
+        // TODO: unshift 有可能会有性能损耗，待分析
         newReferences.unshift(targetNode);
       } else {
         newReferences.push(targetNode);
       }
 
+      // 设置 inbound ordinal id map
       let inbound = this.inboundIndexList[targetNode];
       if (inbound) {
-        if (~inbound.indexOf(nodeOrdinalId)) {
-
-        } else {
-          inbound.push(nodeOrdinalId);
-        }
+        inbound.push(nodeOrdinalId);
       } else {
         this.inboundIndexList[targetNode] = [nodeOrdinalId];
       }

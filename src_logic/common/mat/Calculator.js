@@ -216,15 +216,18 @@ class Calculator {
         }
         objectIds[0] = -2;
         objectIds[1] = ROOT_VALUE;
-
         // 对 dom 结果进行排序
         ArrayUtils.sort(dom, objectIds, 2, dom.length - 2);
+        // 空间换时间的做法，没办法，js 的 indexOf 操作效率实在是太低了
+        // 这里如果用 indexof，性能爆降几百倍
+        let dommap = dom.reduce((pre, next, index) => {
+            pre[next] = index;
+            return pre;
+        }, {});
         // 对 dom 进行扁平化操作
-        let tree = new FlatDominatorTree(snapshot, dom, objectIds, ROOT_VALUE);
-        return {
-            retainedSizes: tree.ts,
-            topDominator: this.getTopDominator(tree)
-        };
+        let tree = new FlatDominatorTree(snapshot, dom, objectIds, ROOT_VALUE, dommap);
+        let topDominator = this.getTopDominator(tree);
+        return { retainedSizes: tree.ts, topDominator };
     }
 
     getTopDominator(tree) {

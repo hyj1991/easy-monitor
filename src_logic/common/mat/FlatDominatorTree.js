@@ -5,6 +5,7 @@ const LongIndexCollector = require('./LongIndexCollector');
 const TEMP_ARR_LENGTH = 1000000;
 
 let dom = [];
+let dommap = {};
 let elements = [];
 let ts = [];
 let dump;
@@ -95,7 +96,7 @@ class SuccessorsEnum {
     findFirstChildIndex(el) {
         // TODO: 有空实现下 binarySearch
         // let i = Arrays.binarySearch(dom, el);
-        let i = dom.indexOf(el);
+        let i = dommap[el] || -1;
         while ((i > 1) && (dom[i - 1] == el)) {
             i--;
         }
@@ -104,9 +105,10 @@ class SuccessorsEnum {
 }
 
 class FlatDominatorTree {
-    constructor(dumpparam, domparam, elementparam, root) {
+    constructor(dumpparam, domparam, elementparam, root, dommapparam) {
         dump = dumpparam;
         dom = domparam;
+        dommap = dommapparam;
         elements = elementparam;
         ts = new Array(domparam.length).fill(0);
         calculateTotalSizesIterative(root);
@@ -122,7 +124,7 @@ class FlatDominatorTree {
 
         // TODO: 有空实现下 binarySearch
         // int j = Arrays.binarySearch(dom, parentId);
-        let j = dom.indexOf(parentId);
+        let j = dommap[parentId] || -1;
         if (j < 0)
             return [];
 
