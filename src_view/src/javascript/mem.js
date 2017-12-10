@@ -406,7 +406,7 @@ function leakPoint() {
         const percentage = this.statistics.total && this.formatPercentage(detail.retainedSize / this.statistics.total) || 0;
         const status = percentage < 60 && 2 || 3;
         const type = status === 2 && 'warning' || 'error';
-        const name = `${detail.name}::${detail.address}`;
+        const name = `${detail.name}::@${detail.address}`;
         const id = detail.address;
         pre.push({ type, name, id });
         return pre;

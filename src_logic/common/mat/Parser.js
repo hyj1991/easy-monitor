@@ -221,11 +221,11 @@ class Parser {
     } else {
       realId = this.ordinalNode2realNode[id];
     }
-    let name = this.nodeUtil.getName(ordinalNodeId);
+    let name = this.nodeUtil.getName(ordinalNodeId) || '';
     // 名字太长的直接省略
-    if (name.length > 20) {
-      name = name.substring(0, 17) + '...'
-    }
+    // if (name.length > 20) {
+    //   name = name.substring(0, 17) + '...'
+    // }
     return {
       name,
       address: this.nodeUtil.getAddress(ordinalNodeId),

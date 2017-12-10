@@ -356,6 +356,23 @@ module.exports = function (_common, config, logger, utils, cache, common) {
     }
 
     /**
+     * @description 增加反馈节点信息
+     */
+    function addNodesImpl(heapUsed, parser) {
+        return function (realId) {
+            heapUsed[realId] = parser.serializeNode(realId);
+            const edgeRealIds = []
+            for (let edge of heapUsed[realId].edges) {
+                const targetNode = parser.edgeUtil.getTargetNode(edge);
+                const edgeRealId = parser.ordinalNode2realNode[targetNode];
+                edgeRealIds.push(edgeRealId);
+                heapUsed[edgeRealId] = parser.serializeNode(edgeRealId);
+            }
+            heapUsed[realId].edges = edgeRealIds;
+        }
+    }
+
+    /**
      * @description 对 profiling 得到的结果进行解析
      */
     function analyticsP(type, profiler, params) {
@@ -406,16 +423,17 @@ module.exports = function (_common, config, logger, utils, cache, common) {
 
                 //取出分析结果
                 // 注意 leakPoint 保存的是泄漏起始点的 realId
-                let heapUsed = {};
+                const heapUsed = {};
+                const addNodes = addNodesImpl(heapUsed, parser);
                 const leakPoints = parser.topDominators;
                 const leakMaps = leakPoints.map(point => {
                     return parser.getLeakMap(point).map((m, i, a) => {
-                        heapUsed[m.realId] = parser.serializeNode(m.realId);
+                        addNodes(m.realId);
                         if (a.length === 1) {
                             return { source: m.realId };
                         }
                         if (a[i + 1]) {
-                            heapUsed[m.realId] = parser.serializeNode(a[i + 1].realId);
+                            addNodes(a[i + 1].realId);
                             return {
                                 source: m.realId,
                                 target: a[i + 1].realId,
