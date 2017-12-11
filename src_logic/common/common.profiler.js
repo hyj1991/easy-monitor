@@ -363,11 +363,19 @@ module.exports = function (_common, config, logger, utils, cache, common) {
             heapUsed[realId] = parser.serializeNode(realId);
             const edgeRealIds = []
             for (let edge of heapUsed[realId].edges) {
+                const edgeName = parser.edgeUtil.getNameOrIndex(edge);
                 const targetNode = parser.edgeUtil.getTargetNode(edge);
                 const edgeRealId = parser.ordinalNode2realNode[targetNode];
-                edgeRealIds.push(edgeRealId);
-                heapUsed[edgeRealId] = parser.serializeNode(edgeRealId);
+                // edge 为已过滤的节点
+                if (edgeRealId === -1) {
+                    continue;
+                }
+                edgeRealIds.push({ realId: edgeRealId, edge: edgeName });
+                if (!heapUsed[edgeRealId]) {
+                    heapUsed[edgeRealId] = parser.serializeNode(edgeRealId)
+                }
             }
+            edgeRealIds.sort((o, n) => parser.serializeNode(o.realId).retainedSize < parser.serializeNode(n.realId).retainedSize ? 1 : -1);
             heapUsed[realId].edges = edgeRealIds;
         }
     }
@@ -413,7 +421,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
 
             //解析 mem-profiler 操作结果
             if (type === 'mem') {
-                params.limit = config.profiler.mem.optional.leakpoint_limit;
+                params.limit = config.profiler.mem.optional.node_limit;
                 // 去除 v8-analytics 依赖
                 // const memAnalytics = yield analysisLib.memAnalyticsP(profiler, params);
                 // 后面会彻底去除此算法
@@ -425,7 +433,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                 // 注意 leakPoint 保存的是泄漏起始点的 realId
                 const heapUsed = {};
                 const addNodes = addNodesImpl(heapUsed, parser);
-                const leakPoints = parser.topDominators;
+                const leakPoints = parser.topDominator.filter((item, index) => index < config.profiler.mem.optional.leakpoint_limit);
                 const leakMaps = leakPoints.map(point => {
                     return parser.getLeakMap(point).map((m, i, a) => {
                         addNodes(m.realId);
@@ -452,39 +460,40 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                 result.statistics = parser.statistics;
                 return result;
 
-                //根据分析结果初步计算属性
-                const statistics = jsHeapSnapShot._statistics;
-                const aggregates = jsHeapSnapShot._aggregates.allObjects;
+                // 去除旧逻辑
+                // //根据分析结果初步计算属性
+                // const statistics = jsHeapSnapShot._statistics;
+                // const aggregates = jsHeapSnapShot._aggregates.allObjects;
 
-                //节点计算柯里化函数
-                const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit);
+                // //节点计算柯里化函数
+                // const serialize = serializeNode(jsHeapSnapShot, config.profiler.mem.optional.node_limit);
 
-                //TODO
-                // const heapUsed = leakPoint.reduce((pre, next) => {
-                //     pre[next.index] = serialize(next.index);
-                //     return pre;
-                // }, {});
+                // //TODO
+                // // const heapUsed = leakPoint.reduce((pre, next) => {
+                // //     pre[next.index] = serialize(next.index);
+                // //     return pre;
+                // // }, {});
 
-                //如果配置打开了 root 节点信息加入 root 节点起始的信息
-                const needRoot = Boolean(config.profiler.mem.optional.need_root);
-                needRoot && addRootDisplay(rootIndex, heapUsed, serialize);
+                // //如果配置打开了 root 节点信息加入 root 节点起始的信息
+                // const needRoot = Boolean(config.profiler.mem.optional.need_root);
+                // needRoot && addRootDisplay(rootIndex, heapUsed, serialize);
 
-                //获取最终分析结果
-                const mem_data = memCalculator(heapUsed, serialize, leakPoint);
-                const forceGraph = mem_data.forceGraph;
-                const searchList = mem_data.searchList.map(item => item.index);
+                // //获取最终分析结果
+                // const mem_data = memCalculator(heapUsed, serialize, leakPoint);
+                // const forceGraph = mem_data.forceGraph;
+                // const searchList = mem_data.searchList.map(item => item.index);
 
-                //释放 jsHeapSnapShot 对象
-                jsHeapSnapShot = null;
+                // //释放 jsHeapSnapShot 对象
+                // jsHeapSnapShot = null;
 
-                //将最终结果填充入结果对象中
-                result.heapUsed = heapUsed;
-                result.leakPoint = leakPoint;
-                result.statistics = statistics;
-                result.rootIndex = rootIndex;
-                result.aggregates = aggregates;
-                result.forceGraph = forceGraph;
-                result.searchList = searchList;
+                // //将最终结果填充入结果对象中
+                // result.heapUsed = heapUsed;
+                // result.leakPoint = leakPoint;
+                // result.statistics = statistics;
+                // result.rootIndex = rootIndex;
+                // result.aggregates = aggregates;
+                // result.forceGraph = forceGraph;
+                // result.searchList = searchList;
             }
 
             return result;

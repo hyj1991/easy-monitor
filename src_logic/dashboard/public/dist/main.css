@@ -59,6 +59,52 @@ p[data-v-3c49d015]{font-size:1em;color:#3091f2}.spin-icon-load[data-v-3c49d015]{
 .ivu-select-input-my-style-mem.ivu-select-single .ivu-select-input {
   height: 30px;
 }
+
+.tooltip {
+  width: 120;
+  height: auto;
+  padding: 0px 5px;
+  position: absolute;
+  text-align: center;
+  border-style: solid;
+  border-width: 1px;
+  background-color: #495060d9;
+  border-radius: 3px;
+}
+path.link {
+  fill: none;
+  stroke: #80848f;
+  stroke-width: 1px;
+}
+marker#suit {
+  fill: #5cadff;
+}
+path.link.suit {
+  stroke: #5cadff;
+}
+marker#leaking {
+  fill: #19be6b;
+}
+path.link.leaking {
+  stroke: #19be6b;
+}
+path.link.cycling {
+  stroke-dasharray: 0, 2 1;
+}
+circle {
+  fill: #5cadff;
+  stroke: #2d8cf0;
+  stroke-width: 1px;
+}
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
 /** global common style **/
 .index h1 {    
             font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;

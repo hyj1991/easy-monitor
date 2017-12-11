@@ -1,39 +1,345 @@
 <style>
+.tooltip {
+  width: 120;
+  height: auto;
+  padding: 0px 5px;
+  position: absolute;
+  text-align: center;
+  border-style: solid;
+  border-width: 1px;
+  background-color: #495060d9;
+  border-radius: 3px;
+}
+
+path.link {
+  fill: none;
+  stroke: #80848f;
+  stroke-width: 1px;
+}
+
+marker#suit {
+  fill: #5cadff;
+}
+
+path.link.suit {
+  stroke: #5cadff;
+}
+
+marker#leaking {
+  fill: #19be6b;
+}
+
+path.link.leaking {
+  stroke: #19be6b;
+}
+
+path.link.cycling {
+  stroke-dasharray: 0, 2 1;
+}
+
+circle {
+  fill: #5cadff;
+  stroke: #2d8cf0;
+  stroke-width: 1px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
 </style>
 
 <template>
-    <div class="index">
-        <p>当前节点大小为 <strong style="font-weight:500">{{ retainedSize }}</strong></p>
-        <div ref="force" :style="self_style || default_style"></div>
-        <div ref="detail"></div>
-    </div>
+  <div class="index" ref="force">
+  </div>
 </template>
 
 <script>
 
 export default {
-    data() {
-        return { myChart: null, default_style: "width:1000px;height:600px;" }
-    },
+  data() {
+    return { nodeOrdinal: null }
+  },
 
-    mounted() {
-        this.renderForcegraph();
-    },
+  mounted() {
+  },
 
-    props: ['forceGraph', 'self_style', 'heapMap', 'formatSize'],
+  props: ['heapMap', 'links', 'formatSize'],
 
-    methods: {
-        renderForcegraph() { this.$_js.force.methods.renderForcegraph.call(this); },
-        openOrFold(param) { this.$_js.force.methods.openOrFold.call(this, param); }
-    },
-
-    computed: {
-        forceGraphOption() { return this.$_js.force.computed.forceGraphOption.call(this); },
-        retainedSize() { return this.$_js.force.computed.retainedSize.call(this); }
-    },
-
-    watch: {
-        forceGraph() { this.renderForcegraph(); }
+  methods: {
+    addEdges(edges, parent, leak) {
+      var heapMap = this.heapMap;
+      var nodeDetail = heapMap[parent];
+      for (let edge of nodeDetail.edges) {
+        if (leak && edge.realId !== leak) {
+          edges.push({
+            s_real_id: parent,
+            t_real_id: edge.realId,
+            source: `@${nodeDetail.address}`,
+            target: `@${heapMap[edge.realId].address}`,
+            type: 'suit',
+            edge: edge.edge
+          });
+        } else if (!leak) {
+          edges.push({
+            s_real_id: parent,
+            t_real_id: edge.realId,
+            source: `@${nodeDetail.address}`,
+            target: `@${heapMap[edge.realId].address}`,
+            type: 'suit',
+            edge: edge.edge
+          });
+        }
+      }
     }
+  },
+
+  computed: {
+    leakInfo() {
+      if (!this.links) return ``;
+      var heapMap = this.heapMap;
+      var leakKeyList = [];
+      var str = this.links.map((link, index) => {
+        const source = heapMap[link.source];
+        if (link.target) {
+          const target = heapMap[link.target];
+          if (index === 0) {
+            leakKeyList.push(`<strong style="font-weight:600">II. 泄漏关键字: </strong>${link.edge}`);
+            return `<strong style="font-weight:600">I. 泄漏链: </strong>${source.name}::@${source.address}<strong style="font-weight:600">.${link.edge}</strong> --> ${target.name}::@${target.address}`;
+          } else {
+            leakKeyList.push(`${link.edge}`);
+            return `<strong style="font-weight:600">.${link.edge}</strong> --> ${target.name}::@${target.address}`;
+          }
+        } else {
+          leakKeyList.push(`<strong style="font-weight:600">II. 泄漏关键字: </strong>无`)
+          return `<strong style="font-weight:600">I. 泄漏链: </strong>${source.name}::@${source.address}`;
+        }
+      }).join('');
+
+      return {
+        leakList: str,
+        leakKeyList: leakKeyList.join(', ')
+      };
+    }
+  },
+
+  watch: {
+    links() {
+      if (!this.links) return;
+      var heapMap = this.heapMap;
+      var nodes = {};
+      var edges = [];
+      var links = this.links.map((link, index, array) => {
+        if (link.target) {
+          if (index === array.length - 1) {
+            this.addEdges(edges, link.target)
+          }
+          this.addEdges(edges, link.source, link.target);
+          return {
+            s_real_id: link.source,
+            t_real_id: link.target,
+            source: `@${heapMap[link.source].address}`,
+            target: `@${heapMap[link.target].address}`,
+            s_size: index === 0 && 10 || 8,
+            main: index === 0,
+            t_size: 8,
+            type: 'leaking',
+            edge: link.edge
+          }
+        } else {
+          this.addEdges(edges, link.source);
+          nodes[`@${heapMap[link.source].address}`] = {
+            name: `@${heapMap[link.source].address}`,
+            size: 10,
+            main: true,
+            real_id: link.source
+          };
+          return false;
+        }
+      }).filter(item => item).concat(edges);
+
+      links.forEach(function(link) {
+        link.source = nodes[link.source] || (nodes[link.source] = {
+          name: link.source,
+          size: link.s_size,
+          real_id: link.s_real_id,
+          main: link.main
+        });
+        link.target = nodes[link.target] || (nodes[link.target] = {
+          name: link.target,
+          size: link.t_size,
+          real_id: link.t_real_id
+        });
+      });
+
+      var w = 960;
+      var h = 500;
+      var force = d3.layout.force()
+        .nodes(d3.values(nodes))
+        .links(links)
+        .size([w, h])
+        .linkDistance(60)
+        .charge(-300)
+        .on("tick", tick)
+        .start();
+
+      // 首先移除
+      d3.select(this.$refs.force).selectAll("*").remove();
+      // 追加当前的 svg
+      var svg = d3.select(this.$refs.force).append("svg:svg")
+        .attr("width", w)
+        .attr("height", h);
+      var leakInfo = d3.select(this.$refs.force).append("p")
+        .html(this.leakInfo.leakList);
+      var br = d3.select(this.$refs.force).append("br");
+      var leakKeyList = d3.select(this.$refs.force).append("p")
+        .html(this.leakInfo.leakKeyList);
+      // 添加 tooltip
+      var show = false;
+      var tooltip = d3.select(this.$refs.force)
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0.0);
+      //(1)创建箭头  
+      svg.append("svg:defs").selectAll("marker")
+        .data(["suit", "leaking", "cycling"])
+        .enter().append("svg:marker")
+        .attr("id", String)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 20)
+        .attr("refY", -1.5)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("svg:path")
+        .attr("d", "M0,-5L10,0L0,5");
+      //(2)根据连线类型引用上面创建的标记  
+      var path = svg.append("svg:g").selectAll("path")
+        .data(force.links())
+        .enter().append("svg:path")
+        .attr("class", function(d) { return "link " + d.type; })
+        .attr("marker-end", function(d) { return "url(#" + d.type + ")"; })
+        .on("mouseover", (function(d) {
+          show = false;
+          var source = heapMap[d.source.real_id];
+          var target = heapMap[d.target.real_id];
+          var sourceName = source.name;
+          if (sourceName.length > 50) {
+            sourceName = sourceName.substr(0, 50);
+          }
+          var targetName = target.name;
+          if (targetName.length > 50) {
+            targetName = targetName.substr(0, 50);
+          }
+          tooltip.html(`<p style="font-size:1px;color:white">${sourceName} .${d.edge} --> ${targetName}</p>`)
+            .style("left", (d3.event.offsetX + 40) + "px")
+            .style("top", (d3.event.offsetY + 50) + "px")
+            .style("opacity", 1.0);
+        }).bind(this))
+        .on("mousemove", (function(d) {
+          // tooltip.style("left", (d3.event.pageX) + "px")
+          //   .style("top", (d3.event.pageY - 120) + "px");
+        }).bind(this))
+        .on("mouseout", (function(d) {
+          if (!show) {
+            tooltip.style("opacity", 0.0);
+          }
+        }).bind(this))
+        .on("click", (function(d) {
+          show = true;
+        }).bind(this))
+        .call(force.drag);
+
+      var circle = svg.append("svg:g").selectAll("circle")
+        .data(force.nodes())
+        .enter().append("svg:circle")
+        .attr("r", 6)
+        .attr("style", "")
+        .on("mouseover", (function(d) {
+          show = false;
+          var nodeOrdinal = heapMap[d.real_id];
+          var name = nodeOrdinal.name;
+          if (name.length > 50) {
+            // 名字过长做截取
+            name = name.substr(0, 50);
+          }
+          tooltip.html(`<p style="font-size:1px;color:white">${name}: ${this.formatSize(nodeOrdinal.retainedSize)}</p>`)
+            .style("left", (d3.event.offsetX + 40) + "px")
+            .style("top", (d3.event.offsetY + 50) + "px")
+            .style("opacity", 1.0);
+        }).bind(this))
+        .on("mousemove", (function(d) {
+          // tooltip.style("left", (d3.event.pageX) + "px")
+          //   .style("top", (d3.event.pageY - 120) + "px");
+        }).bind(this))
+        .on("mouseout", (function(d) {
+          if (!show) {
+            tooltip.style("opacity", 0.0);
+          }
+        }).bind(this))
+        .on("click", (function(d) {
+          show = true;
+        }).bind(this))
+        .call(force.drag);
+      for (let circle of svg.selectAll("circle")[0]) {
+        // #ffbc58
+        if (circle.__data__.size && circle.__data__.main) {
+          circle.attributes["r"].value = circle.__data__.size;
+          circle.attributes["style"].value = "fill:#ffbc58;stroke:#ff9900;stroke-width:1px;";
+          continue;
+        }
+        if (circle.__data__.size && !circle.__data__.main) {
+          circle.attributes["r"].value = circle.__data__.size;
+          circle.attributes["style"].value = "fill:#21e683;stroke:#19be6b;stroke-width:1px;";
+        }
+      }
+
+      var text = svg.append("svg:g").selectAll("g")
+        .data(force.nodes())
+        .enter().append("svg:g");
+
+      // A copy of the text with a thick white stroke for legibility.  
+      text.append("svg:text")
+        .attr("x", 8)
+        .attr("y", ".31em")
+        .attr("class", "shadow")
+        .style("color", "red")
+        .text(function(d) { return d.name; });
+
+      text.append("svg:text")
+        .attr("x", 8)
+        .attr("y", ".31em")
+        .style("color", "red")
+        .text(function(d) { return d.name; });
+
+      // 使用椭圆弧路径段双向编码。  
+      function tick() {
+        //(3)打点path格式是：Msource.x,source.yArr00,1target.x,target.y  
+        path.attr("d", function(d) {
+          var dx = d.target.x - d.source.x,//增量  
+            dy = d.target.y - d.source.y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+          return "M" + d.source.x + ","
+            + d.source.y + "A" + dr + ","
+            + dr + " 0 0,1 " + d.target.x + ","
+            + d.target.y;
+        });
+
+        circle.attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        });
+
+        text.attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        });
+      }
+    }
+  }
 }
 </script>

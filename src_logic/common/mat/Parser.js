@@ -228,10 +228,11 @@ class Parser {
     // }
     return {
       name,
+      realId: id,
       address: this.nodeUtil.getAddress(ordinalNodeId),
       type: this.nodeUtil.getType(ordinalNodeId),
       retainedSize: this.retainedSizes[realId + 2],
-      edges: this.nodeUtil.getEdges(ordinalNodeId).filter((e, i) => i < this.options.limit),
+      edges: this.nodeUtil.getEdges(ordinalNodeId),
     }
   }
 

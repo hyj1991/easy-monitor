@@ -8,7 +8,7 @@ import router from '../main.js';
  */
 function innerCalculate(query, limit) {
     limit = !isNaN(limit) && limit || 20;
-    const leakPoint = (this.singleProfilerData && this.singleProfilerData.leakPoint || []).map(item => item.index);
+    const leakPoint = this.singleProfilerData && this.singleProfilerData.leakPoint || [];
     const singleProfilerData = this.singleProfilerData || {};
     const heapUsed = singleProfilerData.heapUsed || {};
 
@@ -36,7 +36,7 @@ function innerCalculate(query, limit) {
 
         const detail = heapUsed[list[i]] || {};
         if (Number(list[i]) === 0) detail.name = 'Root';
-        const key = `${detail.index} => ${detail.name}::${detail.address}${~leakPoint.indexOf(detail.index) && ` (force: ${formatSize(detail.retainedSize)})` || ``}`;
+        const key = `${detail.realId} => ${detail.name}::@${detail.address}${~leakPoint.indexOf(detail.realId) && `(force: ${formatSize(detail.retainedSize)})` || ``}`;
         if (~_upper(key).indexOf(_upper(query)) || ~_lower(key).indexOf(_lower(query))) {
             result.result.push({ value: key, label: key });
             result.length++;
@@ -267,22 +267,22 @@ function onTreeSelect(obj) {
 
     //如果子节点是占位，则替换成真正的子节点数据
     if (children.length === 1 && children[0].fake) {
-        obj.children = nodeDetail.children.map(item => {
-            const cIndex = item.index;
+        obj.children = nodeDetail.edges.map(item => {
+            const cIndex = item.realId;
             const cDetail = heapUsed[cIndex];
             //节点不存在则直接返回
             if (!cDetail) return exception;
 
             //以下是需要判断的变量
             let disabled = false;
-            let title = `<p style="font-size:1.0em"><strong>.${item.name_or_index}</strong> => <strong>${cDetail.name}::${cDetail.id}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
+            let title = `<p style="font-size:1.0em"><strong>.${item.edge}</strong> => <strong>${cDetail.name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
 
             //判断该节点是否循环
             let parent = obj;
             while (!disabled && parent) {
                 if (Number(cIndex) === Number(parent.index)) {
                     disabled = true;
-                    title = `<p style="font-size:1.0em;color:#b3b3b3"><strong>.${item.name_or_index}</strong> => <strong>${cDetail.name}::${cDetail.id}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
+                    title = `<p style="font-size:1.0em;color:#b3b3b3"><strong>.${item.edge}</strong> => <strong>${cDetail.name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
                 };
                 parent = parent.parent;
             }
@@ -410,7 +410,7 @@ function leakPoint() {
         const id = detail.address;
         pre.push({ type, name, id });
         return pre;
-    }, []).filter((item, index) => index < 5);
+    }, []);
 }
 
 /**
@@ -506,6 +506,19 @@ function links() {
     return leakMaps && leakMaps[this.modal_node_id] || '';
 }
 
+/**
+ * @component: views/common/profiler/mem.vue
+ * @vue-data: computed
+ * @descript: 获取引力图
+ */
+function leakTitle() {
+    const singleProfilerData = this.singleProfilerData || {};
+    const heapUsed = singleProfilerData.heapUsed || {};
+    const leakPoint = singleProfilerData.leakPoint || [];
+    const nodeDetail = heapUsed[leakPoint[this.modal_node_id]];
+    return nodeDetail && `[${nodeDetail.name}::@${nodeDetail.address}: ${this.formatSize(nodeDetail.retainedSize)}]` || ``;
+}
+
 //导出 mem.vue 所需
 export default {
     methods: {
@@ -514,7 +527,7 @@ export default {
         typeHandle, constructorHandle, selectHandle, leakHandle, onTreeSelect
     },
     computed: {
-        singleProfilerData, listInfo, server_error, statistics, links,
+        singleProfilerData, listInfo, server_error, statistics, links, leakTitle,
         leakPoint, idList, dataConstructor, echart3Message, forceGraphLeakPoint
     }
 }

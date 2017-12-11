@@ -31,9 +31,10 @@ module.exports = function (_common, config, logger, utils, cache, common) {
         gcRootsArray: parser.gcRoots,
         heapSize: parser.heapSizeList
       }, {}).calculate();
+      const total = parser.statistics.total;
       parser.retainedSizes = retainedSizes;
-      parser.topDominators = topDominator.filter((td, index) => index < limit);
-
+      // parser.topDominator = topDominator;
+      parser.topDominator = topDominator.filter(tr => retainedSizes[tr + 2] / total > 0.2);
       return parser;
     }
   }

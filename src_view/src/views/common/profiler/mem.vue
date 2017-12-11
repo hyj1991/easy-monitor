@@ -197,8 +197,8 @@
                                 <Button type="text" size="small" style="background:#ebf5ff" @click="typeHandle">
                                         <p style="font-size:1.0em">Type</p>
                                 </Button> 
-                                <Button type="text" size="small" style="background:#ebf5ff" @click="constructorHandle">
-                                    <p style="font-size:1.0em">Constructor</p>
+                                <!-- <Button type="text" size="small" style="background:#ebf5ff" @click="constructorHandle">
+                                    <p style="font-size:1.0em">Constructor</p> -->
                                 </Button>
                                 获取按照节点 [ 类型 / 构造器 ] 分类的详情
                             </p>
@@ -227,7 +227,7 @@
             <!-- Modals Force -->
             <Modal
                 v-model="force"
-                :title="`引力图`"
+                :title="`${leakTitle} 引力图`"
                 width="1000">
                 <force 
                     :links="links"
@@ -251,7 +251,7 @@
 <script>
     import axios from 'axios';
     import lodash from 'lodash';
-    import force from './force1.vue';
+    import force from './force.vue';
     import loadingSpin from '../loading.vue';
     import echart3 from '../echart3.vue';
 
@@ -316,7 +316,8 @@
             dataConstructor() { return this.$_js.mem.computed.dataConstructor.call(this); },
             echart3Message() { return this.$_js.mem.computed.echart3Message.call(this); },
             forceGraphLeakPoint() { return this.$_js.mem.computed.forceGraphLeakPoint.call(this); },
-            links() { return this.$_js.mem.computed.links.call(this); }
+            links() { return this.$_js.mem.computed.links.call(this); },
+            leakTitle() { return this.$_js.mem.computed.leakTitle.call(this); }
         }
     }
 </script>
