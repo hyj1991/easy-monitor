@@ -60,7 +60,6 @@ module.exports = function (server) {
                     return common.socket.notifySide.apply(ctx, [profilingMiddleMessage, socket]);
                 }
             }, notStream);
-
             //发送业务进程 profiling 操作结束
             const profilingEndMessage = common.socket.composeMessage('req', 4, { sequence: ++sequence.seq, raw, loadingMsg: config.profiler[data.opt].end_profiling(null, !notStream) });
             yield common.socket.notifySide.apply(ctx, [profilingEndMessage, socket]);

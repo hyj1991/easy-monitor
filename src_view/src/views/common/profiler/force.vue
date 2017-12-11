@@ -7,7 +7,7 @@
   text-align: center;
   border-style: solid;
   border-width: 1px;
-  background-color: #495060d9;
+  background-color: rgba(73, 80, 96, 0.87);
   border-radius: 3px;
 }
 

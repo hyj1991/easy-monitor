@@ -28,7 +28,7 @@ const jsonparser = JSONStream.parse();
 
 // ./tmp/2.heapsnapshot
 console.time('JSONStream');
-fs.createReadStream('./tmp/4.heapsnapshot').pipe(jsonparser);
+fs.createReadStream('./tmp/3.heapsnapshot').pipe(jsonparser);
 jsonparser.on('data', heapData => {
   let start = process.memoryUsage().heapUsed / 1024 / 1024;
   console.timeEnd('JSONStream');
@@ -57,11 +57,11 @@ jsonparser.on('data', heapData => {
   const leakMap = parser.getLeakMap(topDominator[0]);
   let str = ``;
   leakMap.forEach(leak => {
-    const realInfo = parser.getRealNodeInfo(leak);
+    const realInfo = parser.getRealNodeInfo(leak.realId);
     if (str === '') {
-      str = `可疑泄漏链条:\n@${realInfo.address}(${retainedSizes[leak + 2]})`;
+      str = `可疑泄漏链条:\n@${realInfo.address}(${retainedSizes[leak.realId + 2]})`;
     } else {
-      str = `${str} ---> @${realInfo.address}(${retainedSizes[leak + 2]})`
+      str = `${str} ---> @${realInfo.address}(${retainedSizes[leak.realId + 2]})`
     }
   });
   console.log(str);

@@ -275,14 +275,18 @@ function onTreeSelect(obj) {
 
             //以下是需要判断的变量
             let disabled = false;
-            let title = `<p style="font-size:1.0em"><strong>.${item.edge}</strong> => <strong>${cDetail.name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
+            let name = cDetail.name;
+            if(name.length > 50){
+                name = name.substring(0,50);
+            }
+            let title = `<p style="font-size:1.0em"><strong>.${item.edge}</strong> => <strong>${name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
 
             //判断该节点是否循环
             let parent = obj;
             while (!disabled && parent) {
                 if (Number(cIndex) === Number(parent.index)) {
                     disabled = true;
-                    title = `<p style="font-size:1.0em;color:#b3b3b3"><strong>.${item.edge}</strong> => <strong>${cDetail.name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
+                    title = `<p style="font-size:1.0em;color:#b3b3b3"><strong>.${item.edge}</strong> => <strong>${name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
                 };
                 parent = parent.parent;
             }

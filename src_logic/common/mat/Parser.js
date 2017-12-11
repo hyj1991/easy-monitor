@@ -226,13 +226,19 @@ class Parser {
     // if (name.length > 20) {
     //   name = name.substring(0, 17) + '...'
     // }
+    let edges = this.nodeUtil.getEdges(ordinalNodeId);
+    let bigChild = this.getChildsDetail(ordinalNodeId, [realId]);
+    if(bigChild.length > 0){
+      edges = edges.filter((e, index)=>e!==bigChild[0].edge && index <30);
+      edges.unshift(bigChild[0].edge);
+    }
     return {
       name,
       realId: id,
       address: this.nodeUtil.getAddress(ordinalNodeId),
       type: this.nodeUtil.getType(ordinalNodeId),
       retainedSize: this.retainedSizes[realId + 2],
-      edges: this.nodeUtil.getEdges(ordinalNodeId),
+      edges,
     }
   }
 

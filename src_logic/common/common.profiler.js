@@ -375,7 +375,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                     heapUsed[edgeRealId] = parser.serializeNode(edgeRealId)
                 }
             }
-            edgeRealIds.sort((o, n) => parser.serializeNode(o.realId).retainedSize < parser.serializeNode(n.realId).retainedSize ? 1 : -1);
+            // edgeRealIds.sort((o, n) => parser.serializeNode(o.realId).retainedSize < parser.serializeNode(n.realId).retainedSize ? 1 : -1);
             heapUsed[realId].edges = edgeRealIds;
         }
     }
