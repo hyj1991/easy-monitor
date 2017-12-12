@@ -1,294 +1,285 @@
 'use strict';
 
-//建立全局缓存
-const cache = {
-    maps: {},
-    sourceNodes: [],
-    sourceLinks: []
-}
-
 /**
  * @component: views/common/profiler/force.vue
- * @vue-data: inner function
- * @descript: 针对 root 节点做特殊的处理
+ * @vue-data: method
+ * @descript: 添加边
  */
-function isRoot(vm) {
-    return Boolean(vm.forceGraph && vm.forceGraph.index === 0)
-}
-
-/**
- * @component: views/common/profiler/force.vue
- * @vue-data: inner function
- * @descript: 过滤出只需要展示的节点
- */
-function filterNodesLinks(option, tmpIdList) {
-    tmpIdList = tmpIdList || [];
-    const maps = cache.maps;
-    const nodesOption = cache.sourceNodes;
-    const linksOption = cache.sourceLinks;
-    //先选取引力关系
-    const needLinks = linksOption.filter(link => !maps[link.source].ignore || !maps[link.target].ignore);
-
-    const tmp = {};
-    const needNodes = [];
-
-    //对于手动传入的变更节点，一定加入
-    tmpIdList.forEach(id => {
-        if (!tmp[id]) {
-            tmp[id] = true;
-            needNodes.push(maps[id]);
+function addEdges(edges, parent, leak) {
+    let heapMap = this.heapMap;
+    let nodeDetail = heapMap[parent];
+    for (let edge of nodeDetail.edges) {
+        if (leak && edge.realId !== leak) {
+            edges.push({
+                s_real_id: parent,
+                t_real_id: edge.realId,
+                source: `@${nodeDetail.address}`,
+                target: `@${heapMap[edge.realId].address}`,
+                type: 'suit',
+                edge: edge.edge
+            });
+        } else if (!leak) {
+            edges.push({
+                s_real_id: parent,
+                t_real_id: edge.realId,
+                source: `@${nodeDetail.address}`,
+                target: `@${heapMap[edge.realId].address}`,
+                type: 'suit',
+                edge: edge.edge
+            });
         }
-    });
-    //根据引力关系计算展示节点
-    needLinks.forEach(link => {
-        const nodeSource = maps[link.source];
-        const nodeTarget = maps[link.target];
-
-        if (!tmp[nodeSource.id]) {
-            tmp[nodeSource.id] = true;
-            needNodes.push(nodeSource);
-        }
-
-        if (!tmp[nodeTarget.id]) {
-            tmp[nodeTarget.id] = true;
-            needNodes.push(nodeTarget);
-        }
-    });
-
-    //仅给引力图传递了需要展示的数据
-    option.series[0].nodes = needNodes;
-    option.series[0].links = needLinks;
+    }
 }
 
 /**
  * @component: views/common/profiler/force.vue
- * @vue-data: methods
- * @descript: 渲染出 echarts2 的引力图
+ * @vue-data: computed
+ * @descript: 获取泄漏展示信息
  */
-function renderForcegraph() {
-    if (!this.forceGraph) return;
-    this.myChart = echarts2.init(this.$refs.force, 'macarons');
-    this.myChart.setOption(this.forceGraphOption);
-    this.myChart.on('click', this.openOrFold.bind(this));
-}
-
-/**
- * @component: views/common/profiler/force.vue
- * @vue-data: methods
- * @descript: js实现点击引力图节点 开启 / 关闭 功能
- */
-function openOrFold(param) {
-
-    function findNode(arraySource, type, value, cb) {
-        arraySource.forEach(item => {
-            if (item[type] === value) {
-                cb(item);
+function leakInfo() {
+    if (!this.links) return ``;
+    let heapMap = this.heapMap;
+    let leakKeyList = [];
+    let str = this.links.map((link, index) => {
+        const source = heapMap[link.source];
+        if (link.target) {
+            const target = heapMap[link.target];
+            if (index === 0) {
+                leakKeyList.push(`<strong style="font-weight:600">II. 泄漏关键字: </strong>${link.edge}`);
+                return `<strong style="font-weight:600">I. 泄漏链: </strong>${source.name}::@${source.address}<strong style="font-weight:600">.${link.edge}</strong> --> ${target.name}::@${target.address}`;
+            } else {
+                leakKeyList.push(`${link.edge}`);
+                return `<strong style="font-weight:600">.${link.edge}</strong> --> ${target.name}::@${target.address}`;
             }
+        } else {
+            leakKeyList.push(`<strong style="font-weight:600">II. 泄漏关键字: </strong>无`)
+            return `<strong style="font-weight:600">I. 泄漏链: </strong>${source.name}::@${source.address}`;
+        }
+    }).join('');
+
+    return {
+        leakList: str,
+        leakKeyList: leakKeyList.join(', ')
+    };
+}
+
+/**
+ * @component: views/common/profiler/force.vue
+ * @vue-data: watch
+ * @descript: 生成引力图 svg
+ */
+function links() {
+    if (!this.links) return;
+    let heapMap = this.heapMap;
+    let nodes = {};
+    let edges = [];
+    let links = this.links.map((link, index, array) => {
+        if (link.target) {
+            if (index === array.length - 1) {
+                this.addEdges(edges, link.target)
+            }
+            this.addEdges(edges, link.source, link.target);
+            return {
+                s_real_id: link.source,
+                t_real_id: link.target,
+                source: `@${heapMap[link.source].address}`,
+                target: `@${heapMap[link.target].address}`,
+                s_size: index === 0 && 10 || 8,
+                main: index === 0,
+                t_size: 8,
+                type: 'leaking',
+                edge: link.edge
+            }
+        } else {
+            this.addEdges(edges, link.source);
+            nodes[`@${heapMap[link.source].address}`] = {
+                name: `@${heapMap[link.source].address}`,
+                size: 10,
+                main: true,
+                real_id: link.source
+            };
+            return false;
+        }
+    }).filter(item => item).concat(edges);
+
+    links.forEach(function (link) {
+        link.source = nodes[link.source] || (nodes[link.source] = {
+            name: link.source,
+            size: link.s_size,
+            real_id: link.s_real_id,
+            main: link.main
+        });
+        link.target = nodes[link.target] || (nodes[link.target] = {
+            name: link.target,
+            size: link.t_size,
+            real_id: link.t_real_id
+        });
+    });
+
+    let w = 960;
+    let h = 500;
+    let force = d3.layout.force()
+        .nodes(d3.values(nodes))
+        .links(links)
+        .size([w, h])
+        .linkDistance(60)
+        .charge(-300)
+        .on("tick", tick)
+        .start();
+
+    // 首先移除
+    d3.select(this.$refs.force).selectAll("*").remove();
+    // 追加当前的 svg
+    let svg = d3.select(this.$refs.force).append("svg:svg")
+        .attr("width", w)
+        .attr("height", h);
+    let leakInfo = d3.select(this.$refs.force).append("p")
+        .html(this.leakInfo.leakList);
+    let br = d3.select(this.$refs.force).append("br");
+    let leakKeyList = d3.select(this.$refs.force).append("p")
+        .html(this.leakInfo.leakKeyList);
+    // 添加 tooltip
+    let show = false;
+    let tooltip = d3.select(this.$refs.force)
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0.0);
+    //(1)创建箭头  
+    svg.append("svg:defs").selectAll("marker")
+        .data(["suit", "leaking", "cycling"])
+        .enter().append("svg:marker")
+        .attr("id", String)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 20)
+        .attr("refY", -1.5)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("svg:path")
+        .attr("d", "M0,-5L10,0L0,5");
+    //(2)根据连线类型引用上面创建的标记  
+    let path = svg.append("svg:g").selectAll("path")
+        .data(force.links())
+        .enter().append("svg:path")
+        .attr("class", function (d) { return "link " + d.type; })
+        .attr("marker-end", function (d) { return "url(#" + d.type + ")"; })
+        .on("mouseover", (function (d) {
+            show = false;
+            let source = heapMap[d.source.real_id];
+            let target = heapMap[d.target.real_id];
+            let sourceName = source.name;
+            if (sourceName.length > 50) {
+                sourceName = sourceName.substr(0, 50);
+            }
+            let targetName = target.name;
+            if (targetName.length > 50) {
+                targetName = targetName.substr(0, 50);
+            }
+            tooltip.html(`<p style="font-size:1px;color:white">${sourceName} .${d.edge} --> ${targetName}</p>`)
+                .style("left", (d3.event.offsetX + 40) + "px")
+                .style("top", (d3.event.offsetY + 50) + "px")
+                .style("opacity", 1.0);
+        }).bind(this))
+        .on("mousemove", (function (d) {
+            // tooltip.style("left", (d3.event.pageX) + "px")
+            //   .style("top", (d3.event.pageY - 120) + "px");
+        }).bind(this))
+        .on("mouseout", (function (d) {
+            if (!show) {
+                tooltip.style("opacity", 0.0);
+            }
+        }).bind(this))
+        .on("click", (function (d) {
+            show = true;
+        }).bind(this))
+        .call(force.drag);
+
+    let circle = svg.append("svg:g").selectAll("circle")
+        .data(force.nodes())
+        .enter().append("svg:circle")
+        .attr("r", 6)
+        .attr("style", "")
+        .on("mouseover", (function (d) {
+            show = false;
+            let nodeOrdinal = heapMap[d.real_id];
+            let name = nodeOrdinal.name;
+            if (name.length > 50) {
+                // 名字过长做截取
+                name = name.substr(0, 50);
+            }
+            tooltip.html(`<p style="font-size:1px;color:white">${name}: ${this.formatSize(nodeOrdinal.retainedSize)}</p>`)
+                .style("left", (d3.event.offsetX + 40) + "px")
+                .style("top", (d3.event.offsetY + 50) + "px")
+                .style("opacity", 1.0);
+        }).bind(this))
+        .on("mousemove", (function (d) {
+            // tooltip.style("left", (d3.event.pageX) + "px")
+            //   .style("top", (d3.event.pageY - 120) + "px");
+        }).bind(this))
+        .on("mouseout", (function (d) {
+            if (!show) {
+                tooltip.style("opacity", 0.0);
+            }
+        }).bind(this))
+        .on("click", (function (d) {
+            show = true;
+        }).bind(this))
+        .call(force.drag);
+    for (let circle of svg.selectAll("circle")[0]) {
+        // #ffbc58
+        if (circle.__data__.size && circle.__data__.main) {
+            circle.attributes["r"].value = circle.__data__.size;
+            circle.attributes["style"].value = "fill:#ffbc58;stroke:#ff9900;stroke-width:1px;";
+            continue;
+        }
+        if (circle.__data__.size && !circle.__data__.main) {
+            circle.attributes["r"].value = circle.__data__.size;
+            circle.attributes["style"].value = "fill:#21e683;stroke:#19be6b;stroke-width:1px;";
+        }
+    }
+
+    let text = svg.append("svg:g").selectAll("g")
+        .data(force.nodes())
+        .enter().append("svg:g");
+
+    // A copy of the text with a thick white stroke for legibility.  
+    text.append("svg:text")
+        .attr("x", 8)
+        .attr("y", ".31em")
+        .attr("class", "shadow")
+        .style("color", "red")
+        .text(function (d) { return d.name; });
+
+    text.append("svg:text")
+        .attr("x", 8)
+        .attr("y", ".31em")
+        .style("color", "red")
+        .text(function (d) { return d.name; });
+
+    // 使用椭圆弧路径段双向编码。  
+    function tick() {
+        //(3)打点path格式是：Msource.x,source.yArr00,1target.x,target.y  
+        path.attr("d", function (d) {
+            let dx = d.target.x - d.source.x,//增量  
+                dy = d.target.y - d.source.y,
+                dr = Math.sqrt(dx * dx + dy * dy);
+            return "M" + d.source.x + ","
+                + d.source.y + "A" + dr + ","
+                + dr + " 0 0,1 " + d.target.x + ","
+                + d.target.y;
+        });
+
+        circle.attr("transform", function (d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        });
+
+        text.attr("transform", function (d) {
+            return "translate(" + d.x + "," + d.y + ")";
         });
     }
-
-    function setExpandOff(myChart, param) {
-        var option = myChart.getOption();
-        //空间换时间
-        var mapsOption = cache.maps;
-        var nodesOption = cache.sourceNodes;
-        var linksOption = cache.sourceLinks;
-        var data = param.data;
-        var linksNodes = [];
-        //定义父节点
-        const father = mapsOption[data.id];
-
-        if (data != null && data != undefined && !data.source && !data.target) {
-            if (data.flag) {
-                //找出子节点的过程
-                linksNodes = father.children;
-                //将子节点设置为开启，只设置一层
-                if (linksNodes != null && linksNodes != undefined) {
-                    //子节点设置开启
-                    linksNodes.forEach(link => {
-                        const node = mapsOption[link];
-                        node.ignore = false;
-                        node.flag = true;
-                    });
-                }
-                //更改父节点状态
-                father.flag = false;
-                father.category = 0;
-
-                //只展示需要的
-                filterNodesLinks(option);
-                return option;
-            } else {
-                const tmp = [];
-                //找出子节点
-                father.children.forEach(c => linksNodes.push(c));
-                let array = [];
-                linksNodes.forEach(l => array.push(l));
-                let need = true;
-                while (array.length !== 0 && need) {
-                    const tmp = [];
-                    let tmpNeed = false;
-                    array.forEach(l => {
-                        const node = mapsOption[l];
-                        //如果本轮子节点均需要忽略，则跳出循环，只要本轮子节点有一个不需要忽略，继续下一轮
-                        if (!node.ignore) tmpNeed = true;
-                        //设置需要关闭的子节点
-                        node.children.forEach(c => tmp.push(c));
-                    });
-                    need = tmpNeed;
-                    array = tmp;
-                    tmp.forEach(l => linksNodes.push(l));
-                }
-
-                //将所有子节点设置为关闭
-                if (linksNodes != null && linksNodes != undefined) {
-                    linksNodes.forEach(link => {
-                        const node = mapsOption[link];
-                        node.ignore = true;
-                        node.flag = true;
-
-                        tmp.push(node.id);
-                    });
-                }
-
-                //更改父节点状态
-                father.flag = true;
-                father.category = 1
-
-                //只展示需要的
-                filterNodesLinks(option, tmp);
-                return option;
-            }
-        }
-    }
-
-    var option = setExpandOff(this.myChart, param);
-
-    if (option) {
-        this.myChart.setOption(option);
-    }
-}
-
-/**
- * @component: views/common/profiler/force.vue
- * @vue-data: computed
- * @descript: 引力图配置信息计算
- */
-function forceGraphOption() {
-    const forceGraph = this.forceGraph;
-    const vm = this;
-    const heapMap = vm.heapMap;
-    const formatSize = vm.formatSize;
-    const option = {
-        tooltip: {
-            show: true,
-            showDelay: 100,
-            position: function (position) {
-                return [position[0], position[1] - 20];
-            },
-            formatter: function (params, ticket, callback) {//callback
-                if (!params || !params.data) return 'error: params.data is empty!';
-                if (params.data.source || params.data.target) return params.data.source + ' -> ' + params.data.target;
-
-                let graphTmp = vm.myChart.getOption().series[0];
-                let id = graphTmp.nodes[params.dataIndex].id;
-                let index = graphTmp.nodes[params.dataIndex].index;
-
-                let linkMap = graphTmp.links.reduce((pre, next) => {
-                    let isShow = graphTmp.nodes.some(item => item.id === next.source && Boolean(item.ignore) === false);
-                    if (isShow) {
-                        pre[next.target] = { source: next.source, index: next.sourceIndex, name_or_index: next.name_or_index };
-                    }
-                    return pre;
-                }, {}) || {};
-
-                let result = {};
-                result.tracePath = function (id, index) {
-                    let str = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ')';
-                    let keyList = [];
-                    while (id) {
-                        if (!linkMap[id]) {
-                            break;
-                        }
-
-                        index = linkMap[id].index;
-
-                        let strTmp = '[' + heapMap[index].type + '] (' + heapMap[index].name + '::' + heapMap[index].id + ') \' <strong style="font-weight:600">' + linkMap[id].name_or_index + '</strong> ---> ';
-                        str = strTmp + str;
-                        keyList.push(linkMap[id].name_or_index);
-
-                        id = linkMap[id].source;
-                    }
-
-                    keyList = Array.from(new Set(keyList));
-                    str = '<strong style="font-weight:600">I. Reference List: </strong>' + str + '<br /><br />';
-                    str = str + '<strong style="font-weight:600">II. Leak Key: </strong>' + keyList.join(', ');
-                    return str;
-                };
-                result.showStr = function (id, index) {
-                    let detailTmp = heapMap[index];
-                    let percentage = '100.00%';
-                    if (linkMap[id]) {
-                        percentage = ((detailTmp.retainedSize / heapMap[linkMap[id].index].retainedSize) * 100).toFixed(2) + '%';
-                    }
-
-                    let str = '';
-                    str = '(' + percentage + ') ' + (linkMap[id] && linkMap[id].name_or_index || 'Main') + ': [' + detailTmp.type + ', ' + detailTmp.name + ', ' + formatSize(detailTmp.retainedSize) + ', ' + detailTmp.distance + ']';
-
-                    return str;
-                };
-                //root 节点放弃治疗
-                if (!isRoot(vm)) {
-                    vm.$refs.detail.innerHTML = '<p>' + result.tracePath(id, index) + '</p>';
-                }
-                return result.showStr(id, index);
-            }
-        },
-        series: [{
-            type: 'force',
-            name: "leak tree",
-            itemStyle: {
-                normal: {
-                    label: { show: true },
-                    nodeStyle: {
-                        brushType: 'both',
-                        borderColor: 'rgba(255,215,0,0.4)',
-                        borderWidth: 1
-                    }
-                }
-            },
-            categories: [{ name: 'main' }, { name: 'else' }, { name: 'leak' }],
-            nodes: [],
-            links: []
-        }]
-    };
-
-    //保存源数据
-    forceGraph.nodes.forEach(n => cache.maps[n.id] = n);
-    cache.sourceNodes = forceGraph.nodes;
-    cache.sourceLinks = forceGraph.links;
-
-    //只展示需要的
-    filterNodesLinks(option);
-    return option;
-}
-
-/**
- * @component: views/common/profiler/force.vue
- * @vue-data: computed
- * @descript: 计算当前节点大小
- */
-function retainedSize() {
-    const heapMap = this.heapMap || {};
-    const index = this.forceGraph && this.forceGraph.index || 0;
-
-    const retainedSize = heapMap[index] && heapMap[index].retainedSize || 0;
-
-    return this.formatSize(retainedSize);
 }
 
 //导出 force.vue 所需
 export default {
-    methods: { renderForcegraph, openOrFold },
-    computed: { forceGraphOption, retainedSize }
+    methods: { addEdges }, computed: { leakInfo }, watch: { links }
 }

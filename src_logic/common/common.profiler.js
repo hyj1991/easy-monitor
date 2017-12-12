@@ -441,6 +441,16 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                             return { source: m.realId };
                         }
                         if (a[i + 1]) {
+                            if (i === a.length - 2) {
+                                const lastNode = parser.serializeNode(a[i + 1].realId);
+                                if (lastNode) {
+                                    for (let edge of lastNode.edges) {
+                                        const targetNode = parser.edgeUtil.getTargetNode(edge);
+                                        const edgeRealId = parser.ordinalNode2realNode[targetNode];
+                                        addNodes(edgeRealId);
+                                    }
+                                }
+                            }
                             addNodes(a[i + 1].realId);
                             return {
                                 source: m.realId,
