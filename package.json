@@ -1,6 +1,6 @@
 {
   "name": "easy-monitor",
-  "version": "2.1.9",
+  "version": "2.2.0-bate.1",
   "description": "a node.js performance analysis tool",
   "main": "index.js",
   "scripts": {

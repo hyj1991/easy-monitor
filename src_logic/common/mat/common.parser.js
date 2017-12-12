@@ -8,9 +8,10 @@ const Parser = require('./Parser');
 
 module.exports = function (_common, config, logger, utils, cache, common) {
 
-  function sendMessage(options, message) {
+  function sendMessage(options, message, end) {
     const cb = options.callback;
-    const params = options.params.apply(options, [message, Date.now()]);
+    const params = options.params.apply(options, [message, Date.now(), end]);
+    // console.log(params.message.loadingMsg);
     return cb(params.message, params.socket);
   }
 
@@ -28,8 +29,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
     function* _parse(profile, options) {
       const limit = options.limit || 5;
       const parser = new Parser(profile, options);
-      parser.init();
-      yield sendMessage(options, { prefix: 'Parser 计算完毕', suffix: '开始计算 Dominator Tree...' });
+      yield parser.initAsync(sendMessage.bind(null, options));
       // 根据 parser 获取可疑泄漏点
       const result = new Dominator({
         numberOfObjects: parser.realNodeCount,
@@ -38,7 +38,8 @@ module.exports = function (_common, config, logger, utils, cache, common) {
         gcRootsArray: parser.gcRoots,
         heapSize: parser.heapSizeList
       }, {}).calculate();
-      yield sendMessage(options, { prefix: 'Dominator Tree 计算完毕', suffix: '分析完成' });
+      yield sendMessage(options, { prefix: 'Dominator Tree 计算完毕' });
+      yield sendMessage(options, { prefix: 'Heapsnapshot 所有分析完成' }, true);
       const total = parser.statistics.total;
       parser.retainedSizes = result.retainedSizes;
       // parser.topDominator = result.topDominator;
@@ -61,8 +62,8 @@ module.exports = function (_common, config, logger, utils, cache, common) {
 
         parser.on('data', heapData => {
           const cb = options.callback;
-          const params = options.params.apply(options, [{ prefix: `Memory 流式数据准备完毕`, suffix: `准备开始构建 Parser` }, Date.now()]);
-          cb(params.message, params.socket).then(() => parse(heapData, options)).then(resolve).catch(reject);
+          sendMessage(options, { prefix: `Memory 流式数据准备完毕`, suffix: `准备开始解析 GC Roots...` })
+            .then(() => parse(heapData, options)).then(resolve).catch(reject);
         });
 
         parser.on('error', reject);

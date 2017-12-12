@@ -210,6 +210,25 @@ class Parser {
   }
 
   /**
+   * @desc 异步解析 snapshot
+   */
+  * initAsync(cb) {
+    // 1.
+    this.readRoots();
+    yield cb({ prefix: 'GC Roots 解析完毕', suffix: '准备开始解析显式 Maps...' });
+    this.readMaps();
+    yield cb({ prefix: '显式 Maps 解析完毕', suffix: '准备开始解析隐式 Maps...' });
+    this.reportInstances();
+    yield cb({ prefix: '隐式 Maps 解析完毕', suffix: '准备开始读取 Real Nodes...' });
+    // 2.
+    this.readNodes();
+    yield cb({ prefix: 'Real Nodes 读取完毕', suffix: '准备开始将 Ordinal ID 转换为 Real ID...' });
+    // 3. 所有的 ordinal id -> real id
+    this.map2ids();
+    yield cb({ prefix: 'Real ID 转换完毕', suffix: '准备开始计算 Dominator Tree...' });
+  }
+
+  /**
    * @param {boolean} source true 表示 id 为 ordinal id，false 为 real id
    * @desc 序列化节点信息
    */
@@ -586,6 +605,7 @@ class Parser {
     let newRoots = [];
     for (let old of this.gcRoots) {
       let idx = this.ordinalNode2realNode[old];
+      if (idx === -1) continue;
       newRoots.push(idx);
     }
     // 获取 unreachable node
@@ -598,8 +618,10 @@ class Parser {
     for (let ordinal of allKeys1) {
       let list = [];
       let idx = this.ordinalNode2realNode[ordinal];
+      if (idx === -1) continue;
       for (let ordinalIndex of this.inboundIndexList[ordinal]) {
         let idx = this.ordinalNode2realNode[ordinalIndex];
+        if (idx === -1) continue;
         list.push(idx);
       }
       inboundIndexList[idx] = list;
@@ -613,6 +635,7 @@ class Parser {
       let list = [];
       for (let ordinalIndex of this.outboundIndexList[real]) {
         let idx = this.ordinalNode2realNode[ordinalIndex];
+        if (idx === -1) continue;
         list.push(idx);
       }
       outboundIndexList[real] = list;
