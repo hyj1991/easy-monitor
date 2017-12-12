@@ -228,8 +228,8 @@ class Parser {
     // }
     let edges = this.nodeUtil.getEdges(ordinalNodeId);
     let bigChild = this.getChildsDetail(ordinalNodeId, [realId]);
-    if(bigChild.length > 0){
-      edges = edges.filter((e, index)=>e!==bigChild[0].edge && index <30);
+    if (bigChild.length > 0) {
+      edges = edges.filter((e, index) => e !== bigChild[0].edge && index < 30);
       edges.unshift(bigChild[0].edge);
     }
     return {
@@ -588,7 +588,9 @@ class Parser {
       let idx = this.ordinalNode2realNode[old];
       newRoots.push(idx);
     }
-    this.gcRoots = newRoots;
+    // 获取 unreachable node
+    let unreachableNodes = this.markUnreachableNodes();
+    this.gcRoots = newRoots.concat(unreachableNodes);
 
     // 2.将 inboundIndexList 里面的 ordinal id -> real id
     let inboundIndexList = {};
@@ -641,6 +643,44 @@ class Parser {
       default:
         break;
     }
+  }
+
+  isEssentialEdge(ordinalId, edgeType) {
+    return edgeType !== 'weak' &&
+      (edgeType !== 'shortcut' || ordinalId === this.rootNodeIndex);
+  }
+
+  markUnreachableNodes() {
+    let unreachableNodes = [];
+    let visited = new Uint8Array(this.nodeCount);
+    let unvisitedNodes = [this.rootNodeIndex];
+    while (unvisitedNodes.length > 0) {
+      let tmp = [];
+      for (let unvisitedNode of unvisitedNodes) {
+        if (visited[unvisitedNode]) continue;
+        visited[unvisitedNode] = 1;
+        let edges = this.nodeUtil.getEdges(unvisitedNode);
+        for (let edge of edges) {
+          let edgeType = this.edgeUtil.getType(edge);
+          // weak 边对应的 node 当做 unreachable node 来用
+          if (!this.isEssentialEdge(unvisitedNode, edgeType)) continue;
+          let targetNode = this.edgeUtil.getTargetNode(edge);
+          tmp.push(targetNode);
+        }
+      }
+      unvisitedNodes = tmp;
+    }
+    for (let ordinalId = 0; ordinalId < this.nodeCount; ordinalId++) {
+      if (!visited[ordinalId]) {
+        let realId = this.ordinalNode2realNode[ordinalId];
+        // 无对应的真实节点的 node 不用管
+        if (realId !== -1) {
+          unreachableNodes.push(realId);
+        }
+      }
+    }
+
+    return unreachableNodes;
   }
 }
 

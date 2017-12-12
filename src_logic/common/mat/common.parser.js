@@ -8,7 +8,7 @@ const Parser = require('./Parser');
 
 module.exports = function (_common, config, logger, utils, cache, common) {
 
-  function sendMessage(options, message){
+  function sendMessage(options, message) {
     const cb = options.callback;
     const params = options.params.apply(options, [message, Date.now()]);
     return cb(params.message, params.socket);
@@ -29,7 +29,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
       const limit = options.limit || 5;
       const parser = new Parser(profile, options);
       parser.init();
-      yield sendMessage(options, {prefix:'Parser 计算完毕', suffix:'开始计算 Dominator Tree...'});
+      yield sendMessage(options, { prefix: 'Parser 计算完毕', suffix: '开始计算 Dominator Tree...' });
       // 根据 parser 获取可疑泄漏点
       const result = new Dominator({
         numberOfObjects: parser.realNodeCount,
@@ -38,7 +38,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
         gcRootsArray: parser.gcRoots,
         heapSize: parser.heapSizeList
       }, {}).calculate();
-      yield sendMessage(options, {prefix:'Dominator Tree 计算完毕', suffix:'分析完成'});
+      yield sendMessage(options, { prefix: 'Dominator Tree 计算完毕', suffix: '分析完成' });
       const total = parser.statistics.total;
       parser.retainedSizes = result.retainedSizes;
       // parser.topDominator = result.topDominator;

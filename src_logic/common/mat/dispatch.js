@@ -28,7 +28,7 @@ const jsonparser = JSONStream.parse();
 
 // ./tmp/2.heapsnapshot
 console.time('JSONStream');
-fs.createReadStream('./tmp/3.heapsnapshot').pipe(jsonparser);
+fs.createReadStream('./tmp/4.heapsnapshot').pipe(jsonparser);
 jsonparser.on('data', heapData => {
   let start = process.memoryUsage().heapUsed / 1024 / 1024;
   console.timeEnd('JSONStream');
@@ -42,13 +42,15 @@ jsonparser.on('data', heapData => {
 
   console.time('dominator');
   let domPre = process.memoryUsage().heapUsed / 1024 / 1024;
-  const { topDominator, retainedSizes } = new Dominator({
+  const result = new Dominator({
     numberOfObjects: parser.realNodeCount,
     inboundIndexList: parser.inboundIndexList,
     outboundIndexList: parser.outboundIndexList,
     gcRootsArray: parser.gcRoots,
     heapSize: parser.heapSizeList
   }, {}).calculate();
+  const topDominator = result.topDominator;
+  const retainedSizes = result.retainedSizes;
   parser.retainedSizes = retainedSizes;
   console.timeEnd('dominator');
   console.log('dom 计算耗费: ' + (process.memoryUsage().heapUsed / 1024 / 1024 - domPre) + 'M')
