@@ -284,7 +284,7 @@ class Parser {
       return leakMap;
     }
     bigChild = bigChild[0];
-    while (nowDepth < MAX_DEPTH && (bigChild.retainedSize / parentSize > 0.7)) {
+    while (nowDepth < MAX_DEPTH && (bigChild.retainedSize / parentSize > 0.5)) {
       nowDepth++;
       record.push(bigChild.realId);
       leakMap.push(bigChild);
