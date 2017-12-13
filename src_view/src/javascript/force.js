@@ -191,6 +191,7 @@ function links() {
         }).bind(this))
         .on("click", (function (d) {
             show = true;
+            d3.event.stopPropagation();
         }).bind(this))
         .call(force.drag);
 
@@ -223,6 +224,7 @@ function links() {
         }).bind(this))
         .on("click", (function (d) {
             show = true;
+            d3.event.stopPropagation();
         }).bind(this))
         .call(force.drag);
     for (let circle of svg.selectAll("circle")[0]) {

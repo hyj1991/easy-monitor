@@ -68,6 +68,12 @@ export default {
   },
 
   mounted() {
+    document.addEventListener('click', (e) => {
+      const $dom = document.querySelector('.tooltip');
+      if($dom) {
+        $dom.style.opacity = '0.0'
+      }
+    })
   },
 
   props: ['heapMap', 'links', 'formatSize'],
