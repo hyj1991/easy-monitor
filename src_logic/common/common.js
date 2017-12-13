@@ -3,7 +3,7 @@ const path = require('path');
 const glob = require('glob');
 const colors = require('colors/safe');
 const ext = { prefix: 'common', suffix: 'js' };
-const commonBase = `./**/${ext.prefix}.*.${ext.suffix}`;
+const commonBase = `./**/${ext.prefix}.!(heap|model|worker).${ext.suffix}`;
 
 /**
  * @param {string} base @param {string} files

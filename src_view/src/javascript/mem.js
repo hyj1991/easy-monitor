@@ -276,8 +276,8 @@ function onTreeSelect(obj) {
             //以下是需要判断的变量
             let disabled = false;
             let name = cDetail.name;
-            if(name.length > 50){
-                name = name.substring(0,50);
+            if (name.length > 100) {
+                name = name.substring(0, 100);
             }
             let title = `<p style="font-size:1.0em"><strong>.${item.edge}</strong> => <strong>${name}::${cDetail.address}</strong>  (type: ${cDetail.type}, size: ${formatSize(cDetail.retainedSize)})</p>`
 
