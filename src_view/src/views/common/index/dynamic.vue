@@ -104,32 +104,32 @@ strong {
                 </i-switch>
             </p>
             <!-- 是否展示 root 节点 -->
-            <p style="font-size:1.1em;margin-bottom:10px">展示 Root 节点起始引力图:
+            <!-- <p style="font-size:1.1em;margin-bottom:10px">展示 Root 节点起始引力图:
                 <i-switch size="large" v-model="memRoot" :disabled="memRootDisable" style="margin-left:10px;vertical-align:-7px">
                     <span slot="open">开启</span>
                     <span slot="close">关闭</span>
                 </i-switch>
-            </p>
+            </p> -->
             <!-- 展示多少个疑似泄漏点 -->
             <p style="font-size:1.1em;margin-bottom:10px">疑似泄漏点展示个数:
                 <Input-number :max="50" :min="1" v-model="memLeakLimit" :disabled="memLeakLimitDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  个
             </p>
             <!-- 每一个节点子节点个数 -->
-            <p style="font-size:1.1em;margin-bottom:10px">引力图每一个 Node 展示的子节点个数:
+            <!-- <p style="font-size:1.1em;margin-bottom:10px">引力图每一个 Node 展示的子节点个数:
                 <Input-number :max="20" :min="1" v-model="memChildren" :disabled="memChildrenDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  个
-            </p>
+            </p> -->
             <!-- root 节点起始引力图深度 -->
-            <p style="font-size:1.1em;margin-bottom:10px">Root 节点起始引力图深度:
+            <!-- <p style="font-size:1.1em;margin-bottom:10px">Root 节点起始引力图深度:
                 <Input-number :max="100" :min="1" v-model="memRootDistance" :disabled="memRootDistanceDisable || !memRoot" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  Distance
-            </p>
+            </p> -->
             <!-- 疑似泄漏节点起始引力图深度 -->
-            <p style="font-size:1.1em;margin-bottom:20px">疑似泄漏节点起始引力图深度:
+            <!-- <p style="font-size:1.1em;margin-bottom:20px">疑似泄漏节点起始引力图深度:
                 <Input-number :max="100" :min="1" v-model="memLeakDistance" :disabled="memLeakDistanceDisable" size=small style="margin-left:10px;margin-right:10px;vertical-align:-7px"></Input-number>
                  Distance
-            </p>
+            </p> -->
 
             <!-- 鉴权配置 -->
             <header class="header">

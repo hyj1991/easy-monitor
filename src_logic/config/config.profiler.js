@@ -58,8 +58,8 @@ exports = module.exports = function (config) {
 
             //定义 cpu profiling 操作期间的文字提示
             cpu: {
-                //cpu profiling 时间长短
-                profiling_time: 5 * 1000,
+                //cpu profiling 时间长短，默认开启 5min
+                profiling_time: 300 * 1000,
 
                 //是否允许更改
                 profiling_time_disable: false,

@@ -1,39 +1,93 @@
 <style>
+.tooltip {
+  width: 120;
+  height: auto;
+  padding: 0px 5px;
+  position: absolute;
+  text-align: center;
+  border-style: solid;
+  border-width: 1px;
+  background-color: rgba(73, 80, 96, 0.87);
+  border-radius: 3px;
+}
+
+path.link {
+  fill: none;
+  stroke: #80848f;
+  stroke-width: 1px;
+}
+
+marker#suit {
+  fill: #5cadff;
+}
+
+path.link.suit {
+  stroke: #5cadff;
+}
+
+marker#leaking {
+  fill: #19be6b;
+}
+
+path.link.leaking {
+  stroke: #19be6b;
+}
+
+path.link.cycling {
+  stroke-dasharray: 0, 2 1;
+}
+
+circle {
+  fill: #5cadff;
+  stroke: #2d8cf0;
+  stroke-width: 1px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
 </style>
 
 <template>
-    <div class="index">
-        <p>当前节点大小为 <strong style="font-weight:500">{{ retainedSize }}</strong></p>
-        <div ref="force" :style="self_style || default_style"></div>
-        <div ref="detail"></div>
-    </div>
+  <div class="index" ref="force">
+  </div>
 </template>
 
 <script>
 
 export default {
-    data() {
-        return { myChart: null, default_style: "width:1000px;height:600px;" }
-    },
+  data() {
+    return { nodeOrdinal: null }
+  },
 
-    mounted() {
-        this.renderForcegraph();
-    },
+  mounted() {
+    document.addEventListener('click', (e) => {
+      const $dom = document.querySelector('.tooltip');
+      if($dom) {
+        $dom.style.opacity = '0.0'
+      }
+    })
+  },
 
-    props: ['forceGraph', 'self_style', 'heapMap', 'formatSize'],
+  props: ['heapMap', 'links', 'formatSize'],
 
-    methods: {
-        renderForcegraph() { this.$_js.force.methods.renderForcegraph.call(this); },
-        openOrFold(param) { this.$_js.force.methods.openOrFold.call(this, param); }
-    },
+  methods: {
+    addEdges(edges, parent, leak) { this.$_js.force.methods.addEdges.apply(this, [edges, parent, leak]); }
+  },
 
-    computed: {
-        forceGraphOption() { return this.$_js.force.computed.forceGraphOption.call(this); },
-        retainedSize() { return this.$_js.force.computed.retainedSize.call(this); }
-    },
+  computed: {
+    leakInfo() { return this.$_js.force.computed.leakInfo.call(this); }
+  },
 
-    watch: {
-        forceGraph() { this.renderForcegraph(); }
-    }
+  watch: {
+    links() { this.$_js.force.watch.links.call(this); }
+  }
 }
 </script>
