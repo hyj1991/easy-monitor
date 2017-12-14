@@ -143,7 +143,11 @@ function links() {
     let tooltip = d3.select(this.$refs.force)
         .append("div")
         .attr("class", "tooltip")
-        .style("opacity", 0.0);
+        .style("opacity", 0.0)
+        .on("click", function (d) {
+            show = true;
+            d3.event.stopPropagation();
+        });
     //(1)创建箭头  
     svg.append("svg:defs").selectAll("marker")
         .data(["suit", "leaking", "cycling"])
