@@ -69,7 +69,7 @@ export default {
 
   mounted() {
     document.addEventListener('click', (e) => {
-      const $dom = document.querySelector('.tooltip');
+      const $dom = document.querySelector('.force-tooltip');
       if ($dom) {
         $dom.style.opacity = '0.0'
       }
