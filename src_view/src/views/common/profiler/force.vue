@@ -1,4 +1,4 @@
-<style>
+<style scoped>
 .tooltip {
   width: 120;
   height: auto;
