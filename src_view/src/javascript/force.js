@@ -57,6 +57,10 @@ function leakInfo() {
         }
     }).join('');
 
+    let firstKey = leakKeyList.shift();
+    leakKeyList = Array.from(new Set(leakKeyList));
+    leakKeyList.unshift(firstKey);
+
     return {
         leakList: str,
         leakKeyList: leakKeyList.join(', ')
