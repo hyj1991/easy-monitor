@@ -142,7 +142,7 @@ function links() {
     let show = false;
     let tooltip = d3.select(this.$refs.force)
         .append("div")
-        .attr("class", "tooltip")
+        .attr("class", "force-tooltip")
         .style("opacity", 0.0)
         .on("click", function (d) {
             show = true;

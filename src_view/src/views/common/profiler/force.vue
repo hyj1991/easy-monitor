@@ -1,5 +1,5 @@
-<style scoped>
-.tooltip {
+<style>
+.force-tooltip {
   width: 120;
   height: auto;
   padding: 0px 5px;
@@ -43,7 +43,7 @@ circle {
   stroke-width: 1px;
 }
 
-text {
+.force-view text {
   font: 10px sans-serif;
   pointer-events: none;
 }
@@ -56,7 +56,7 @@ text.shadow {
 </style>
 
 <template>
-  <div class="index" ref="force">
+  <div class="force-view" ref="force">
   </div>
 </template>
 
@@ -70,7 +70,7 @@ export default {
   mounted() {
     document.addEventListener('click', (e) => {
       const $dom = document.querySelector('.tooltip');
-      if($dom) {
+      if ($dom) {
         $dom.style.opacity = '0.0'
       }
     })
