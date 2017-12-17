@@ -2,10 +2,11 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <style scoped lang="less">
     .func_g:hover { stroke:black; stroke-width:0.5; }
+    .flamegraph-view text { font: 11px sans-serif;}
 </style>
 
 <template>
-<svg ref="svg" version="1.1" id="flamegraph-svg"
+<svg class="flamegraph-view" ref="svg" version="1.1" id="flamegraph-svg"
   data-width="100%" width="100%"
   :height="data.imageheight" :data-height="data.imageheight"
   xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
