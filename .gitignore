@@ -7,3 +7,4 @@ package-lock.json
 index_prod.html
 coverage
 tmp
+dispatch.js

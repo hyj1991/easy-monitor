@@ -337,30 +337,25 @@ class Parser {
     return details;
   }
 
-  getRealNodeInfo(realId, type) {
-    const nodeSourceId = this.realNode2OrdinalNode[realId];
-    if (!realId || nodeSourceId === -1) {
-      throw new Error("Bad Real Node Id");
+  /**
+   * @desc 获取 gc roots 路径
+   */
+  getPath2GCRoots(realId, limit, path2gcroots, record) {
+    path2gcroots = path2gcroots || [];
+    limit = limit || 1;
+    record = record || [];
+    record.push(realId);
+    if (~this.gcRoots.indexOf(realId)) {
+      path2gcroots.push(record.slice());
     }
-
-    switch (type) {
-      case 'name':
-        return this.nodeUtil.getName(nodeSourceId);
-        break;
-      case 'address':
-        return this.nodeUtil.getAddress(nodeSourceId);
-        break;
-      case 'ordinal':
-        return nodeSourceId;
-        break;
-      default:
-        return {
-          name: this.nodeUtil.getName(nodeSourceId),
-          address: this.nodeUtil.getAddress(nodeSourceId),
-          ordinal: nodeSourceId
-        }
-        break;
+    if (path2gcroots.length < limit) {
+      for (let inbound of this.inboundIndexList[realId]) {
+        if (~record.indexOf(inbound)) continue;
+        this.getPath2GCRoots(inbound, limit, path2gcroots, record);
+      }
+      record.pop();
     }
+    return path2gcroots;
   }
 
   /**

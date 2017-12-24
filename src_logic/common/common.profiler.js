@@ -439,6 +439,7 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                 const leakMaps = leakPoints.map(point => {
                     let nowCacheDepth = 0;
                     let leakMapList = parser.getLeakMap(point);
+                    let path2GCRoots = parser.getPath2GCRoots(point);
                     if (!leakMapList.length) return;
                     let needCacheNodesRealIdList = [leakMapList[leakMapList.length - 1].realId];
                     while (nowCacheDepth < MAX_CACHE_DEPTH && needCacheNodesRealIdList.length > 0) {
@@ -476,7 +477,21 @@ module.exports = function (_common, config, logger, utils, cache, common) {
                             }
                         }
                         return false;
-                    }).filter(item => item);
+                    }).filter(item => item)/* .concat(path2GCRoots.reduce((pre, p2gs, i, a) => {
+                        // 设置 gc root
+                        // setGCRoot(p2gs[p2gs.length - 1]);
+                        p2gs.forEach((p2g, i, a) => {
+                            if (a[i + 1]) {
+                                addNodes(a[i + 1]);
+                                pre.push({
+                                    source: a[i + 1],
+                                    target: p2g,
+                                    // edge: p2g && parser.serializeEdge(p2g).nameOrIndex || false
+                                })
+                            }
+                        })
+                        return pre;
+                    }, [])) */;
                 });
 
                 // rootIndex 对应的是 ordinal id
