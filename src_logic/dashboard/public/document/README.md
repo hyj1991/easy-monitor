@@ -89,12 +89,18 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的 Node 项目进程，�
 * 修正了 [issue#35](https://github.com/hyj1991/easy-monitor/issues/35) 提供的 bug
 * 增加了 CPU Profiling 日志解析后的 Flamegraph 展示
 * 优化了解析算法
-* 去除了 CPU Profiling 展示韩函数执行超过阈值的列表（意义不是很大，替换为火焰图展示）
+* 去除了 CPU Profiling 展示函数执行超过阈值的列表（意义不是很大，替换为火焰图展示）
 
 **v2.2.0:**
 
 * 优化了 Dominator Tree 计算过程
 * 优化了疑似内存泄漏链条的引力图，使用 D3.js
+
+**v2.2.1:**
+
+* 修正了 [issue#49](https://github.com/hyj1991/easy-monitor/issues/49) 提供的 bug
+* 优化了默认 CPU Profiling 的时长至 5min
+* 优化了去重疑似内存泄漏 key 列表
 
 ## **II. 快速开始**
 
