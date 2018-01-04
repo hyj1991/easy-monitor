@@ -81,7 +81,7 @@ const GCRootInfo = {
 const GCRootType = {
   '(Internalized strings)': { desc: "kStringTable", value: -1 },
   '(External strings)': { desc: "kExternalStringsTable", value: -1 },
-  '(Smi roots)': { desc: 'kSmiRootList', vallue: -1 },
+  '(Smi roots)': { desc: 'kSmiRootList', value: -1 },
   '(Strong roots)': { desc: 'kStrongRootList', value: GCRootInfo.JS_SYSTEM_OBJ },
   '(Internal string)': { desc: 'kInternalizedString', value: GCRootInfo.JS_SYSTEM_OBJ },
   '(Bootstrapper)': { desc: 'kBootstrapper', value: GCRootInfo.JS_SYSTEM_OBJ },
