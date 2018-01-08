@@ -66,7 +66,7 @@ class Node {
     // 获取 node ordinal index
     const nodeOrdinalIndex = source && id / this.parser.nodeFieldLength || id;
     const firstEdgeIndex = this.parser.firstEdgeIndexs[nodeOrdinalIndex];
-    const nextFirstEdgeIndex = this.parser.firstEdgeIndexs[nodeOrdinalIndex + 1];
+    const nextFirstEdgeIndex = this.parser.firstEdgeIndexs[nodeOrdinalIndex + 1] || this.parser.edges.length;
     const edges = [];
     for (let i = firstEdgeIndex; i < nextFirstEdgeIndex; i += this.parser.edgeFiledLength) {
       edges.push(i);

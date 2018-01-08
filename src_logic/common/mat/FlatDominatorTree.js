@@ -13,7 +13,7 @@ let dump;
 let tempIntArray = new Array(TEMP_ARR_LENGTH).fill(0);
 
 function calculateTotalSizesIterative(e) {
-    let retained = new LongIndexCollector();
+    let retained = new LongIndexCollector(dump.numberOfObjects);
 
     let capacity = 2047;
     let size = 0;
@@ -25,9 +25,6 @@ function calculateTotalSizesIterative(e) {
     stack[size] = currentEntry;
     succStack[size] = currentSucc;
     size++;
-
-
-    let counter = 0;
 
     while (size > 0) {
         currentEntry = stack[size - 1];
