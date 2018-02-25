@@ -2,9 +2,11 @@
 const co = require('co');
 const MAX_CACHE_DEPTH = 5;
 /** 因为 v8-profiler 在 node 8.x 上有 bug，且官方响应太慢，故先行修复此 bug，
-发布 v8-profiler-node8 作为临时方案，等到官方修复后再恢复官方版本 */
+发布 v8-profiler-node8 作为临时方案，等到官方修复后再恢复官方版本 
+v8-profiler-node8 在window系统存在编码问题，使用v8-profiler-fixed修复
+*/
 // const v8Profiler = require('v8-profiler');
-const v8Profiler = require('v8-profiler-node8');
+const v8Profiler = require('v8-profiler-fixed');
 // const analysisLib = require('v8-analytics');
 
 module.exports = function (_common, config, logger, utils, cache, common) {
