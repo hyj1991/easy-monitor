@@ -47,6 +47,6 @@
     "lodash": "^4.17.4",
     "pretty-bytes": "^4.0.2",
     "serve-favicon": "^2.4.3",
-    "v8-profiler-node8": "^5.7.6"
+    "v8-profiler-node8": "^5.7.7"
   }
 }
