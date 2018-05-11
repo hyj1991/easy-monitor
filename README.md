@@ -24,6 +24,7 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的 Node 项目进程，�
 * Node v4.x
 * Node v6.x
 * Node v8.x
+* Node v10.x
 
 因为 Node.js 的 LTS 版本都是偶数版本，所以此处并未对于奇数版本进行测试（v5.x，v7.x），如果有测试过的可以以 [issue](https://github.com/hyj1991/easy-monitor/issues) 的形式将兼容性结果反馈。
 
@@ -155,6 +156,10 @@ app.listen(8082);
 * 修正了 [issue#49](https://github.com/hyj1991/easy-monitor/issues/49) 提供的 bug
 * 优化了默认 CPU Profiling 的时长至 5min
 * 优化了去重疑似内存泄漏 key 列表
+
+**v2.2.2:**
+
+* 解决了 v8-profiler-node8 这个模块在 v10.x 下编译不过的问题，更新了对应的依赖，以支持部分开发者 v10.x 尝鲜
 
 ## V. 单元 & 覆盖率测试
 
