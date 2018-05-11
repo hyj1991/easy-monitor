@@ -41,6 +41,14 @@ class Node {
     return types[this.parser.nodes[nodeSourceIndex + this.parser.nodeTypeOffset]];
   }
 
+  getTypeByInt(id, source) {
+    if (source && id % this.parser.nodeFieldLength !== 0) {
+      throw new Error('Bad Node Source ID!');
+    }
+    const nodeSourceIndex = source && id || id * this.parser.nodeFieldLength;
+    return this.parser.nodes[nodeSourceIndex + this.parser.nodeTypeOffset];
+  }
+
   /**
    * @param {Boolean} source true 表示源 index，false 表示处理后 index
    * @desc 获取 node 名称
@@ -52,6 +60,14 @@ class Node {
     const nodeSourceIndex = source && id || id * this.parser.nodeFieldLength;
     const strings = this.parser.strings;
     return strings[this.parser.nodes[nodeSourceIndex + this.parser.nodeNameOffset]];
+  }
+
+  getNameByInt(id, source) {
+    if (source && id % this.parser.nodeFieldLength !== 0) {
+      throw new Error('Bad Node Source ID!');
+    }
+    const nodeSourceIndex = source && id || id * this.parser.nodeFieldLength;
+    return this.parser.nodes[nodeSourceIndex + this.parser.nodeNameOffset];
   }
 
   /**

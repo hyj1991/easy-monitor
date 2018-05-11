@@ -636,6 +636,29 @@ class Parser {
       outboundIndexList[real] = list;
     }
     this.outboundIndexList = outboundIndexList;
+
+    // ArrayBuffer 计算
+    for (let ordinalId = 0; ordinalId < this.nodeCount; ordinalId++) {
+      let name = this.nodeUtil.getName(ordinalId, false);
+      let address = this.nodeUtil.getAddress(ordinalId, false);
+      let selfSize = this.nodeUtil.getSelfSize(ordinalId, false);
+      let edges = this.nodeUtil.getEdges(ordinalId, false);
+      let vm = this;
+      if (name == "ArrayBuffer") {
+        let detail = edges.map(edge => {
+          let node = vm.edgeUtil.getTargetNode(edge, true);
+          let inbound = inboundIndexList[node];
+          if (inbound && inbound.length == 1) {
+            // console.log(inbound);
+            let size = vm.nodeUtil.getSelfSize(node, false);
+            let type = vm.edgeUtil.getType(edge, true);
+            let name = vm.edgeUtil.getNameOrIndex(edge, true);
+            return { size, type, name, inbound };
+          }
+        }).filter(item => item);
+        console.log(`${name} @${address}: ${selfSize}, ${JSON.stringify(detail)}`);
+      }
+    }
   }
 
   calculateStatics(nodeOrdinalId) {
