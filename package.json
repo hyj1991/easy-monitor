@@ -1,6 +1,6 @@
 {
   "name": "easy-monitor",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "a node.js performance analysis tool",
   "main": "index.js",
   "scripts": {
@@ -47,6 +47,6 @@
     "lodash": "^4.17.4",
     "pretty-bytes": "^4.0.2",
     "serve-favicon": "^2.4.3",
-    "v8-profiler-node8": "^5.7.7"
+    "v8-profiler-node8": "^5.7.8"
   }
 }
