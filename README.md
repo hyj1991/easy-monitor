@@ -161,6 +161,11 @@ app.listen(8082);
 
 * 解决了 v8-profiler-node8 这个模块在 v10.x 下编译不过的问题，更新了对应的依赖，以支持部分开发者 v10.x 尝鲜
 
+**v2.2.3:**
+
+* 修正了 [issue#73](https://github.com/hyj1991/easy-monitor/issues/73) 提供的 bug
+  * 会导致某些场景下的 cpu profile 序列化时出错
+
 ## V. 单元 & 覆盖率测试
 
 git clone 下本项目并且安装完毕 dependence 依赖后，执行如下命令进行单元测试:
