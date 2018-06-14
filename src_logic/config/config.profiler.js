@@ -219,12 +219,12 @@ exports = module.exports = function (config) {
              */
             filter_function: function (filePath, funcName) {
                 //过滤掉包含 node_modules 和 anonymous 的函数
-                const needIgnore = ['node_modules', 'anonymous'].some(fileName => {
+                const needIgnore = ['node_modules', 'anonymous', '(0)'].some(fileName => {
                     return Boolean(~(filePath.indexOf(fileName))) || Boolean(~(funcName.indexOf(fileName)))
                 });
 
                 //结构路径必须以 "(/" 开始
-                const mustHave = [/^\(\/.*/].every(regexp => {
+                const mustHave = [/^\(\/.*/, /^\([C-Z]\:/].some(regexp => {
                     return Boolean(regexp.test(filePath));
                 });
 
