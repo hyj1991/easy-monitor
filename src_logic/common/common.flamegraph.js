@@ -174,7 +174,7 @@ module.exports = function (_common, config, logger, utils) {
             const nodes = this._nodes;
             const each = this._each;
             const funcList = Object.keys(nodes).filter(f => !this._filter || this._filter(nodes[f].url, nodes[f].funcName));
-            funcList.forEach(f => {
+            Object.keys(nodes).forEach(f => {
                 const execTime = (nodes[f].etime - nodes[f].stime) * each;
                 nodes[f].execTime = execTime;
                 if (nodes[f].parent.mock) {
