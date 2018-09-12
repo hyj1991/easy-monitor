@@ -111,6 +111,11 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的 Node 项目进程，�
 * 修正了 [issue#73](https://github.com/hyj1991/easy-monitor/issues/73) 提供的 bug
   * 会导致某些场景下的 cpu profile 序列化时出错
 
+**v2.2.4:**
+
+* 修正了 [issue#81](https://github.com/hyj1991/easy-monitor/issues/81) 提供的 bug
+  * Node 10 下编译 v8-profiler-node8 失败
+
 ## **II. 快速开始**
 
 ### - 安装模块
