@@ -171,6 +171,11 @@ app.listen(8082);
 * 修正了 [issue#81](https://github.com/hyj1991/easy-monitor/issues/81) 提供的 bug
   * Node 10 下编译 v8-profiler-node8 失败
 
+**v2.2.5:**
+
+* 修正了 [issue#85](https://github.com/hyj1991/easy-monitor/issues/85) 提供的 bug
+  * 开启了 auth 但是未启用 admin 账号下，保存一次配置信息后会出现没有权限操作的提示
+
 ## V. 单元 & 覆盖率测试
 
 git clone 下本项目并且安装完毕 dependence 依赖后，执行如下命令进行单元测试:

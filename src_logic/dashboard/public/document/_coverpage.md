@@ -1,4 +1,4 @@
-# <a href="#">Easy-Monitor <small>v2.2.4</small></a>
+# <a href="#">Easy-Monitor <small>v2.2.5</small></a>
 
 > 轻量级实时 Node.js 内核性能监控分析工具
 
