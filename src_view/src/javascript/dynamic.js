@@ -95,6 +95,7 @@ function fetchConfig(data, cb) {
                     vm.authNeed = Boolean(auth.need);
                     vm.authNeedDisable = auth.disable.need;
                     vm.adminList = Array.isArray(auth.admin) && auth.admin || [];
+                    vm.rawAdmin = auth.admin;
                     vm.normalList = Array.isArray(auth.project_auth) && auth.project_auth || [];
                 }
 
@@ -169,7 +170,7 @@ function axiosFetch(type, cb) {
 
         //设置修改后的 auth 配置
         data.auth = {
-            admin: this.adminList,
+            admin: this.rawAdmin === false ? false : this.adminList,
             project_auth: this.normalList
         }
 
