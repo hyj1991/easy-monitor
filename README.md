@@ -176,6 +176,11 @@ app.listen(8082);
 * 修正了 [issue#85](https://github.com/hyj1991/easy-monitor/issues/85) 提供的 bug
   * 开启了 auth 但是未启用 admin 账号下，保存一次配置信息后会出现没有权限操作的提示
 
+**v2.2.6:**
+
+* 修正了 [issue#89](https://github.com/hyj1991/easy-monitor/issues/89) 提供的 bug
+  * 配置虚拟路径转发后，d3.js 没有正确重定向
+
 ## V. 单元 & 覆盖率测试
 
 git clone 下本项目并且安装完毕 dependence 依赖后，执行如下命令进行单元测试:
