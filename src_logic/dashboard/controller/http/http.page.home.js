@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports = function(app){
+module.exports = function (app) {
     //取出公共对象
     const common = this.common;
     const config = this.config;
@@ -10,14 +10,14 @@ module.exports = function(app){
 
     //客户端采用 Vue 编写的单页面应用，故而这些路由均需指向 index.ejs 文件
     app.get([
-          `${config.http.prefix}/`,
-          `${config.http.prefix}/${config.http.router.page_index}`,
-          `${config.http.prefix}/${config.http.router.page_profiler}`,
-          `${config.http.prefix}/${config.http.router.page_overview}` ],
-      (req, res, next) => res.render('index', { config: { prefix: config.http.prefix } }));
+        `${config.http.prefix}/`,
+        `${config.http.prefix}/${config.http.router.page_index}`,
+        `${config.http.prefix}/${config.http.router.page_profiler}`,
+        `${config.http.prefix}/${config.http.router.page_overview}`],
+        (req, res, next) => res.render('index', { config: { prefix: config.http.prefix } }));
 
     //无需增加额外路由
-    if( !config.http.prefix ) return;
+    if (!config.http.prefix) return;
 
     /** 以下是针对配置单页路由后的静态资源文件重定向 **/
     const forwardList = [
@@ -45,7 +45,7 @@ module.exports = function(app){
         const newFileContent = needReplace && fileContent.replace(/\/dist\//g, `${config.http.prefix}/dist/`);
 
         //设置路由
-        app.get(`${config.http.prefix}${fd}`, function(req, res, next){
+        app.get(`${config.http.prefix}${fd}`, function (req, res, next) {
             needReplace ? res.end(newFileContent) : res.sendFile(config.dashboard.public || path.join(__dirname, `../../public${fd}`));
         });
     });
