@@ -21,7 +21,7 @@ module.exports = function (app) {
 
     /** 以下是针对配置单页路由后的静态资源文件重定向 **/
     const forwardList = [
-        '/echarts2.min.js',
+        '/dist/d3.v2.js',
         '/dist/main.css',
         '/dist/vendors.js',
         '/dist/main.js',
