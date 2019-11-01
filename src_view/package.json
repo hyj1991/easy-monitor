@@ -16,7 +16,7 @@
   "author": "Aresn",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.16.1",
+    "axios": "^0.19.0",
     "echarts": "^3.5.4",
     "iview": "2.0.0-rc.13",
     "lodash": "^4.17.4",
