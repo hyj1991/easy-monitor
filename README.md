@@ -85,11 +85,11 @@ app.listen(8082);
 
 将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！
 
-这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://47.100.164.242/index)，可以点击进入自行尝试一番。
+这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://120.27.24.200/easy-monitor/index)，可以点击进入自行尝试一番。
 
 ## III. 深度定制化 & 通用配置 &动态更新配置
 
-深度定制化开发、通用配置项以及如何动态更新配置项详见 [Easy-Monitor 详细文档](http://47.100.164.242/document)
+深度定制化开发、通用配置项以及如何动态更新配置项详见 [Easy-Monitor 详细文档](http://120.27.24.200/easy-monitor/document)
 
 图文指南，参见 [Easy-Monitor 2.0: 开启你的 Node.js 内核性能监控](https://cnodejs.org/topic/594f6e21642874f845d9fe0d#599beae0bae6f2ed6f7e4c45)
 
@@ -97,7 +97,7 @@ app.listen(8082);
 
 **v2.1.0:**
 
-* 增加了动态更新配置的功能，[Easy-Monitor 详细文档](http://47.100.164.242/document) 中同步添加动态更新配置的功能说明
+* 增加了动态更新配置的功能，[Easy-Monitor 详细文档](http://120.27.24.200/easy-monitor/document) 中同步添加动态更新配置的功能说明
 
 **v2.1.1:**
 
@@ -126,7 +126,7 @@ app.listen(8082);
 
 **v2.1.5:**
 
-* 增加了虚拟路径转发的功能，[Easy-Monitor 详细文档](http://47.100.164.242/document/#/?id=-%E8%99%9A%E6%8B%9F%E8%B7%AF%E5%BE%84%E8%BD%AC%E5%8F%91) 中同步添加虚拟路径转发的功能说明
+* 增加了虚拟路径转发的功能，[Easy-Monitor 详细文档](http://120.27.24.200/easy-monitor/document#/?id=-%e8%99%9a%e6%8b%9f%e8%b7%af%e5%be%84%e8%bd%ac%e5%8f%91) 中同步添加虚拟路径转发的功能说明
 
 **v2.1.6:**
 
@@ -181,7 +181,7 @@ app.listen(8082);
 * 修正了 [issue#89](https://github.com/hyj1991/easy-monitor/issues/89) 提供的 bug
   * 配置虚拟路径转发后，d3.js 没有正确重定向
 
-**v2.2.7:**
+**v2.2.7 & v2.2.8:**
 
 * 更新了 easy-monitor 的 demo & document 服务至阿里云主机
 

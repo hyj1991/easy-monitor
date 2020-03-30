@@ -126,7 +126,7 @@ Easy-Monitor 旨在帮助大家更深入的理解自己的 Node 项目进程，�
 * 修正了 [issue#89](https://github.com/hyj1991/easy-monitor/issues/89) 提供的 bug
   * 配置虚拟路径转发后，d3.js 没有正确重定向
 
-**v2.2.7:**
+**v2.2.7 & v2.2.8:**
 
 * 更新了 easy-monitor 的 demo & document 服务至阿里云主机
 
@@ -176,7 +176,7 @@ app.listen(8082);
 
 将上述的内容保存成一个 js 文件，启动后访问 http://127.0.0.1:12333 即进入 Easy-Monitor 的首页，就是这样的简单！
 
-这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://47.100.164.242/index)，可以点击进入自行尝试一番。
+这里有一个在线真实的 Demo 地址：[Easy-Monitor Demo](http://120.27.24.200/easy-monitor/index)，可以点击进入自行尝试一番。
 
 ## **III. 定制化**
 
@@ -770,7 +770,7 @@ server {
 
 这里可以看到，所有以 ```/monitor``` 开始的 URL，均会被转发到本地的 12333 端口，即 Easy-Monitor 的 Dashboard 启动的 Http 展示服务器的端口，这样就达到了虚拟路径转发的目的。
 
-可以点击 [虚拟路径转发部署实例](http://47.100.164.242/monitor) 来感受一番~
+可以点击 [虚拟路径转发部署实例](http://120.27.24.200/easy-monitor) 来感受一番~
 
 !> cluster 模式下 ```http ``` 节点仅需在 dashboard 进程启动参数中带上即可。cluster 模式下此参数对 embrace 进程无效。
 
