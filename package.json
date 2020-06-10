@@ -3,9 +3,6 @@
   "version": "3.0.0-venus",
   "description": "node.js performance monitor",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyj1991/easy-monitor.git"
