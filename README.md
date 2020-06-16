@@ -27,7 +27,7 @@ Easy-Monitor 3.0 使用文档部署在语雀上，详细内容参见 [Easy-Monit
 
 ### - 项目地址
 
-因为架构整体变动巨大，Easy-Monitor 3.0 划分了多个子模块存放于组织 X-Profiler 中，地址为：https://github.com/X-Profiler。
+因为架构整体变动巨大，Easy-Monitor 3.0 划分了多个子模块存放于组织 X-Profiler 中，地址为：https://github.com/X-Profiler
 
 项目具体拆分的各个子模块功能简述与仓库地址：
 
