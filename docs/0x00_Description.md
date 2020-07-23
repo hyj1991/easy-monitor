@@ -1,15 +1,15 @@
 # Description
 
-As a Node.js developer, I know that for front-end developers who are new to the server field, it is easy to get lost when introducing Node.js:
+As a Node.js developer, I know it very well that it is easy for front-end developers who are new to the server field to get lost when they are introducing Node.js:
 
--   My application memory has risen a little bit. Why?
--   Why is the response time of my application so slow?
--   Where is the performance bottleneck of my code?
+-   My application memory keeps rising in a little bit. What is the reason?
+-   Why does my application have a long response time?
+-   Where are the performance bottlenecks of my code?
 -   ...
 
 Easy-Monitor is a solution for Node.js application performance monitoring and online fault location.
 
-Aiming at the open source ecological tool chain of Node.js, do something that can help developers who want to use and are using Node.js to better perceive their Node.js application status, so as to better face the performance and stable challenges.
+Aiming at the open source ecological tool chain of Node.js, Easy-Monitor helps developers who want to use and in use Node.js to better perceive the status of their Node.js applications, so as to better face the challenges from performance and stability.
 
 ## Main features
 
