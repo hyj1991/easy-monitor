@@ -9,6 +9,8 @@
 
 点击 [Easy-Monitor 2.0 分支](https://github.com/hyj1991/easy-monitor/tree/v2.x) 可以访问旧的 2.x 分支查看以前的版本。
 
+点击 [Easy-Monitor 3.0 部署样例](http://120.27.24.200:7443) 对 3.0 版本的控制台部署和应用接入效果以及功能进行预览。
+
 ## 3.0 简介
 
 全新的企业级 Node.js 应用性能监控与线上故障定位解决方案。
@@ -40,8 +42,6 @@ Easy-Monitor 3.0 使用文档部署在语雀上，详细内容参见 [Easy-Monit
 * xtransit 长连接服务：[xtransit-server](https://github.com/X-Profiler/xtransit-server)
 * 性能日志生成插件：[xprofiler](https://github.com/X-Profiler/xprofiler)
 * 性能日志采集器：[xtransit](https://github.com/X-Profiler/xtransit)
-
-可以点击 [Easy-Monitor 3.0 部署样例](http://120.27.24.200:7443) 对 3.0 版本的控制台部署和应用接入效果以及功能进行预览。
 
 ### - 设计架构
 
