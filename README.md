@@ -9,7 +9,7 @@
 
 点击 [Easy-Monitor 2.0 分支](https://github.com/hyj1991/easy-monitor/tree/v2.x) 可以访问旧的 2.x 分支查看以前的版本。
 
-点击 [Easy-Monitor 3.0 部署样例](http://120.27.24.200:7443) 对 3.0 版本的控制台部署和应用接入效果以及功能进行预览。
+点击 [Easy-Monitor 3.0 部署样例](http://www.devtoolx.com/easy-monitor) 对 3.0 版本的控制台部署和应用接入效果以及功能进行预览。
 
 ## 3.0 简介
 

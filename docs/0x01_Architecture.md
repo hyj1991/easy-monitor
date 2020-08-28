@@ -18,7 +18,7 @@ A brief description of the functions of each sub-module of the project and the w
 
 The front end of the console is written based on the [Vue.js](https://vuejs.org/) + [iView UI](https://github.com/view-design/ViewUI) framework, the monitoring server part is written based on the [Egg.js](https://eggjs.org/) framework, and the UI part is based on the [AliNode](https://node.console.aliyun.com/) console as a whole.
 
-Click the [Easy-Monitor 3.0 console sample](http://120.27.24.200:7443/) to preview the function and interface.
+Click the [Easy-Monitor 3.0 console sample](http://www.devtoolx.com/easy-monitor) to preview the function and interface.
 
 ## III. Architecture design diagram
 

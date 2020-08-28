@@ -41,7 +41,7 @@ exports.xtransit = {
 };
 ```
 
-最后按照正常操作启动 Egg.js 项目即可，正常情况下，你可以在 [控制台 Demo](http://120.27.24.200:7443/) 主页看到本地连接上来的实例：
+最后按照正常操作启动 Egg.js 项目即可，正常情况下，你可以在控制台主页看到本地连接上来的实例：
 
 ![image.png](https://cdn.nlark.com/yuque/0/2020/png/155185/1591789451589-1efc823b-ee68-41a8-a8fc-86e24efc35c3.png#align=left&display=inline&height=472&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1544&originWidth=3270&size=410503&status=done&style=shadow&width=1000)
 
