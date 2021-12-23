@@ -2,8 +2,7 @@
 
 [![Npm](https://img.shields.io/npm/v/xprofiler)](https://www.npmjs.com/package/xprofiler)
 [![Codecov branch](https://img.shields.io/codecov/c/github/X-Profiler/xprofiler/master)](https://codecov.io/gh/X-Profiler/xprofiler/branch/master)
-[![Linux/osx build status](https://travis-ci.org/X-Profiler/xprofiler.svg?branch=master)](https://travis-ci.org/github/X-Profiler/xprofiler)
-[![Windows build status](https://ci.appveyor.com/api/projects/status/e5xtotum6lbi3mt7/branch/master?svg=true)](https://ci.appveyor.com/project/hyj1991/xprofiler/branch/master)
+[![Continuous integration](https://github.com/X-Profiler/xprofiler/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/X-Profiler/xprofiler/actions/workflows/nodejs.yml?query=branch:master)
 [![Npm](https://img.shields.io/npm/dm/xprofiler)](https://www.npmjs.com/package/xprofiler)
 [![License](https://img.shields.io/github/license/X-Profiler/xprofiler)](LICENSE)
 
@@ -23,6 +22,7 @@
 
 ### - 新特性
 
+* Linux / MacOS / Windows 全平台支持
 * 针对 Node.js 进程与系统指标的性能监控
 * 错误日志展示与依赖 Npm 模块安全风险提示
 * 自定义智能运维告警与线上进程实时状态导出
