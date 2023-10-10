@@ -18,7 +18,7 @@
 
 扫钉钉二维码码可以进入本项目的开源官方讨论钉钉群：
 
- <img width="200" src="https://cdn.nlark.com/yuque/0/2022/png/155185/1664346948632-d67f6e5b-514e-47a5-addf-9c40ddeaae55.png">
+ <img width="200" src="https://cdn.nlark.com/yuque/0/2023/jpeg/155185/1696931427391-0bcc6154-466e-4c83-8cdd-47d82e5bc024.jpeg">
 
 ### - 新特性
 
